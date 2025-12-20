@@ -5,10 +5,15 @@ import { useDictStoreHook } from "@/store/modules/dict.store";
 import AuthAPI from "@/api/auth.api";
 import UserAPI from "@/api/system/user.api";
 
-import { setAccessToken, setRefreshToken, getRefreshToken, clearToken } from "@/utils/auth";
+import { setTokens, getRefreshToken, clearAuth, getAccessToken, getRememberMe } from "@/utils/auth";
 
 export const useUserStore = defineStore("user", () => {
   const userInfo = useStorage("userInfo", {});
+  const rememberMe = ref(getRememberMe());
+
+  function isLoggedIn() {
+    return !!getAccessToken();
+  }
 
   /**
    * 登录
@@ -21,8 +26,8 @@ export const useUserStore = defineStore("user", () => {
       AuthAPI.login(LoginFormData)
         .then((data) => {
           const { accessToken, refreshToken } = data;
-          setAccessToken(accessToken); // eyJhbGciOiJIUzI1NiJ9.xxx.xxx
-          setRefreshToken(refreshToken);
+          rememberMe.value = LoginFormData.rememberMe ?? false;
+          setTokens(accessToken, refreshToken, rememberMe.value);
           resolve();
         })
         .catch((error) => {
@@ -60,13 +65,17 @@ export const useUserStore = defineStore("user", () => {
     return new Promise((resolve, reject) => {
       AuthAPI.logout()
         .then(() => {
-          clearSessionAndCache();
+          resetAllState();
           resolve();
         })
         .catch((error) => {
           reject(error);
         });
     });
+  }
+
+  function resetAllState() {
+    return clearSessionAndCache();
   }
 
   /**
@@ -78,8 +87,7 @@ export const useUserStore = defineStore("user", () => {
       AuthAPI.refreshToken(refreshToken)
         .then((data) => {
           const { accessToken, refreshToken } = data;
-          setAccessToken(accessToken);
-          setRefreshToken(refreshToken);
+          setTokens(accessToken, refreshToken, getRememberMe());
           resolve();
         })
         .catch((error) => {
@@ -94,21 +102,25 @@ export const useUserStore = defineStore("user", () => {
    */
   function clearSessionAndCache() {
     return new Promise((resolve) => {
-      clearToken();
+      clearAuth();
       usePermissionStoreHook().resetRouter();
       useDictStoreHook().clearDictCache();
       userInfo.value = {};
+      rememberMe.value = getRememberMe();
       resolve();
     });
   }
 
   return {
     userInfo,
+    rememberMe,
+    isLoggedIn,
     getUserInfo,
     login,
     logout,
     clearSessionAndCache,
     refreshToken,
+    resetAllState,
   };
 });
 

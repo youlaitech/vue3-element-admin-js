@@ -1,9 +1,9 @@
-import { setupDirective } from "@/directive";
+import { setupDirective } from "@/directives";
 import { setupI18n } from "@/lang";
 import { setupRouter } from "@/router";
 import { setupStore } from "@/store";
 import { setupElIcons } from "./icons";
-import { setupPermission } from "./permission";
+import { setupPermissionGuard } from "@/router/guards/permission";
 import { InstallCodeMirror } from "codemirror-editor-vue3";
 
 export default {
@@ -19,8 +19,8 @@ export default {
     // Element-plus图标
     setupElIcons(app);
     // 路由守卫
-    setupPermission();
+    setupPermissionGuard();
     // 注册 CodeMirror
     app.use(InstallCodeMirror);
   },
-}; 
+};

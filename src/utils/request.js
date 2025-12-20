@@ -1,7 +1,7 @@
 import axios from "axios";
 import qs from "qs";
 import { useUserStoreHook } from "@/store/modules/user.store";
-import { ResultEnum } from "@/enums/api/result.enum";
+import { ApiCodeEnum } from "@/enums/api";
 import { getAccessToken } from "@/utils/auth";
 import router from "@/router";
 
@@ -36,9 +36,10 @@ service.interceptors.response.use(
       return response;
     }
     const { code, data, msg } = response.data;
-    if (code === ResultEnum.SUCCESS) {
+    if (code === ApiCodeEnum.SUCCESS) {
       return data;
     }
+
     ElMessage.error(msg || "系统出错");
     return Promise.reject(new Error(msg || "Error"));
   },
@@ -47,10 +48,10 @@ service.interceptors.response.use(
     const { config, response } = error;
     if (response) {
       const { code, msg } = response.data;
-      if (code === ResultEnum.ACCESS_TOKEN_INVALID) {
+      if (code === ApiCodeEnum.ACCESS_TOKEN_INVALID) {
         // Token 过期，刷新 Token
         return handleTokenRefresh(config);
-      } else if (code === ResultEnum.REFRESH_TOKEN_INVALID) {
+      } else if (code === ApiCodeEnum.REFRESH_TOKEN_INVALID) {
         // 刷新 Token 过期，跳转登录页
         await handleSessionExpired();
         return Promise.reject(new Error(msg || "Error"));
@@ -58,6 +59,7 @@ service.interceptors.response.use(
         ElMessage.error(msg || "系统出错");
       }
     }
+
     return Promise.reject(error.message);
   }
 );

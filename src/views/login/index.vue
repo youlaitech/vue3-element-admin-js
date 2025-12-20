@@ -88,7 +88,6 @@
 
         <div class="flex-x-between w-full">
           <el-checkbox v-model="loginFormData.rememberMe">{{ t("login.rememberMe") }}</el-checkbox>
-          <el-link type="primary" @click="unfinished">{{ t("login.forgetPassword") }}</el-link>
         </div>
 
         <!-- 登录按钮 -->
@@ -144,7 +143,7 @@ const captchaBase64 = ref(); // 验证码图片Base64字符串
 const loginFormData = ref({
   username: "admin",
   password: "123456",
-  captchaKey: "",
+  captchaId: "",
   captchaCode: "",
   rememberMe: false,
 });
@@ -183,7 +182,7 @@ const loginRules = computed(() => {
 // 获取验证码
 function getCaptcha() {
   AuthAPI.getCaptcha().then((data) => {
-    loginFormData.value.captchaKey = data.captchaKey;
+    loginFormData.value.captchaId = data.captchaId;
     captchaBase64.value = data.captchaBase64;
   });
 }
