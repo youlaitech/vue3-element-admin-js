@@ -18,7 +18,7 @@
 
 <script setup>
 import { useAppStore } from "@/store/modules/app.store";
-import { LanguageEnum } from "@/enums/settings/locale.enum";
+import { LanguageEnum } from "@/enums/settings";
 
 defineProps({
   size: {

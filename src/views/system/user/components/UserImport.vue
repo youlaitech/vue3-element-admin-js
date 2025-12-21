@@ -91,7 +91,7 @@
 <script setup>
 import { ElMessage } from "element-plus";
 import UserAPI from "@/api/system/user.api";
-import { ResultEnum } from "@/enums/api/result.enum";
+import { ApiCodeEnum } from "@/enums/api";
 
 const emit = defineEmits(["import-success"]);
 const visible = defineModel("modelValue", {
@@ -162,7 +162,7 @@ const handleUpload = async () => {
 
   try {
     const result = await UserAPI.import("1", importFormData.files[0].raw);
-    if (result.code === ResultEnum.SUCCESS && result.invalidCount === 0) {
+    if (result.code === ApiCodeEnum.SUCCESS && result.invalidCount === 0) {
       ElMessage.success("导入成功，导入数据：" + result.validCount + "条");
       emit("import-success");
       handleClose();

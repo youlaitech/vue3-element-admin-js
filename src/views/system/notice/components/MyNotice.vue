@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <div class="search-bar">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
+    <div class="filter-section">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
         <el-form-item label="通知标题" prop="title">
           <el-input
             v-model="queryParams.title"
@@ -27,8 +27,14 @@
       </el-form>
     </div>
 
-    <el-card shadow="never">
-      <el-table ref="dataTableRef" v-loading="loading" :data="pageData" highlight-current-row>
+    <el-card shadow="hover" class="table-section">
+      <el-table
+        ref="dataTableRef"
+        v-loading="loading"
+        :data="pageData"
+        highlight-current-row
+        class="table-section__content"
+      >
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column label="通知标题" prop="title" min-width="200" />
         <el-table-column align="center" label="通知类型" width="150">

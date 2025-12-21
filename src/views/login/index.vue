@@ -124,7 +124,7 @@ import AuthAPI from "@/api/auth.api";
 import router from "@/router";
 
 import defaultSettings from "@/settings";
-import { ThemeMode } from "@/enums/settings/theme.enum";
+import { ThemeMode } from "@/enums/settings";
 
 import { useSettingsStore, useUserStore } from "@/store";
 

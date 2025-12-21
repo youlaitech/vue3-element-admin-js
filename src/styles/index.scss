@@ -1,23 +1,12 @@
+// 1. 基础重置（补充 UnoCSS 预设未覆盖的全局样式）
 @use "./reset";
 
-.app-container {
-  padding: 15px;
-}
+// 2. 项目自定义主题变量（CSS 变量 / SCSS 变量 / JS 导出）
+@use "./variables" as *;
 
-.search-bar {
-  padding: 18px 0 0 10px;
-  margin-bottom: 10px;
-  background-color: var(--el-bg-color-overlay);
-  border: 1px solid var(--el-border-color-light);
-  border-radius: 4px;
-  box-shadow: var(--el-box-shadow-light);
-}
+// 3. UI 框架适配：Element Plus & Vxe Table
+@use "./element-plus";
+@use "./vxe-table";
 
-.table-container > .el-card__header {
-  padding: calc(var(--el-card-padding) - 8px) var(--el-card-padding);
-}
-
-// 进度条颜色
-#nprogress .bar {
-  background-color: var(--el-color-primary);
-}
+// 4. 业务通用样式
+@use "./common";

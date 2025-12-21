@@ -15,7 +15,7 @@
 <script setup>
 import { useAppStore, useSettingsStore } from "@/store";
 import defaultSettings from "@/settings";
-import { ThemeMode } from "@/enums/settings/theme.enum";
+import { ThemeMode } from "@/enums/settings";
 
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();

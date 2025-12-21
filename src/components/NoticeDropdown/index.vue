@@ -89,13 +89,13 @@
 <script setup>
 import NoticeAPI from "@/api/system/notice.api";
 import router from "@/router";
+import { useStomp } from "@/composables/websocket/useStomp";
 
 const noticeList = ref([]);
 const noticeDialogVisible = ref(false);
 const noticeDetail = ref(null);
 
-import { useStomp } from "@/hooks/useStomp";
-const { subscribe, unsubscribe, isConnected } = useStomp();
+const { subscribe, unsubscribeDestination, isConnected } = useStomp();
 
 watch(
   () => isConnected.value,
@@ -164,7 +164,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  unsubscribe("/user/queue/message");
+  unsubscribeDestination("/user/queue/message");
 });
 </script>
 

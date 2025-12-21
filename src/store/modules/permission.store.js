@@ -4,15 +4,15 @@ import router from "@/router";
 
 import MenuAPI from "@/api/system/menu.api";
 const modules = import.meta.glob("../../views/**/**.vue");
-const Layout = () => import("@/layout/index.vue");
+const Layout = () => import("@/layouts/index.vue");
 
 export const usePermissionStore = defineStore("permission", () => {
   // 储所有路由，包括静态路由和动态路由
   const routes = ref([]);
   // 混合模式左侧菜单路由
   const mixedLayoutLeftRoutes = ref([]);
-  // 路由是否加载完成
-  const isRoutesLoaded = ref(false);
+  // 动态路由是否已生成
+  const isRouteGenerated = ref(false);
 
   /**
    * 获取后台动态路由数据，解析并注册到全局路由
@@ -25,7 +25,7 @@ export const usePermissionStore = defineStore("permission", () => {
         .then((data) => {
           const dynamicRoutes = parseDynamicRoutes(data);
           routes.value = [...constantRoutes, ...dynamicRoutes];
-          isRoutesLoaded.value = true;
+          isRouteGenerated.value = true;
           resolve(dynamicRoutes);
         })
         .catch((error) => {
@@ -60,13 +60,13 @@ export const usePermissionStore = defineStore("permission", () => {
     // 清空本地存储的路由和菜单数据
     routes.value = [];
     mixedLayoutLeftRoutes.value = [];
-    isRoutesLoaded.value = false;
+    isRouteGenerated.value = false;
   };
 
   return {
     routes,
     mixedLayoutLeftRoutes,
-    isRoutesLoaded,
+    isRouteGenerated,
     generateRoutes,
     setMixedLayoutLeftRoutes,
     resetRouter,
@@ -90,7 +90,7 @@ const parseDynamicRoutes = (rawRoutes) => {
       normalizedRoute.component?.toString() === "Layout"
         ? Layout
         : modules[`../../views/${normalizedRoute.component}.vue`] ||
-          modules["../../views/error-page/404.vue"];
+          modules["../../views/error/404.vue"];
 
     // 递归解析子路由
     if (normalizedRoute.children) {

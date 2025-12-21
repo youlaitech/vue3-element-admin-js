@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <div class="search-bar">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
+    <div class="filter-section">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
         <el-form-item prop="keywords" label="关键字">
           <el-input
             v-model="queryParams.keywords"
@@ -23,15 +23,15 @@
           />
         </el-form-item>
 
-        <el-form-item>
+        <el-form-item class="search-buttons">
           <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
           <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
 
-    <el-card shadow="never">
-      <el-table v-loading="loading" :data="pageData" highlight-current-row border>
+    <el-card shadow="hover" class="table-section">
+      <el-table v-loading="loading" :data="pageData" highlight-current-row border class="table-section__content">
         <el-table-column label="操作时间" prop="createTime" width="180" />
         <el-table-column label="操作人" prop="operator" width="120" />
         <el-table-column label="日志模块" prop="module" width="100" />

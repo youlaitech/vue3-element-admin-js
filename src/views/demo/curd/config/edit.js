@@ -1,5 +1,5 @@
 import UserAPI from "@/api/system/user.api";
-import { DeviceEnum } from "@/enums/settings/device.enum";
+import { DeviceEnum } from "@/enums/settings";
 import { useAppStore } from "@/store";
 
 const modalConfig = {

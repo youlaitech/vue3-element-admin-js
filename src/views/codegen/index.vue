@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <div class="search-bar">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
+    <div class="filter-section">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
         <el-form-item prop="keywords" label="关键字">
           <el-input
             v-model="queryParams.keywords"
@@ -28,11 +28,12 @@
       </el-form>
     </div>
 
-    <el-card shadow="never" class="table-container">
+    <el-card shadow="hover" class="table-section">
       <el-table
         ref="dataTableRef"
         v-loading="loading"
         :data="pageData"
+        class="table-section__content"
         highlight-current-row
         border
       >
@@ -416,8 +417,7 @@ import "codemirror/mode/javascript/javascript.js";
 import Codemirror from "codemirror-editor-vue3";
 import { useClipboard } from "@vueuse/core";
 
-import { FormTypeEnum } from "@/enums/codegen/form.enum";
-import { QueryTypeEnum } from "@/enums/codegen/query.enum";
+import { FormTypeEnum, QueryTypeEnum } from "@/enums/codegen";
 
 import GeneratorAPI from "@/api/codegen.api";
 import DictAPI from "@/api/system/dict.api";

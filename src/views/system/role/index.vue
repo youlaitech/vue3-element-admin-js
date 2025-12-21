@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <div class="search-bar">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
+    <div class="filter-section">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
         <el-form-item prop="keywords" label="关键字">
           <el-input
             v-model="queryParams.keywords"
@@ -11,25 +11,28 @@
           />
         </el-form-item>
 
-        <el-form-item>
+        <el-form-item class="search-buttons">
           <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
           <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
 
-    <el-card shadow="never">
-      <div class="mb-10px">
-        <el-button type="success" icon="plus" @click="handleOpenDialog()">新增</el-button>
-        <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
-          删除
-        </el-button>
+    <el-card shadow="hover" class="table-section">
+      <div class="table-section__toolbar">
+        <div class="table-section__toolbar--actions">
+          <el-button type="success" icon="plus" @click="handleOpenDialog()">新增</el-button>
+          <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
+            删除
+          </el-button>
+        </div>
       </div>
 
       <el-table
         ref="dataTableRef"
         v-loading="loading"
         :data="roleList"
+        class="table-section__content"
         highlight-current-row
         border
         @selection-change="handleSelectionChange"
@@ -204,7 +207,7 @@
 
 <script setup>
 import { useAppStore } from "@/store/modules/app.store";
-import { DeviceEnum } from "@/enums/settings/device.enum";
+import { DeviceEnum } from "@/enums/settings";
 
 import RoleAPI from "@/api/system/role.api";
 import MenuAPI from "@/api/system/menu.api";

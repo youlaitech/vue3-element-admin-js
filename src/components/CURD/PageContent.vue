@@ -403,11 +403,27 @@
 </template>
 
 <script setup>
-import { hasAuth } from "@/plugins/permission";
+import { ROLE_ROOT } from "@/constants";
+import { useUserStore } from "@/store";
 import { useDateFormat, useThrottleFn } from "@vueuse/core";
 import { genFileId } from "element-plus";
 import ExcelJS from "exceljs";
 import { reactive, ref } from "vue";
+
+const userStore = useUserStore();
+
+function hasAuth(value) {
+  const { roles = [], perms = [] } = userStore.userInfo || {};
+  if (roles.includes(ROLE_ROOT)) {
+    return true;
+  }
+
+  return typeof value === "string"
+    ? perms.includes(value)
+    : Array.isArray(value)
+      ? value.some((perm) => perms.includes(perm))
+      : false;
+}
 
 // 定义接收的属性
 const props = defineProps({

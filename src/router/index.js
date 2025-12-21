@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
-export const Layout = () => import("@/layout/index.vue");
+export const Layout = () => import("@/layouts/index.vue");
 
 // 静态路由
 export const constantRoutes = [

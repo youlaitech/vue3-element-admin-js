@@ -1,6 +1,5 @@
 import defaultSettings from "@/settings";
-import { SidebarColor, ThemeMode } from "@/enums/settings/theme.enum";
-import { LayoutMode } from "@/enums/settings/layout.enum";
+import { SidebarColor, ThemeMode, LayoutMode } from "@/enums/settings";
 import { generateThemeColors, applyTheme, toggleDarkMode, toggleSidebarColor } from "@/utils/theme";
 
 export const useSettingsStore = defineStore("setting", () => {

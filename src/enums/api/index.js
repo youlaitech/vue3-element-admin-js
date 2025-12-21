@@ -1,9 +1,0 @@
-export const ApiCodeEnum = {
-  SUCCESS: "00000",
-  ERROR: "B0001",
-  ACCESS_TOKEN_INVALID: "A0230",
-  REFRESH_TOKEN_INVALID: "A0231",
-  CHOOSE_TENANT: "A0250",
-};
-
-export * from "./result.enum";
