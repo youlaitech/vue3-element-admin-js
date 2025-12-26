@@ -3,7 +3,7 @@
     <!-- 开启水印 -->
     <el-watermark
       :font="{ color: fontColor }"
-      :content="watermarkEnabled ? defaultSettings.watermarkContent : ''"
+      :content="watermarkEnabled ? defaults.watermarkContent : ''"
       :z-index="9999"
       class="wh-full"
     >
@@ -14,7 +14,7 @@
 
 <script setup>
 import { useAppStore, useSettingsStore } from "@/store";
-import defaultSettings from "@/settings";
+import { defaults } from "@/settings";
 import { ThemeMode } from "@/enums/settings";
 
 const appStore = useAppStore();

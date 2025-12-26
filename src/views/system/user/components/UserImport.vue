@@ -90,7 +90,7 @@
 
 <script setup>
 import { ElMessage } from "element-plus";
-import UserAPI from "@/api/system/user.api";
+import UserAPI from "@/api/system/user";
 import { ApiCodeEnum } from "@/enums/api";
 
 const emit = defineEmits(["import-success"]);

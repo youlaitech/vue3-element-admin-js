@@ -28,23 +28,23 @@
     <el-card shadow="hover" class="table-section">
       <div class="table-section__toolbar">
         <div class="table-section__toolbar--actions">
-        <el-button
-          v-hasPerm="['sys:dept:add']"
-          type="success"
-          icon="plus"
-          @click="handleOpenDialog()"
-        >
-          新增
-        </el-button>
-        <el-button
-          v-hasPerm="['sys:dept:delete']"
-          type="danger"
-          :disabled="selectIds.length === 0"
-          icon="delete"
-          @click="handleDelete()"
-        >
-          删除
-        </el-button>
+          <el-button
+            v-hasPerm="['sys:dept:add']"
+            type="success"
+            icon="plus"
+            @click="handleOpenDialog()"
+          >
+            新增
+          </el-button>
+          <el-button
+            v-hasPerm="['sys:dept:delete']"
+            type="danger"
+            :disabled="selectIds.length === 0"
+            icon="delete"
+            @click="handleDelete()"
+          >
+            删除
+          </el-button>
         </div>
       </div>
 
@@ -161,7 +161,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import DeptAPI from "@/api/system/dept.api";
+import DeptAPI from "@/api/system/dept";
 
 const queryFormRef = ref();
 const deptFormRef = ref();

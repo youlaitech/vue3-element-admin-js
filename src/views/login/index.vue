@@ -18,7 +18,7 @@
       :class="[isDark ? 'bg-transparent' : 'bg-white']"
     >
       <div class="flex-center relative pb-5">
-        <h2>{{ defaultSettings.title }}</h2>
+        <h2>{{ defaults.title }}</h2>
         <el-dropdown class="absolute! right-0">
           <div class="cursor-pointer">
             <el-icon><arrow-down /></el-icon>
@@ -26,7 +26,7 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item>
-                <el-tag>{{ defaultSettings.version }}</el-tag>
+                <el-tag>{{ defaults.version }}</el-tag>
               </el-dropdown-item>
               <el-dropdown-item @click="setLoginCredentials('root', '123456')">
                 超级管理员: root/123456
@@ -120,10 +120,10 @@
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 
-import AuthAPI from "@/api/auth.api";
+import AuthAPI from "@/api/auth";
 import router from "@/router";
 
-import defaultSettings from "@/settings";
+import { defaults } from "@/settings";
 import { ThemeMode } from "@/enums/settings";
 
 import { useSettingsStore, useUserStore } from "@/store";
@@ -224,7 +224,7 @@ function resolveRedirectTarget(query) {
   const defaultPath = "/";
 
   // 获取原始重定向路径
-  const rawRedirect = (query.redirect) || defaultPath;
+  const rawRedirect = query.redirect || defaultPath;
 
   try {
     // 6. 使用Vue Router解析路径

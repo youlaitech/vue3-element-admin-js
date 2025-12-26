@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import FileAPI from "@/api/file.api";
+import FileAPI from "@/api/file";
 
 const props = defineProps({
   /**

@@ -21,22 +21,22 @@
     <el-card shadow="hover" class="table-section">
       <div class="table-section__toolbar">
         <div class="table-section__toolbar--actions">
-        <el-button
-          v-hasPerm="['sys:config:add']"
-          type="success"
-          icon="plus"
-          @click="handleOpenDialog()"
-        >
-          新增
-        </el-button>
-        <el-button
-          v-hasPerm="['sys:config:refresh']"
-          color="#626aef"
-          icon="RefreshLeft"
-          @click="handleRefreshCache"
-        >
-          刷新缓存
-        </el-button>
+          <el-button
+            v-hasPerm="['sys:config:add']"
+            type="success"
+            icon="plus"
+            @click="handleOpenDialog()"
+          >
+            新增
+          </el-button>
+          <el-button
+            v-hasPerm="['sys:config:refresh']"
+            color="#626aef"
+            icon="RefreshLeft"
+            @click="handleRefreshCache"
+          >
+            刷新缓存
+          </el-button>
         </div>
       </div>
 
@@ -138,7 +138,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import ConfigAPI from "@/api/system/config.api";
+import ConfigAPI from "@/api/system/config";
 
 const queryFormRef = ref();
 const dataFormRef = ref();

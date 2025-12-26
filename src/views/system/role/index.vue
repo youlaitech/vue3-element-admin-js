@@ -22,7 +22,12 @@
       <div class="table-section__toolbar">
         <div class="table-section__toolbar--actions">
           <el-button type="success" icon="plus" @click="handleOpenDialog()">新增</el-button>
-          <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
+          <el-button
+            type="danger"
+            :disabled="ids.length === 0"
+            icon="delete"
+            @click="handleDelete()"
+          >
             删除
           </el-button>
         </div>
@@ -206,11 +211,11 @@
 </template>
 
 <script setup>
-import { useAppStore } from "@/store/modules/app.store";
+import { useAppStore } from "@/store/modules/app";
 import { DeviceEnum } from "@/enums/settings";
 
-import RoleAPI from "@/api/system/role.api";
-import MenuAPI from "@/api/system/menu.api";
+import RoleAPI from "@/api/system/role";
+import MenuAPI from "@/api/system/menu";
 
 defineOptions({
   name: "Role",
@@ -401,9 +406,7 @@ async function handleOpenAssignPermDialog(row) {
 function handleAssignPermSubmit() {
   const roleId = checkedRole.value.id;
   if (roleId) {
-    const checkedMenuIds = permTreeRef
-      .value.getCheckedNodes(false, true)
-      .map((node) => node.value);
+    const checkedMenuIds = permTreeRef.value.getCheckedNodes(false, true).map((node) => node.value);
 
     loading.value = true;
     RoleAPI.updateRoleMenus(roleId, checkedMenuIds)

@@ -1,4 +1,4 @@
-import DeptAPI from "@/api/system/dept.api";
+import DeptAPI from "@/api/system/dept";
 
 const searchConfig = {
   pageName: "sys:user",

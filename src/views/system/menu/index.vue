@@ -337,10 +337,10 @@
 </template>
 
 <script setup>
-import { useAppStore } from "@/store/modules/app.store";
+import { useAppStore } from "@/store/modules/app";
 import { DeviceEnum } from "@/enums/settings";
 
-import MenuAPI from "@/api/system/menu.api";
+import MenuAPI from "@/api/system/menu";
 import { MenuTypeEnum } from "@/enums/business";
 
 defineOptions({
@@ -351,7 +351,6 @@ defineOptions({
 const appStore = useAppStore();
 
 const queryFormRef = ref();
- 
 
 const loading = ref(false);
 const dialog = reactive({

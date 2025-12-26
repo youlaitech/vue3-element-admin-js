@@ -1,4 +1,4 @@
-import UserAPI from "@/api/system/user.api";
+import UserAPI from "@/api/system/user";
 
 const selectConfig = {
   pk: "id",
@@ -80,7 +80,7 @@ const selectConfig = {
       },
     },
   ],
-  indexAction: function (params) {
+  indexAction(params) {
     if ("createAt" in params) {
       const createAt = params.createAt;
       if (createAt?.length > 1) {

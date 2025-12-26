@@ -37,18 +37,18 @@
     </el-dropdown>
 
     <!-- 设置面板 -->
-    <div v-if="defaultSettings.showSettings" @click="settingStore.settingsVisible = true">
+    <div v-if="defaults.showSettings" @click="settingStore.settingsVisible = true">
       <div class="i-svg:setting" />
     </div>
   </div>
 </template>
 <script setup>
-import defaultSettings from "@/settings";
+import { defaults } from "@/settings";
 import { DeviceEnum, SidebarColor, ThemeMode } from "@/enums/settings";
 import { useAppStore, useSettingsStore, useUserStore, useTagsViewStore } from "@/store";
 
-import { useRoute, useRouter } from 'vue-router';
-import { ElMessageBox } from 'element-plus';
+import { useRoute, useRouter } from "vue-router";
+import { ElMessageBox } from "element-plus";
 
 const appStore = useAppStore();
 const settingStore = useSettingsStore();

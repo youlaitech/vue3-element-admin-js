@@ -1,7 +1,13 @@
 <template>
   <div class="app-container">
     <div class="filter-section">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-suffix=":" label-width="auto">
+      <el-form
+        ref="queryFormRef"
+        :model="queryParams"
+        :inline="true"
+        label-suffix=":"
+        label-width="auto"
+      >
         <el-form-item label="标题" prop="title">
           <el-input
             v-model="queryParams.title"
@@ -257,8 +263,8 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import NoticeAPI from "@/api/system/notice.api";
-import UserAPI from "@/api/system/user.api";
+import NoticeAPI from "@/api/system/notice";
+import UserAPI from "@/api/system/user";
 
 const queryFormRef = ref();
 const dataFormRef = ref();

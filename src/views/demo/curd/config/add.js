@@ -1,4 +1,4 @@
-import UserAPI from "@/api/system/user.api";
+import UserAPI from "@/api/system/user";
 
 const modalConfig = {
   pageName: "sys:user",

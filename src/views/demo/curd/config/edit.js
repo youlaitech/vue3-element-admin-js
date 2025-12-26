@@ -1,4 +1,4 @@
-import UserAPI from "@/api/system/user.api";
+import UserAPI from "@/api/system/user";
 import { DeviceEnum } from "@/enums/settings";
 import { useAppStore } from "@/store";
 
@@ -10,7 +10,7 @@ const modalConfig = {
     size: useAppStore().device === DeviceEnum.MOBILE ? "80%" : 500,
   },
   pk: "id",
-  formAction: function (data) {
+  formAction(data) {
     return UserAPI.update(data.id, data);
   },
   beforeSubmit(data) {

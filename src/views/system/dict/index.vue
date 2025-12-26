@@ -22,7 +22,12 @@
       <div class="table-section__toolbar">
         <div class="table-section__toolbar--actions">
           <el-button type="success" icon="plus" @click="handleAddClick()">新增</el-button>
-          <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
+          <el-button
+            type="danger"
+            :disabled="ids.length === 0"
+            icon="delete"
+            @click="handleDelete()"
+          >
             删除
           </el-button>
         </div>
@@ -132,7 +137,7 @@ defineOptions({
   inherititems: false,
 });
 
-import DictAPI from "@/api/system/dict.api";
+import DictAPI from "@/api/system/dict";
 import router from "@/router";
 
 const queryFormRef = ref();

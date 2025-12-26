@@ -1,6 +1,6 @@
 import axios from "axios";
 import qs from "qs";
-import { useUserStoreHook } from "@/store/modules/user.store";
+import { useUserStoreHook } from "@/store/modules/user";
 import { ApiCodeEnum } from "@/enums/api";
 import { getAccessToken } from "@/utils/auth";
 import router from "@/router";
@@ -110,4 +110,4 @@ async function handleSessionExpired() {
   });
   await useUserStoreHook().clearSessionAndCache();
   router.push("/login");
-} 
+}

@@ -33,7 +33,7 @@ import "@wangeditor-next/editor/dist/css/style.css";
 import { Toolbar, Editor } from "@wangeditor-next/editor-for-vue";
 
 // 文件上传 API
-import FileAPI from "@/api/file.api";
+import FileAPI from "@/api/file";
 
 defineProps({
   height: {

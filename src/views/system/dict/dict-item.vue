@@ -129,7 +129,7 @@
 </template>
 
 <script setup>
-import DictAPI from "@/api/system/dict.api";
+import DictAPI from "@/api/system/dict";
 
 const route = useRoute();
 

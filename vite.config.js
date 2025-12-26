@@ -5,7 +5,7 @@ import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 
-import mockDevServerPlugin from "vite-plugin-mock-dev-server";
+import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
 
 import UnoCSS from "unocss/vite";
 import { resolve } from "path";
@@ -22,6 +22,8 @@ const pathSrc = resolve(__dirname, "src");
 // Vite配置  https://cn.vitejs.dev/config
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
+  const isProduction = mode === "production";
+
   return {
     resolve: {
       alias: {
@@ -54,9 +56,9 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       vue(),
-      env.VITE_MOCK_DEV_SERVER === "true" ? mockDevServerPlugin() : null,
+      ...(env.VITE_MOCK_DEV_SERVER === "true" ? [mockDevServerPlugin()] : []),
       UnoCSS(),
-      // 自动导入配置 https://github.com/sxzz/element-plus-best-practices/blob/main/vite.config.ts
+      // API 自动导入
       AutoImport({
         // 导入 Vue 函数，如：ref, reactive, toRef 等
         imports: ["vue", "@vueuse/core", "pinia", "vue-router", "vue-i18n"],
@@ -72,7 +74,9 @@ export default defineConfig(({ mode }) => {
         vueTemplate: true,
         // 导入函数类型声明文件路径 (false:关闭自动生成)
         dts: false,
+        // dts: "src/types/auto-imports.d.ts",
       }),
+      // 组件自动导入
       Components({
         resolvers: [
           // 导入 Element Plus 组件
@@ -120,6 +124,7 @@ export default defineConfig(({ mode }) => {
         "element-plus/es/components/breadcrumb/style/index",
         "element-plus/es/components/button/style/index",
         "element-plus/es/components/card/style/index",
+        "element-plus/es/components/cascader/style/index",
         "element-plus/es/components/checkbox-group/style/index",
         "element-plus/es/components/checkbox/style/index",
         "element-plus/es/components/col/style/index",
@@ -173,6 +178,7 @@ export default defineConfig(({ mode }) => {
         "element-plus/es/components/tag/style/index",
         "element-plus/es/components/text/style/index",
         "element-plus/es/components/time-picker/style/index",
+        "element-plus/es/components/time-select/style/index",
         "element-plus/es/components/timeline-item/style/index",
         "element-plus/es/components/timeline/style/index",
         "element-plus/es/components/tooltip/style/index",
@@ -180,22 +186,27 @@ export default defineConfig(({ mode }) => {
         "element-plus/es/components/tree/style/index",
         "element-plus/es/components/upload/style/index",
         "element-plus/es/components/watermark/style/index",
+        "element-plus/es/components/checkbox-button/style/index",
+        "element-plus/es/components/space/style/index",
       ],
     },
     // 构建配置
     build: {
       chunkSizeWarningLimit: 2000, // 消除打包大小超过500kb警告
-      minify: "terser", // Vite 2.6.x 以上需要配置 minify: "terser", terserOptions 才能生效
-      terserOptions: {
-        compress: {
-          keep_infinity: true, // 防止 Infinity 被压缩成 1/0，这可能会导致 Chrome 上的性能问题
-          drop_console: true, // 生产环境去除 console
-          drop_debugger: true, // 生产环境去除 debugger
-        },
-        format: {
-          comments: false, // 删除注释
-        },
-      },
+      minify: isProduction ? "terser" : false, // 只在生产环境启用压缩
+      terserOptions: isProduction
+        ? {
+            compress: {
+              keep_infinity: true, // 防止 Infinity 被压缩成 1/0，这可能会导致 Chrome 上的性能问题
+              drop_console: true, // 生产环境去除 console.log, console.warn, console.error 等
+              drop_debugger: true, // 生产环境去除 debugger
+              pure_funcs: ["console.log", "console.info"], // 移除指定的函数调用
+            },
+            format: {
+              comments: false, // 删除注释
+            },
+          }
+        : {},
       rollupOptions: {
         output: {
           // manualChunks: {

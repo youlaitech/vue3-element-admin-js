@@ -1,0 +1,134 @@
+import { store } from "@/store";
+import { usePermissionStoreHook } from "@/store/modules/permission";
+import { useDictStoreHook } from "@/store/modules/dict";
+
+import AuthAPI from "@/api/auth";
+import UserAPI from "@/api/system/user";
+
+import { setTokens, getRefreshToken, clearAuth, getAccessToken, getRememberMe } from "@/utils/auth";
+
+export const useUserStore = defineStore("user", () => {
+  const userInfo = useStorage("userInfo", {});
+  const rememberMe = ref(getRememberMe());
+
+  function isLoggedIn() {
+    return !!getAccessToken();
+  }
+
+  /**
+   * 登录
+   *
+   * @param {Object} LoginFormData
+   * @returns
+   */
+  function login(LoginFormData) {
+    return new Promise((resolve, reject) => {
+      AuthAPI.login(LoginFormData)
+        .then((data) => {
+          const { accessToken, refreshToken } = data;
+          rememberMe.value = LoginFormData.rememberMe ?? false;
+          setTokens(accessToken, refreshToken, rememberMe.value);
+          resolve();
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  /**
+   * 获取用户信息
+   *
+   * @returns {Object} 用户信息
+   */
+  function getUserInfo() {
+    return new Promise((resolve, reject) => {
+      UserAPI.getInfo()
+        .then((data) => {
+          if (!data) {
+            reject("Verification failed, please Login again.");
+            return;
+          }
+          Object.assign(userInfo.value, { ...data });
+          resolve(data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  /**
+   * 登出
+   */
+  function logout() {
+    return new Promise((resolve, reject) => {
+      AuthAPI.logout()
+        .then(() => {
+          resetAllState();
+          resolve();
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  }
+
+  function resetAllState() {
+    return clearSessionAndCache();
+  }
+
+  /**
+   * 刷新 token
+   */
+  function refreshToken() {
+    const refreshToken = getRefreshToken();
+    return new Promise((resolve, reject) => {
+      AuthAPI.refreshToken(refreshToken)
+        .then((data) => {
+          const { accessToken, refreshToken } = data;
+          setTokens(accessToken, refreshToken, getRememberMe());
+          resolve();
+        })
+        .catch((error) => {
+          console.log(" refreshToken  刷新失败", error);
+          reject(error);
+        });
+    });
+  }
+
+  /**
+   * 清除用户会话和缓存
+   */
+  function clearSessionAndCache() {
+    return new Promise((resolve) => {
+      clearAuth();
+      usePermissionStoreHook().resetRouter();
+      useDictStoreHook().clearDictCache();
+      userInfo.value = {};
+      rememberMe.value = getRememberMe();
+      resolve();
+    });
+  }
+
+  return {
+    userInfo,
+    rememberMe,
+    isLoggedIn,
+    getUserInfo,
+    login,
+    logout,
+    clearSessionAndCache,
+    refreshToken,
+    resetAllState,
+  };
+});
+
+/**
+ * 用于在组件外部（如在Pinia Store 中）使用 Pinia 提供的 store 实例。
+ * 官方文档解释了如何在组件外部使用 Pinia Store：
+ * https://pinia.vuejs.org/core-concepts/outside-component-usage.html#using-a-store-outside-of-a-component
+ */
+export function useUserStoreHook() {
+  return useUserStore(store);
+}

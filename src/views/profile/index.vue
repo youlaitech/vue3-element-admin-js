@@ -218,8 +218,8 @@
 </template>
 
 <script setup>
-import UserAPI from "@/api/system/user.api";
-import FileAPI from "@/api/file.api";
+import UserAPI from "@/api/system/user";
+import FileAPI from "@/api/file";
 import { Camera } from "@element-plus/icons-vue";
 
 const userProfile = ref({});

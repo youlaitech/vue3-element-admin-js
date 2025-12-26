@@ -21,12 +21,8 @@
       <!-- 主内容区域 -->
       <div :class="{ hasTagsView: isShowTagsView }" class="layout__main">
         <TagsView v-if="isShowTagsView" />
-        <AppMain />
-        <Settings v-if="defaultSettings.showSettings" />
-        <!-- 返回顶部按钮 -->
-        <el-backtop target=".app-main">
-          <div class="i-svg:backtop w-6 h-6" />
-        </el-backtop>
+        <LayoutMain />
+        <Settings v-if="defaults.showSettings" />
       </div>
     </div>
 
@@ -34,8 +30,8 @@
     <div v-else :class="{ hasTagsView: isShowTagsView }" class="layout__main">
       <NavBar v-if="layout === LayoutMode.LEFT" />
       <TagsView v-if="isShowTagsView" />
-      <AppMain />
-      <Settings v-if="defaultSettings.showSettings" />
+      <LayoutMain />
+      <Settings v-if="defaults.showSettings" />
       <!-- 返回顶部按钮 -->
       <el-backtop target=".app-main">
         <div class="i-svg:backtop w-6 h-6" />
@@ -49,7 +45,7 @@
 import { useAppStore, useSettingsStore, usePermissionStore } from "@/store";
 
 // 配置
-import defaultSettings from "@/settings";
+import { defaults } from "@/settings";
 
 // 枚举
 import { DeviceEnum, LayoutMode } from "@/enums/settings";

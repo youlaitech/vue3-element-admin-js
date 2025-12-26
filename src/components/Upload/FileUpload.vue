@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-import FileAPI from "@/api/file.api";
+import FileAPI from "@/api/file";
 
 const props = defineProps({
   /**
@@ -122,7 +122,7 @@ watch(
     fileList.value = value.map((item) => {
       const name = item.name ? item.name : item.url?.substring(item.url.lastIndexOf("/") + 1);
       return {
-        name: name,
+        name,
         url: item.url,
         status: "success",
         uid: getUid(),
@@ -191,11 +191,11 @@ const handleSuccess = (response, uploadFile, files) => {
       return file.status === "success" || file.status === "fail";
     })
   ) {
-    let fileInfos = [];
+    const fileInfos = [];
     files.map((file) => {
       if (file.status === "success") {
         //只取携带response的才是刚上传的
-        let res = file.response;
+        const res = file.response;
         if (res) {
           fileInfos.push({ name: res.name, url: res.url });
         }

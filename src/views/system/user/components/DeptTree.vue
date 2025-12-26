@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import DeptAPI from "@/api/system/dept.api";
+import DeptAPI from "@/api/system/dept";
 const props = defineProps({
   modelValue: {
     type: [String, Number],

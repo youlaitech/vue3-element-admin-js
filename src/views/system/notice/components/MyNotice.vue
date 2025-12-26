@@ -113,7 +113,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import NoticeAPI from "@/api/system/notice.api";
+import NoticeAPI from "@/api/system/notice";
 
 const queryFormRef = ref();
 const pageData = ref([]);

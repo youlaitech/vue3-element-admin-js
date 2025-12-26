@@ -98,7 +98,7 @@
 
 <script setup>
 import { useStomp } from "@/composables/websocket/useStomp";
-import { useUserStoreHook } from "@/store/modules/user.store";
+import { useUserStoreHook } from "@/store/modules/user";
 
 const userStore = useUserStoreHook();
 // 用于手动调整 WebSocket 地址

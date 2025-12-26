@@ -87,7 +87,7 @@
 </template>
 
 <script setup>
-import NoticeAPI from "@/api/system/notice.api";
+import NoticeAPI from "@/api/system/notice";
 import router from "@/router";
 import { useStomp } from "@/composables/websocket/useStomp";
 

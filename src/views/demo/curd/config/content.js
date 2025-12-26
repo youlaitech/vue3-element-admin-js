@@ -1,5 +1,5 @@
-import UserAPI from "@/api/system/user.api";
-import RoleAPI from "@/api/system/role.api";
+import UserAPI from "@/api/system/user";
+import RoleAPI from "@/api/system/role";
 
 const contentConfig = {
   pageName: "sys:user",
@@ -13,7 +13,7 @@ const contentConfig = {
     pageSize: 20,
     pageSizes: [10, 20, 30, 50],
   },
-  indexAction: function (params) {
+  indexAction(params) {
     return UserAPI.getPage(params);
   },
   deleteAction: UserAPI.deleteByIds,
@@ -27,7 +27,7 @@ const contentConfig = {
     console.log("importsAction", data);
     return Promise.resolve();
   },
-  exportsAction: async function (params) {
+  async exportsAction(params) {
     // 模拟获取到的是全量数据
     const res = await UserAPI.getPage(params);
     console.log("exportsAction", res.list);

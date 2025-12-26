@@ -31,7 +31,13 @@
     </div>
 
     <el-card shadow="hover" class="table-section">
-      <el-table v-loading="loading" :data="pageData" highlight-current-row border class="table-section__content">
+      <el-table
+        v-loading="loading"
+        :data="pageData"
+        highlight-current-row
+        border
+        class="table-section__content"
+      >
         <el-table-column label="操作时间" prop="createTime" width="180" />
         <el-table-column label="操作人" prop="operator" width="120" />
         <el-table-column label="日志模块" prop="module" width="100" />
@@ -60,7 +66,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import LogAPI from "@/api/system/log.api";
+import LogAPI from "@/api/system/log";
 
 const queryFormRef = ref();
 

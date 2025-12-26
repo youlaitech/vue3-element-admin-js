@@ -285,8 +285,8 @@ defineOptions({
 });
 
 import { dayjs } from "element-plus";
-import LogAPI from "@/api/system/log.api";
-import { useUserStore } from "@/store/modules/user.store";
+import LogAPI from "@/api/system/log";
+import { useUserStore } from "@/store/modules/user";
 import { formatGrowthRate } from "@/utils";
 
 const userStore = useUserStore();

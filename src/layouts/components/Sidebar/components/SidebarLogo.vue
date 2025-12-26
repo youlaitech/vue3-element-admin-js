@@ -4,7 +4,7 @@
       <router-link :key="+collapse" class="wh-full flex-center" to="/">
         <img :src="logo" class="w20px h20px" />
         <span v-if="!collapse" class="title">
-          {{ defaultSettings.title }}
+          {{ defaults.title }}
         </span>
       </router-link>
     </transition>
@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import defaultSettings from "@/settings";
+import { defaults } from "@/settings";
 import logo from "@/assets/logo.png";
 
 defineProps({

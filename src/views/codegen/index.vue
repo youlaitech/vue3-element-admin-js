@@ -419,9 +419,9 @@ import { useClipboard } from "@vueuse/core";
 
 import { FormTypeEnum, QueryTypeEnum } from "@/enums/codegen";
 
-import GeneratorAPI from "@/api/codegen.api";
-import DictAPI from "@/api/system/dict.api";
-import MenuAPI from "@/api/system/menu.api";
+import GeneratorAPI from "@/api/codegen";
+import DictAPI from "@/api/system/dict";
+import MenuAPI from "@/api/system/menu";
 
 const treeData = ref([]);
 
@@ -564,7 +564,7 @@ const initSort = () => {
 };
 
 const setNodeSort = (oldIndex, newIndex) => {
-  let arr = Object.assign([], genConfigFormData.value.fieldConfigs);
+  const arr = Object.assign([], genConfigFormData.value.fieldConfigs);
   const currentRow = arr.splice(oldIndex, 1)[0];
   arr.splice(newIndex, 0, currentRow);
   arr.forEach((item, index) => {
