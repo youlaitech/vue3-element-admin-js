@@ -14,8 +14,8 @@ export default defineMock([
         roles: ["ADMIN"],
         perms: [
           "sys:user:query",
-          "sys:user:add",
-          "sys:user:edit",
+          "sys:user:create",
+          "sys:user:update",
           "sys:user:delete",
           "sys:user:import",
           "sys:user:export",
@@ -47,9 +47,9 @@ export default defineMock([
           "sys:dict-item:edit",
           "sys:dict-item:delete",
 
-          "sys:notice:query",
-          "sys:notice:add",
-          "sys:notice:edit",
+          "sys:notice:list",
+          "sys:notice:create",
+          "sys:notice:update",
           "sys:notice:delete",
           "sys:notice:revoke",
           "sys:notice:publish",

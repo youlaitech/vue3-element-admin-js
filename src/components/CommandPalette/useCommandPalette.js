@@ -1,7 +1,8 @@
 /**
  * 菜单搜索逻辑
  */
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { useMagicKeys } from "@vueuse/core";
 import router from "@/router";
 import { usePermissionStore } from "@/store";
 import { isExternal } from "@/utils";
@@ -154,13 +155,20 @@ export function useCommandPalette() {
   // ============================================
   // 快捷键
   // ============================================
+  const { Ctrl_k, Meta_k } = useMagicKeys({
+    passive: false,
+    onEventFired(e) {
+      if (e.ctrlKey && e.key === "k" && e.type === "keydown") {
+        e.preventDefault();
+      }
+    },
+  });
 
-  function handleKeydown(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
+  watch([Ctrl_k, Meta_k], (v) => {
+    if (v[0] || v[1]) {
       open();
     }
-  }
+  });
 
   // ============================================
   // 生命周期
@@ -169,11 +177,6 @@ export function useCommandPalette() {
   onMounted(() => {
     loadRoutes(permissionStore.routes);
     loadHistory();
-    document.addEventListener("keydown", handleKeydown);
-  });
-
-  onBeforeUnmount(() => {
-    document.removeEventListener("keydown", handleKeydown);
   });
 
   return {

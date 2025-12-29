@@ -1,33 +1,34 @@
 import { store } from "@/store";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import { useDictStoreHook } from "@/store/modules/dict";
+import { useTagsViewStore } from "@/store";
+import { cleanupWebSocket } from "@/composables";
 
 import AuthAPI from "@/api/auth";
 import UserAPI from "@/api/system/user";
 
-import { setTokens, getRefreshToken, clearAuth, getAccessToken, getRememberMe } from "@/utils/auth";
+import { AuthStorage } from "@/utils/auth";
 
 export const useUserStore = defineStore("user", () => {
-  const userInfo = useStorage("userInfo", {});
-  const rememberMe = ref(getRememberMe());
-
-  function isLoggedIn() {
-    return !!getAccessToken();
-  }
+  // 用户信息
+  const userInfo = ref({});
+  // 记住我状态
+  const rememberMe = ref(AuthStorage.getRememberMe());
 
   /**
    * 登录
    *
-   * @param {Object} LoginFormData
+   * @param {Object} loginRequest
    * @returns
    */
-  function login(LoginFormData) {
+  function login(loginRequest) {
     return new Promise((resolve, reject) => {
-      AuthAPI.login(LoginFormData)
+      AuthAPI.login(loginRequest)
         .then((data) => {
           const { accessToken, refreshToken } = data;
-          rememberMe.value = LoginFormData.rememberMe ?? false;
-          setTokens(accessToken, refreshToken, rememberMe.value);
+          // 保存记住我状态和token
+          rememberMe.value = loginRequest.rememberMe ?? false;
+          AuthStorage.setTokens(accessToken, refreshToken, rememberMe.value);
           resolve();
         })
         .catch((error) => {
@@ -65,6 +66,7 @@ export const useUserStore = defineStore("user", () => {
     return new Promise((resolve, reject) => {
       AuthAPI.logout()
         .then(() => {
+          // 重置所有系统状态
           resetAllState();
           resolve();
         })
@@ -74,20 +76,56 @@ export const useUserStore = defineStore("user", () => {
     });
   }
 
+  /**
+   * 重置所有系统状态
+   * 统一处理所有清理工作，包括用户凭证、路由、缓存等
+   */
   function resetAllState() {
-    return clearSessionAndCache();
+    // 1. 重置用户状态
+    resetUserState();
+
+    // 2. 重置其他模块状态
+    // 重置路由
+    usePermissionStoreHook().resetRouter();
+    // 清除字典缓存
+    useDictStoreHook().clearDictCache();
+    // 清除标签视图
+    useTagsViewStore().delAllViews();
+
+    // 3. 清理 WebSocket 连接
+    cleanupWebSocket();
+    console.log("[UserStore] WebSocket connections cleaned up");
+
+    return Promise.resolve();
+  }
+
+  /**
+   * 重置用户状态
+   * 仅处理用户模块内的状态
+   */
+  function resetUserState() {
+    // 清除用户凭证
+    AuthStorage.clearAuth();
+    // 重置用户信息
+    userInfo.value = {};
   }
 
   /**
    * 刷新 token
    */
   function refreshToken() {
-    const refreshToken = getRefreshToken();
+    const refreshToken = AuthStorage.getRefreshToken();
+
+    if (!refreshToken) {
+      return Promise.reject(new Error("没有有效的刷新令牌"));
+    }
+
     return new Promise((resolve, reject) => {
       AuthAPI.refreshToken(refreshToken)
         .then((data) => {
-          const { accessToken, refreshToken } = data;
-          setTokens(accessToken, refreshToken, getRememberMe());
+          const { accessToken, refreshToken: newRefreshToken } = data;
+          // 更新令牌，保持当前记住我状态
+          AuthStorage.setTokens(accessToken, newRefreshToken, AuthStorage.getRememberMe());
           resolve();
         })
         .catch((error) => {
@@ -97,37 +135,22 @@ export const useUserStore = defineStore("user", () => {
     });
   }
 
-  /**
-   * 清除用户会话和缓存
-   */
-  function clearSessionAndCache() {
-    return new Promise((resolve) => {
-      clearAuth();
-      usePermissionStoreHook().resetRouter();
-      useDictStoreHook().clearDictCache();
-      userInfo.value = {};
-      rememberMe.value = getRememberMe();
-      resolve();
-    });
-  }
-
   return {
     userInfo,
     rememberMe,
-    isLoggedIn,
+    isLoggedIn: () => !!AuthStorage.getAccessToken(),
     getUserInfo,
     login,
     logout,
-    clearSessionAndCache,
-    refreshToken,
     resetAllState,
+    resetUserState,
+    refreshToken,
   };
 });
 
 /**
- * 用于在组件外部（如在Pinia Store 中）使用 Pinia 提供的 store 实例。
- * 官方文档解释了如何在组件外部使用 Pinia Store：
- * https://pinia.vuejs.org/core-concepts/outside-component-usage.html#using-a-store-outside-of-a-component
+ * 在组件外部使用UserStore的钩子函数
+ * @see https://pinia.vuejs.org/core-concepts/outside-component-usage.html
  */
 export function useUserStoreHook() {
   return useUserStore(store);

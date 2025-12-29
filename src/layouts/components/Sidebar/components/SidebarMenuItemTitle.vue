@@ -14,11 +14,11 @@
 </template>
 
 <script setup>
-import { translateRouteTitle } from "@/utils/i18n";
+import { translateRouteTitle } from "@/lang/utils";
 
 const props = defineProps({
   icon: String,
-  title: String
+  title: String,
 });
 
 const isElIcon = computed(() => props.icon?.startsWith("el-icon"));

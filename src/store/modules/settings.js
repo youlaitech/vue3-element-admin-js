@@ -1,88 +1,92 @@
-import { defaults } from "@/settings";
-import { SidebarColor, ThemeMode, LayoutMode } from "@/enums/settings";
-import { generateThemeColors, applyTheme, toggleDarkMode, toggleSidebarColor } from "@/utils/theme";
+import { SidebarColor, ThemeMode } from "@/enums";
+import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from "@/utils/theme";
+import { STORAGE_KEYS } from "@/constants";
+import { appConfig, defaults } from "@/settings";
 
 export const useSettingsStore = defineStore("setting", () => {
-  // 基本设置
+  // 界面显示
   const settingsVisible = ref(false);
-  // 标签视图
-  const tagsView = useStorage("tagsView", defaults.tagsView);
-  // 侧边栏 Logo
-  const sidebarLogo = useStorage("sidebarLogo", defaults.sidebarLogo);
-  // 侧边栏配色方案 (经典蓝/极简白)
-  const sidebarColorScheme = useStorage("sidebarColorScheme", defaults.sidebarColorScheme);
+  const showTagsView = useStorage(STORAGE_KEYS.SHOW_TAGS_VIEW, defaults.showTagsView);
+  const showAppLogo = useStorage(STORAGE_KEYS.SHOW_APP_LOGO, defaults.showAppLogo);
+  const showWatermark = useStorage(STORAGE_KEYS.SHOW_WATERMARK, defaults.showWatermark);
+
   // 布局
-  const layout = useStorage("layout", defaults.layout);
-  // 水印
-  const watermarkEnabled = useStorage("watermarkEnabled", defaults.watermarkEnabled);
+  const layout = useStorage(STORAGE_KEYS.LAYOUT, defaults.layout);
+  const sidebarColorScheme = useStorage(
+    STORAGE_KEYS.SIDEBAR_COLOR_SCHEME,
+    defaults.sidebarColorScheme
+  );
 
   // 主题
-  const themeColor = useStorage("themeColor", defaults.themeColor);
-  const theme = useStorage("theme", defaults.theme);
+  const theme = useStorage(STORAGE_KEYS.THEME, defaults.theme);
+  const themeColor = useStorage(STORAGE_KEYS.THEME_COLOR, defaults.themeColor);
 
-  //  监听主题变化
+  // 特殊模式
+  const grayMode = useStorage(STORAGE_KEYS.GRAY_MODE, false);
+  const colorWeak = useStorage(STORAGE_KEYS.COLOR_WEAK, false);
+
+  // AI 助手：系统级 && 用户级
+  const userEnableAi = useStorage(STORAGE_KEYS.ENABLE_AI_ASSISTANT, false);
+  const enableAiAssistant = computed(() => appConfig.aiEnabled && userEnableAi.value);
+
+  // 主题变化监听
   watch(
     [theme, themeColor],
-    ([newTheme, newThemeColor]) => {
-      toggleDarkMode(newTheme === ThemeMode.DARK);
-      const colors = generateThemeColors(newThemeColor, newTheme);
-      applyTheme(colors);
+    ([t, c]) => {
+      toggleDarkMode(t === ThemeMode.DARK);
+      applyTheme(generateThemeColors(c, t));
     },
     { immediate: true }
   );
 
-  //  监听浅色侧边栏配色方案变化
+  watch(sidebarColorScheme, (v) => toggleSidebarColor(v === SidebarColor.CLASSIC_BLUE), {
+    immediate: true,
+  });
+
+  // 灰色模式监听
   watch(
-    [sidebarColorScheme],
-    ([newSidebarColorScheme]) => {
-      toggleSidebarColor(newSidebarColorScheme === SidebarColor.CLASSIC_BLUE);
+    grayMode,
+    (v) => {
+      document.documentElement.style.filter = v ? "grayscale(100%)" : "";
     },
     { immediate: true }
   );
 
-  // 设置映射
-  const settingsMap = {
-    tagsView,
-    sidebarLogo,
-    sidebarColorScheme,
-    layout,
-    watermarkEnabled,
-  };
+  // 色弱模式监听
+  watch(
+    colorWeak,
+    (v) => {
+      document.documentElement.classList.toggle("color-weak", v);
+    },
+    { immediate: true }
+  );
 
-  function changeSetting({ key, value }) {
-    const setting = settingsMap[key];
-    if (setting) setting.value = value;
-  }
-
-  function changeTheme(val) {
-    theme.value = val;
-  }
-
-  function changeSidebarColor(val) {
-    sidebarColorScheme.value = val;
-  }
-
-  function changeThemeColor(color) {
-    themeColor.value = color;
-  }
-
-  function changeLayout(val) {
-    layout.value = val;
+  function resetSettings() {
+    showTagsView.value = defaults.showTagsView;
+    showAppLogo.value = defaults.showAppLogo;
+    showWatermark.value = defaults.showWatermark;
+    userEnableAi.value = false;
+    grayMode.value = false;
+    colorWeak.value = false;
+    sidebarColorScheme.value = defaults.sidebarColorScheme;
+    layout.value = defaults.layout;
+    themeColor.value = defaults.themeColor;
+    theme.value = defaults.theme;
   }
 
   return {
     settingsVisible,
-    tagsView,
-    sidebarLogo,
+    showTagsView,
+    showAppLogo,
+    showWatermark,
+    enableAiAssistant,
+    userEnableAi,
+    grayMode,
+    colorWeak,
     sidebarColorScheme,
     layout,
     themeColor,
     theme,
-    watermarkEnabled,
-    changeSetting,
-    changeTheme,
-    changeThemeColor,
-    changeLayout,
-    changeSidebarColor,
+    resetSettings,
   };
 });

@@ -1,6 +1,6 @@
 import { Client } from "@stomp/stompjs";
 import { computed, ref, watch } from "vue";
-import { getAccessToken } from "@/utils/auth";
+import { AuthStorage } from "@/utils/auth";
 
 const ConnectionState = {
   DISCONNECTED: "DISCONNECTED",
@@ -79,7 +79,7 @@ export function useStomp(options = {}) {
       return;
     }
 
-    const token = options.token ?? getAccessToken();
+    const token = options.token ?? AuthStorage.getAccessToken();
     if (!token) {
       console.warn("[useStomp] token 为空，跳过初始化");
       return;

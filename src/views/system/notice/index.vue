@@ -39,7 +39,7 @@
       <div class="table-section__toolbar">
         <div class="table-section__toolbar--actions">
           <el-button
-            v-hasPerm="['sys:notice:add']"
+            v-hasPerm="['sys:notice:create']"
             type="success"
             icon="plus"
             @click="handleOpenDialog()"
@@ -137,7 +137,7 @@
             </el-button>
             <el-button
               v-if="scope.row.publishStatus != 1"
-              v-hasPerm="['sys:notice:edit']"
+              v-hasPerm="['sys:notice:update']"
               type="primary"
               size="small"
               link

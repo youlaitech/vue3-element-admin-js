@@ -87,5 +87,9 @@ export default {
     configManagement: "配置管理",
     copyConfigDescription: "生成当前设置代码并复制到剪贴板，然后覆盖 src/settings.ts 文件",
     resetConfigDescription: "将所有设置恢复到系统默认值",
+    layout: "布局",
+    sidebarLogo: "侧边栏Logo",
+    tagsView: "开启 Tags-View",
+    watermark: "开启水印",
   },
 };

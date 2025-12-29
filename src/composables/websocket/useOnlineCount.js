@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted, getCurrentInstance } from "vue";
+import { ref, readonly, onMounted, onUnmounted, getCurrentInstance } from "vue";
 import { useStomp } from "./useStomp";
 import { AuthStorage } from "@/utils/auth";
 
@@ -130,17 +130,6 @@ function createOnlineCountComposable() {
  * 在线用户计数组合式函数（单例模式）
  *
  * 用于实时显示系统在线用户数量
- *
- * @example
- * ```js
- * // 在组件中使用（推荐）
- * const { onlineUserCount, isConnected } = useOnlineCount();
- *
- * // 手动控制初始化（高级用法）
- * const { onlineUserCount, initialize, cleanup } = useOnlineCount({ autoInit: false });
- * onMounted(() => initialize());
- * onUnmounted(() => cleanup());
- * ```
  */
 export function useOnlineCount(options = {}) {
   const { autoInit = true } = options;

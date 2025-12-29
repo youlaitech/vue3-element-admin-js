@@ -17,7 +17,7 @@
 <script setup>
 import { compile } from "path-to-regexp";
 import router from "@/router";
-import { translateRouteTitle } from "@/utils/i18n";
+import { translateRouteTitle } from "@/lang/utils";
 
 const currentRoute = useRoute();
 const pathCompile = (path) => {

@@ -1,3 +1,4 @@
+import { ref } from "vue";
 import { useDictStoreHook } from "@/store/modules/dict";
 import { useStomp } from "./useStomp";
 
@@ -75,98 +76,67 @@ function createDictSyncComposable() {
       return;
     }
 
-    // console.log("[DictSync] 初始化字典同步服务..."); // 高频日志已禁用
+    // 建立 WebSocket 连接
+    stomp.connect();
 
-    // 连接 WebSocket 并订阅主题
-    stomp
-      .connect()
-      .then(() => {
-        // console.log("[DictSync] WebSocket 连接成功，开始订阅字典主题"); // 高频日志已禁用
-
-        // 订阅字典变更主题
-        subscriptionId = stomp.subscribe(DICT_TOPIC, handleDictChangeMessage);
-      })
-      .catch((error) => {
-        console.error("[DictSync] WebSocket 连接失败:", error);
-      });
+    // 订阅字典主题（useStomp 会自动处理重连后的订阅恢复）
+    subscriptionId = stomp.subscribe(DICT_TOPIC, handleDictChangeMessage);
   };
 
   /**
-   * 清理 WebSocket 连接
+   * 关闭 WebSocket 连接并清理资源
    */
   const cleanup = () => {
-    // console.log("[DictSync] 清理字典同步服务..."); // 高频日志已禁用
-
-    // 取消订阅
+    // 取消订阅（如果有的话）
     if (subscriptionId) {
       stomp.unsubscribe(subscriptionId);
       subscriptionId = null;
     }
 
-    // 断开 WebSocket 连接
+    // 也可以通过主题地址取消订阅
+    stomp.unsubscribeDestination(DICT_TOPIC);
+
+    // 断开连接
     stomp.disconnect();
 
-    // 清空回调函数列表
+    // 清空回调列表
     messageCallbacks.value = [];
   };
 
   /**
-   * 添加字典变更事件监听器
+   * 注册字典变更回调函数
+   *
+   * @param callback 回调函数
+   * @returns 返回一个取消注册的函数
    */
-  const addChangeListener = (callback) => {
+  const onDictChange = (callback) => {
     messageCallbacks.value.push(callback);
+
+    // 返回取消注册的函数
+    return () => {
+      const index = messageCallbacks.value.indexOf(callback);
+      if (index !== -1) {
+        messageCallbacks.value.splice(index, 1);
+      }
+    };
   };
-
-  /**
-   * 移除字典变更事件监听器
-   */
-  const removeChangeListener = (callback) => {
-    const index = messageCallbacks.value.indexOf(callback);
-    if (index > -1) {
-      messageCallbacks.value.splice(index, 1);
-    }
-  };
-
-  /**
-   * 获取连接状态
-   */
-  const isConnected = computed(() => stomp.isConnected.value);
-
-  /**
-   * 获取连接状态文本
-   */
-  const connectionStatus = computed(() => stomp.connectionStatus.value);
 
   return {
+    // 状态
+    isConnected: stomp.isConnected,
+    connectionState: stomp.connectionState,
+
+    // 方法
     initialize,
     cleanup,
-    addChangeListener,
-    removeChangeListener,
-    isConnected,
-    connectionStatus,
+    onDictChange,
   };
 }
 
 /**
  * 字典同步组合式函数（单例模式）
  *
- * @description
- * 提供字典数据实时同步功能，当后端字典数据发生变更时，
- * 自动清除前端缓存并通知所有监听器
- *
- * @example
- * ```js
- * const dictSync = useDictSync();
- * dictSync.initialize();
- *
- * // 监听字典变更
- * dictSync.addChangeListener((message) => {
- *   console.log("字典变更:", message.dictCode);
- * });
- *
- * // 清理资源
- * dictSync.cleanup();
- * ```
+ * 用于监听后端字典变更并自动同步到前端缓存
  */
 export function useDictSync() {
   if (!singletonInstance) {

@@ -4,107 +4,100 @@ import router from "@/router";
 
 import MenuAPI from "@/api/system/menu";
 const modules = import.meta.glob("../../views/**/**.vue");
-const Layout = () => import("@/layouts/index.vue");
+const Layout = () => import("../../layouts/index.vue");
 
 export const usePermissionStore = defineStore("permission", () => {
-  // 储所有路由，包括静态路由和动态路由
+  // 所有路由（静态路由 + 动态路由）
   const routes = ref([]);
-  // 混合模式左侧菜单路由
-  const mixedLayoutLeftRoutes = ref([]);
+  // 混合布局的左侧菜单路由
+  const mixLayoutSideMenus = ref([]);
   // 动态路由是否已生成
   const isRouteGenerated = ref(false);
 
-  /**
-   * 获取后台动态路由数据，解析并注册到全局路由
-   *
-   * @returns Promise 解析后的动态路由列表
-   */
-  function generateRoutes() {
-    return new Promise((resolve, reject) => {
-      MenuAPI.getRoutes()
-        .then((data) => {
-          const dynamicRoutes = parseDynamicRoutes(data);
-          routes.value = [...constantRoutes, ...dynamicRoutes];
-          isRouteGenerated.value = true;
-          resolve(dynamicRoutes);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+  /** 生成动态路由 */
+  async function generateRoutes() {
+    try {
+      const data = await MenuAPI.getRoutes(); // 获取当前登录人的菜单路由
+      const dynamicRoutes = transformRoutes(data);
+
+      routes.value = [...constantRoutes, ...dynamicRoutes];
+      isRouteGenerated.value = true;
+
+      return dynamicRoutes;
+    } catch (error) {
+      // 路由生成失败，重置状态
+      isRouteGenerated.value = false;
+      throw error;
+    }
   }
 
-  /**
-   * 根据父菜单路径设置混合模式左侧菜单
-   *
-   * @param parentPath 父菜单的路径，用于查找对应的菜单项
-   */
-  const setMixedLayoutLeftRoutes = (parentPath) => {
-    const matchedItem = routes.value.find((item) => item.path === parentPath);
-    if (matchedItem && matchedItem.children) {
-      mixedLayoutLeftRoutes.value = matchedItem.children;
-    }
+  /** 设置混合布局左侧菜单 */
+  const setMixLayoutSideMenus = (parentPath) => {
+    const parentMenu = routes.value.find((item) => item.path === parentPath);
+    mixLayoutSideMenus.value = parentMenu?.children || [];
   };
 
-  /**
-   * 重置路由
-   */
+  /** 重置路由状态 */
   const resetRouter = () => {
-    //  从 router 实例中移除动态路由
+    // 移除动态添加的路由
+    const constantRouteNames = new Set(constantRoutes.map((route) => route.name).filter(Boolean));
     routes.value.forEach((route) => {
-      if (route.name && !constantRoutes.find((r) => r.name === route.name)) {
+      if (route.name && !constantRouteNames.has(route.name)) {
         router.removeRoute(route.name);
       }
     });
 
-    // 清空本地存储的路由和菜单数据
-    routes.value = [];
-    mixedLayoutLeftRoutes.value = [];
+    // 重置所有状态
+    routes.value = [...constantRoutes];
+    mixLayoutSideMenus.value = [];
     isRouteGenerated.value = false;
   };
 
   return {
     routes,
-    mixedLayoutLeftRoutes,
+    mixLayoutSideMenus,
     isRouteGenerated,
     generateRoutes,
-    setMixedLayoutLeftRoutes,
+    setMixLayoutSideMenus,
     resetRouter,
   };
 });
 
 /**
- * 解析后端返回的路由数据并转换为 Vue Router 兼容的路由配置
- *
- * @param rawRoutes 后端返回的原始路由数据
- * @returns 解析后的路由配置数组
+ * 转换后端路由数据为Vue Router配置
+ * 处理组件路径映射和Layout层级嵌套
  */
-const parseDynamicRoutes = (rawRoutes) => {
-  const parsedRoutes = [];
+const transformRoutes = (routes, isTopLevel = true) => {
+  return routes.map((route) => {
+    const { component, children, ...args } = route;
 
-  rawRoutes.forEach((route) => {
-    const normalizedRoute = { ...route };
+    // 处理组件：顶层或非Layout保留组件，中间层Layout设为undefined
+    const processedComponent = isTopLevel || component !== "Layout" ? component : undefined;
 
-    // 处理组件路径
-    normalizedRoute.component =
-      normalizedRoute.component?.toString() === "Layout"
-        ? Layout
-        : modules[`../../views/${normalizedRoute.component}.vue`] ||
-          modules["../../views/error/404.vue"];
+    const normalizedRoute = { ...args };
 
-    // 递归解析子路由
-    if (normalizedRoute.children) {
-      normalizedRoute.children = parseDynamicRoutes(route.children);
+    if (!processedComponent) {
+      // 多级菜单的父级菜单，不需要组件
+      normalizedRoute.component = undefined;
+    } else {
+      // 动态导入组件，Layout特殊处理，找不到组件时返回404
+      normalizedRoute.component =
+        processedComponent === "Layout"
+          ? Layout
+          : modules[`../../views/${processedComponent}.vue`] ||
+            modules[`../../views/error/404.vue`];
     }
 
-    parsedRoutes.push(normalizedRoute);
-  });
+    // 递归处理子路由
+    if (children && children.length > 0) {
+      normalizedRoute.children = transformRoutes(children, false);
+    }
 
-  return parsedRoutes;
+    return normalizedRoute;
+  });
 };
-/**
- * 在组件外使用 Pinia store 实例 @see https://pinia.vuejs.org/core-concepts/outside-component-usage.html
- */
+
+/** 非组件环境使用权限store */
 export function usePermissionStoreHook() {
   return usePermissionStore(store);
 }

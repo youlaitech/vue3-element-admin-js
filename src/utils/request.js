@@ -1,113 +1,124 @@
 import axios from "axios";
 import qs from "qs";
-import { useUserStoreHook } from "@/store/modules/user";
 import { ApiCodeEnum } from "@/enums/api";
-import { getAccessToken } from "@/utils/auth";
-import router from "@/router";
+import { useUserStoreHook } from "@/store/modules/user";
+import { AuthStorage, redirectToLogin } from "@/utils/auth";
+import { ElMessage } from "element-plus";
 
-// 创建 axios 实例
-const service = axios.create({
+// ============================================
+// HTTP 请求实例
+// ============================================
+
+const http = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API,
   timeout: 50000,
   headers: { "Content-Type": "application/json;charset=utf-8" },
   paramsSerializer: (params) => qs.stringify(params),
 });
 
+// ============================================
 // 请求拦截器
-service.interceptors.request.use(
+// ============================================
+
+http.interceptors.request.use(
   (config) => {
-    const accessToken = getAccessToken();
-    // 如果 Authorization 设置为 no-auth，则不携带 Token
-    if (config.headers.Authorization !== "no-auth" && accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    } else {
+    const token = AuthStorage.getAccessToken();
+
+    if (config.headers.Authorization === "no-auth") {
       delete config.headers.Authorization;
+    } else if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
+// ============================================
 // 响应拦截器
-service.interceptors.response.use(
+// ============================================
+
+http.interceptors.response.use(
   (response) => {
-    // 如果响应是二进制流，则直接返回，用于下载文件、Excel 导出等
-    if (response.config.responseType === "blob") {
+    // 二进制数据直接返回
+    const { responseType } = response.config;
+    if (responseType === "blob" || responseType === "arraybuffer") {
       return response;
     }
+
     const { code, data, msg } = response.data;
+
     if (code === ApiCodeEnum.SUCCESS) {
       return data;
     }
 
+    // 需要选择租户（特殊业务码，传递给调用方处理）
+    if (code === ApiCodeEnum.CHOOSE_TENANT) {
+      return Promise.reject({ code, data, msg });
+    }
+
+    // ElMessage 可在 unplugin-auto-import 中配置自动导入，也可显式导入
     ElMessage.error(msg || "系统出错");
     return Promise.reject(new Error(msg || "Error"));
   },
+
   async (error) => {
-    console.error("request error", error); // for debug
     const { config, response } = error;
-    if (response) {
-      const { code, msg } = response.data;
-      if (code === ApiCodeEnum.ACCESS_TOKEN_INVALID) {
-        // Token 过期，刷新 Token
-        return handleTokenRefresh(config);
-      } else if (code === ApiCodeEnum.REFRESH_TOKEN_INVALID) {
-        // 刷新 Token 过期，跳转登录页
-        await handleSessionExpired();
-        return Promise.reject(new Error(msg || "Error"));
-      } else {
-        ElMessage.error(msg || "系统出错");
-      }
+
+    if (!response) {
+      ElMessage.error("网络连接失败");
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error.message);
+    const { code, msg } = response.data;
+
+    // Token 过期处理
+    if (code === ApiCodeEnum.ACCESS_TOKEN_INVALID) {
+      return retryWithRefresh(config);
+    }
+
+    if (code === ApiCodeEnum.REFRESH_TOKEN_INVALID) {
+      await redirectToLogin("登录已过期，请重新登录");
+      return Promise.reject(new Error(msg || "Token Invalid"));
+    }
+
+    ElMessage.error(msg || "请求失败");
+    return Promise.reject(new Error(msg || "Error"));
   }
 );
 
-export default service;
+export default http;
 
-// 是否正在刷新标识，避免重复刷新
-let isRefreshing = false;
-// 因 Token 过期导致的请求等待队列
-const waitingQueue = [];
+// ============================================
+// Token 刷新重试
+// ============================================
 
-// 刷新 Token 处理
-async function handleTokenRefresh(config) {
-  return new Promise((resolve) => {
-    // 封装需要重试的请求
-    const retryRequest = () => {
-      config.headers.Authorization = `Bearer ${getAccessToken()}`;
-      resolve(service(config));
-    };
-    waitingQueue.push(retryRequest);
-    if (!isRefreshing) {
-      isRefreshing = true;
-      useUserStoreHook()
-        .refreshToken()
-        .then(() => {
-          // 依次重试队列中所有请求, 重试后清空队列
-          waitingQueue.forEach((callback) => callback());
-          waitingQueue.length = 0;
-        })
-        .catch(async (error) => {
-          console.error("handleTokenRefresh error", error);
-          // 刷新 Token 失败，跳转登录页
-          await handleSessionExpired();
-        })
-        .finally(() => {
-          isRefreshing = false;
-        });
-    }
+let refreshing = false;
+const queue = [];
+
+async function retryWithRefresh(config) {
+  return new Promise((resolve, reject) => {
+    queue.push({ resolve, reject });
+
+    if (refreshing) return;
+    refreshing = true;
+
+    useUserStoreHook()
+      .refreshToken()
+      .then(() => {
+        const token = AuthStorage.getAccessToken();
+        if (token) config.headers.Authorization = `Bearer ${token}`;
+
+        queue.forEach(({ resolve }) => http(config).then(resolve).catch(reject));
+      })
+      .catch(async () => {
+        queue.forEach(({ reject }) => reject(new Error("Token refresh failed")));
+        await redirectToLogin("登录已过期，请重新登录");
+      })
+      .finally(() => {
+        queue.length = 0;
+        refreshing = false;
+      });
   });
-}
-
-// 处理会话过期
-async function handleSessionExpired() {
-  ElNotification({
-    title: "提示",
-    message: "您的会话已过期，请重新登录",
-    type: "info",
-  });
-  await useUserStoreHook().clearSessionAndCache();
-  router.push("/login");
 }

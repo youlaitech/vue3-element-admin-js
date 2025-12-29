@@ -52,6 +52,7 @@ import { DeviceEnum, LayoutMode } from "@/enums/settings";
 
 // 组件
 import NavBar from "./components/NavBar/index.vue";
+import Settings from "./components/LayoutSettings.vue";
 
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
@@ -67,13 +68,13 @@ const isSidebarOpen = computed(() => appStore.sidebar.opened); // 侧边栏是�
 const isShowTagsView = computed(() => settingsStore.tagsView); // 是否显示标签视图
 const layout = computed(() => settingsStore.layout); // 当前布局模式（left、top、mix）
 const activeTopMenuPath = computed(() => appStore.activeTopMenuPath); // 顶部菜单激活路径
-const mixedLayoutLeftRoutes = computed(() => permissionStore.mixedLayoutLeftRoutes); // 混合布局左侧菜单路由
+const mixedLayoutLeftRoutes = computed(() => permissionStore.mixLayoutSideMenus); // 混合布局左侧菜单路由
 
 // 监听顶部菜单激活路径变化，更新混合布局左侧菜单路由
 watch(
   () => activeTopMenuPath.value,
   (newVal) => {
-    permissionStore.setMixedLayoutLeftRoutes(newVal);
+    permissionStore.setMixLayoutSideMenus(newVal);
   },
   { deep: true, immediate: true }
 );

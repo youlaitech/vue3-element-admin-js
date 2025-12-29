@@ -61,7 +61,7 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 import { resolve } from "path-browserify";
-import { translateRouteTitle } from "@/utils/i18n";
+import { translateRouteTitle } from "@/lang/utils";
 
 import { usePermissionStore, useTagsViewStore } from "@/store";
 

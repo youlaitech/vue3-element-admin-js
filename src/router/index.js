@@ -60,8 +60,14 @@ export const constantRoutes = [
       {
         path: "my-notice",
         name: "MyNotice",
-        component: () => import("@/views/system/notice/components/MyNotice.vue"),
+        component: () => import("@/views/profile/notice/index.vue"),
         meta: { title: "我的通知", icon: "user", hidden: true },
+      },
+      {
+        path: "/detail/:id(\\d+)",
+        name: "DemoDetail",
+        component: () => import("@/views/demo/detail.vue"),
+        meta: { title: "详情页缓存", icon: "user", hidden: true, keepAlive: true },
       },
     ],
   },
@@ -82,4 +88,4 @@ export function setupRouter(app) {
   app.use(router);
 }
 
-export default router; 
+export default router;

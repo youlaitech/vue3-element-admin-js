@@ -1,7 +1,12 @@
 import { Storage } from "./storage";
-import { STORAGE_KEYS } from "@/constants";
+import { STORAGE_KEYS, ROLE_ROOT } from "@/constants";
+import { useUserStoreHook } from "@/store/modules/user";
+import router from "@/router";
 
-// 负责本地凭证与偏好的读写
+// ============================================
+// Token 存储管理
+// ============================================
+
 export const AuthStorage = {
   getAccessToken() {
     const isRememberMe = Storage.get(STORAGE_KEYS.REMEMBER_ME, false);
@@ -42,52 +47,59 @@ export const AuthStorage = {
   },
 };
 
-// 访问 token 缓存的 key
-const ACCESS_TOKEN_KEY = "access_token";
-// 刷新 token 缓存的 key
-const REFRESH_TOKEN_KEY = "refresh_token";
-// 记住我缓存的 key
-const REMEMBER_ME_KEY = "remember_me";
+// ============================================
+// 权限判断
+// ============================================
 
-function getRememberMe() {
-  return localStorage.getItem(REMEMBER_ME_KEY) === "true";
+/**
+ * 权限判断
+ * @param {string | string[]} value 权限值或角色值
+ * @param {"button" | "role"} type 判断类型
+ * @returns {boolean}
+ */
+export function hasPerm(value, type = "button") {
+  const { roles, perms } = useUserStoreHook().userInfo;
+
+  if (!roles || !perms) {
+    return false;
+  }
+
+  // 超级管理员拥有所有权限
+  if (type === "button" && roles.includes(ROLE_ROOT)) {
+    return true;
+  }
+
+  const auths = type === "button" ? perms : roles;
+  return typeof value === "string"
+    ? auths.includes(value)
+    : value.some((perm) => auths.includes(perm));
 }
 
-function getAccessToken() {
-  const rememberMe = getRememberMe();
-  return rememberMe
-    ? localStorage.getItem(ACCESS_TOKEN_KEY) || ""
-    : sessionStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem(ACCESS_TOKEN_KEY) || "";
-}
+// ============================================
+// 重定向到登录页面
+// ============================================
 
-function getRefreshToken() {
-  const rememberMe = getRememberMe();
-  return rememberMe
-    ? localStorage.getItem(REFRESH_TOKEN_KEY) || ""
-    : sessionStorage.getItem(REFRESH_TOKEN_KEY) || localStorage.getItem(REFRESH_TOKEN_KEY) || "";
-}
+/**
+ * 重定向到登录页面
+ * @param {string} message 提示消息
+ */
+export async function redirectToLogin(message = "请重新登录") {
+  ElNotification({
+    title: "提示",
+    message,
+    type: "warning",
+    duration: 3000,
+  });
 
-function setTokens(accessToken, refreshToken, rememberMe) {
-  localStorage.setItem(REMEMBER_ME_KEY, rememberMe ? "true" : "false");
-  if (rememberMe) {
-    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-  } else {
-    sessionStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-    sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  await useUserStoreHook().resetAllState();
+
+  try {
+    // 跳转到登录页，保留当前路由用于登录后跳转
+    const currentPath = router.currentRoute.value.fullPath;
+    await router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+  } catch (error) {
+    console.error("Redirect to login error:", error);
+    // 强制跳转，即使路由重定向失败
+    window.location.href = "/login";
   }
 }
-
-function clearAuth() {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
-  sessionStorage.removeItem(ACCESS_TOKEN_KEY);
-  sessionStorage.removeItem(REFRESH_TOKEN_KEY);
-  localStorage.removeItem(REMEMBER_ME_KEY);
-}
-
-export { getAccessToken, getRefreshToken, getRememberMe, setTokens, clearAuth };

@@ -1,27 +1,8 @@
-/**
- * WebSocket 服务统一管理
- *
- * @description
- * 提供 WebSocket 服务的统一初始化和清理接口
- * - 字典同步服务
- * - 在线用户统计服务
- *
- * @author 有来技术团队
- */
-
 import { useDictSync } from "./useDictSync";
 import { useOnlineCount } from "./useOnlineCount";
 
 /**
  * 初始化所有 WebSocket 服务
- *
- * 应在应用启动时调用，统一初始化所有 WebSocket 连接
- *
- * @example
- * ```js
- * // 在 main.js 中调用
- * setupWebSocket();
- * ```
  */
 export function setupWebSocket() {
   // 初始化字典同步服务
@@ -35,14 +16,6 @@ export function setupWebSocket() {
 
 /**
  * 清理所有 WebSocket 连接
- *
- * 应在用户登出时调用，释放所有 WebSocket 资源
- *
- * @example
- * ```js
- * // 在 user store 的 logout 方法中调用
- * cleanupWebSocket();
- * ```
  */
 export function cleanupWebSocket() {
   // 清理字典同步服务

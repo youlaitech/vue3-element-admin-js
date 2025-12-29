@@ -1,9 +1,10 @@
 import { store } from "@/store";
 import DictAPI from "@/api/system/dict";
+import { STORAGE_KEYS } from "@/constants";
 
 export const useDictStore = defineStore("dict", () => {
   // 字典数据缓存
-  const dictCache = useStorage("dict_cache", {});
+  const dictCache = useStorage(STORAGE_KEYS.DICT_CACHE, {});
 
   // 请求队列（防止重复请求）
   const requestQueue = {};
@@ -25,10 +26,16 @@ export const useDictStore = defineStore("dict", () => {
     if (dictCache.value[dictCode]) return;
     // 防止重复请求
     if (!requestQueue[dictCode]) {
-      requestQueue[dictCode] = DictAPI.getDictItems(dictCode).then((data) => {
-        cacheDictItems(dictCode, data);
-        Reflect.deleteProperty(requestQueue, dictCode);
-      });
+      requestQueue[dictCode] = DictAPI.getDictItems(dictCode)
+        .then((data) => {
+          cacheDictItems(dictCode, data);
+          Reflect.deleteProperty(requestQueue, dictCode);
+        })
+        .catch((error) => {
+          // 请求失败，清理队列，允许重试
+          Reflect.deleteProperty(requestQueue, dictCode);
+          throw error;
+        });
     }
     await requestQueue[dictCode];
   };
@@ -43,6 +50,16 @@ export const useDictStore = defineStore("dict", () => {
   };
 
   /**
+   * 移除指定字典项
+   * @param dictCode 字典编码
+   */
+  const removeDictItem = (dictCode) => {
+    if (dictCache.value[dictCode]) {
+      Reflect.deleteProperty(dictCache.value, dictCode);
+    }
+  };
+
+  /**
    * 清空字典缓存
    */
   const clearDictCache = () => {
@@ -52,6 +69,7 @@ export const useDictStore = defineStore("dict", () => {
   return {
     loadDictItems,
     getDictItems,
+    removeDictItem,
     clearDictCache,
   };
 });

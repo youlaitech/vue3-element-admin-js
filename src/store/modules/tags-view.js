@@ -12,7 +12,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     if (view.path.startsWith("/redirect")) {
       return;
     }
-    if (visitedViews.value.some((v) => v.name === view.name)) {
+    if (visitedViews.value.some((v) => v.path === view.path)) {
       return;
     }
     // 如果视图是固定的（affix），则在已访问的视图列表的开头添加
@@ -27,16 +27,15 @@ export const useTagsViewStore = defineStore("tagsView", () => {
   /**
    * 添加缓存视图到缓存视图列表中
    */
-  function addCachedView(view) {
-    const viewName = view.name;
+  function addCachedView({ fullPath, keepAlive }) {
     // 如果缓存视图名称已经存在于缓存视图列表中，则不再添加
-    if (cachedViews.value.includes(viewName)) {
+    if (cachedViews.value.includes(fullPath)) {
       return;
     }
 
     // 如果视图需要缓存（keepAlive），则将其路由名称添加到缓存视图列表中
-    if (view.keepAlive) {
-      cachedViews.value.push(viewName);
+    if (keepAlive) {
+      cachedViews.value.push(fullPath);
     }
   }
 
@@ -57,9 +56,9 @@ export const useTagsViewStore = defineStore("tagsView", () => {
   }
 
   function delCachedView(view) {
-    const viewName = view.name;
+    const { fullPath } = view;
     return new Promise((resolve) => {
-      const index = cachedViews.value.indexOf(viewName);
+      const index = cachedViews.value.indexOf(fullPath);
       if (index > -1) {
         cachedViews.value.splice(index, 1);
       }
@@ -76,9 +75,9 @@ export const useTagsViewStore = defineStore("tagsView", () => {
   }
 
   function delOtherCachedViews(view) {
-    const viewName = view.name;
+    const { fullPath } = view;
     return new Promise((resolve) => {
-      const index = cachedViews.value.indexOf(viewName);
+      const index = cachedViews.value.indexOf(fullPath);
       if (index > -1) {
         cachedViews.value = cachedViews.value.slice(index, index + 1);
       } else {
@@ -95,6 +94,19 @@ export const useTagsViewStore = defineStore("tagsView", () => {
         v = Object.assign(v, view);
         break;
       }
+    }
+  }
+
+  /**
+   * 根据路径更新标签名称
+   * @param fullPath 路径
+   * @param title 标签名称
+   */
+  function updateTagName(fullPath, title) {
+    const tag = visitedViews.value.find((tag) => tag.fullPath === fullPath);
+
+    if (tag) {
+      tag.title = title;
     }
   }
 
@@ -136,7 +148,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
           return true;
         }
 
-        const cacheIndex = cachedViews.value.indexOf(item.name);
+        const cacheIndex = cachedViews.value.indexOf(item.fullPath);
         if (cacheIndex > -1) {
           cachedViews.value.splice(cacheIndex, 1);
         }
@@ -158,6 +170,11 @@ export const useTagsViewStore = defineStore("tagsView", () => {
         if (index <= currIndex || item?.affix) {
           return true;
         }
+        const cacheIndex = cachedViews.value.indexOf(item.fullPath);
+        if (cacheIndex > -1) {
+          cachedViews.value.splice(cacheIndex, 1);
+        }
+        return false;
       });
       resolve({
         visitedViews: [...visitedViews.value],
@@ -253,5 +270,6 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     closeCurrentView,
     isActive,
     toLastView,
+    updateTagName,
   };
 });

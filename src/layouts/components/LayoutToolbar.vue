@@ -36,6 +36,11 @@
       <div class="navbar-actions__item">
         <NavbarUser />
       </div>
+
+      <!-- 系统设置 -->
+      <div v-if="defaults.showSettings" class="navbar-actions__item" @click="handleSettingsClick">
+        <div class="i-svg:setting text-lg" />
+      </div>
     </template>
 
     <!-- 移动端工具项 -->
@@ -57,13 +62,21 @@ import LangSelect from "@/components/LangSelect/index.vue";
 import NoticeDropdown from "@/components/NoticeDropdown/index.vue";
 import ThemeSwitch from "@/components/ThemeSwitch/index.vue";
 import Hamburger from "@/components/Hamburger/index.vue";
+import NavbarUser from "./NavbarUser.vue";
+import { useSettingsStore } from "@/store";
+import { defaults } from "@/settings";
 
 const { isDesktop, isSidebarOpen, toggleSidebar } = useLayout();
+const settingsStore = useSettingsStore();
 
 const isSidebarOpened = computed(() => isSidebarOpen.value);
 
 function toggleSideBar() {
   toggleSidebar();
+}
+
+function handleSettingsClick() {
+  settingsStore.settingsVisible = true;
 }
 
 // 工具栏样式类名

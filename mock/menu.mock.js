@@ -579,7 +579,7 @@ export default defineMock([
                   visible: 1,
                   icon: "",
                   redirect: "",
-                  perm: "sys:user:add",
+                  perm: "sys:user:create",
                   children: [],
                 },
                 {
@@ -594,7 +594,7 @@ export default defineMock([
                   visible: 1,
                   icon: "",
                   redirect: "",
-                  perm: "sys:user:edit",
+                  perm: "sys:user:update",
                   children: [],
                 },
                 {
@@ -1096,7 +1096,7 @@ export default defineMock([
                   visible: 1,
                   icon: "",
                   redirect: null,
-                  perm: "sys:notice:query",
+                  perm: "sys:notice:list",
                   children: [],
                 },
                 {
@@ -1111,7 +1111,7 @@ export default defineMock([
                   visible: 1,
                   icon: "",
                   redirect: null,
-                  perm: "sys:notice:add",
+                  perm: "sys:notice:create",
                   children: [],
                 },
                 {
@@ -1126,7 +1126,7 @@ export default defineMock([
                   visible: 1,
                   icon: "",
                   redirect: null,
-                  perm: "sys:notice:edit",
+                  perm: "sys:notice:update",
                   children: [],
                 },
                 {

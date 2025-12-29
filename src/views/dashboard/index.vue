@@ -4,28 +4,32 @@
     <github-corner class="github-corner" />
 
     <el-card shadow="never" class="mt-2">
-      <el-row class="h-80px">
-        <el-col :span="18" :xs="24">
-          <div class="flex-x-start">
+      <div class="flex flex-wrap">
+        <!-- 左侧问候语区域 -->
+        <div class="flex-1 flex items-start">
+          <div style="width: 80px; height: 80px; overflow: hidden; border-radius: 50%">
             <img
-              class="w80px h80px rounded-full"
               :src="userStore.userInfo.avatar + '?imageView2/1/w/80/h/80'"
+              class="w80px h80px rounded-full"
+              style="width: 100%; height: 100%; object-fit: cover; object-position: center"
             />
-            <div class="ml-5">
-              <p>{{ greetings }}</p>
-              <p class="text-sm text-gray">今日天气晴朗，气温在15℃至25℃之间，东南风。</p>
-            </div>
           </div>
-        </el-col>
+          <div class="ml-5">
+            <p>{{ greetings }}</p>
+            <p class="text-sm text-gray">今日天气晴朗，气温在15℃至25℃之间，东南风。</p>
+          </div>
+        </div>
 
-        <el-col :span="6" :xs="24">
-          <el-row class="h-80px flex-y-center" :gutter="10">
-            <el-col :span="10">
-              <div class="font-bold color-#ff9a2e text-sm flex-y-center">
+        <!-- 右侧图标区域 - PC端-->
+        <div class="hidden sm:block">
+          <div class="flex items-end space-x-6">
+            <!-- 仓库 -->
+            <div>
+              <div class="font-bold color-#ff9a2e text-sm flex items-center">
                 <el-icon class="mr-2px"><Folder /></el-icon>
                 仓库
               </div>
-              <div class="mt-3">
+              <div class="mt-3 whitespace-nowrap">
                 <el-link href="https://gitee.com/youlaiorg/vue3-element-admin" target="_blank">
                   <div class="i-svg:gitee text-lg color-#F76560" />
                 </el-link>
@@ -38,14 +42,15 @@
                   <div class="i-svg:gitcode text-lg color-#FF9A2E" />
                 </el-link>
               </div>
-            </el-col>
+            </div>
 
-            <el-col :span="10">
-              <div class="font-bold color-#4080ff text-sm flex-y-center">
+            <!-- 文档 -->
+            <div>
+              <div class="font-bold color-#4080ff text-sm flex items-center">
                 <el-icon class="mr-2px"><Document /></el-icon>
                 文档
               </div>
-              <div class="mt-3">
+              <div class="mt-3 whitespace-nowrap">
                 <el-link href="https://juejin.cn/post/7228990409909108793" target="_blank">
                   <div class="i-svg:juejin text-lg" />
                 </el-link>
@@ -61,28 +66,95 @@
                   <div class="i-svg:cnblogs text-lg" />
                 </el-link>
               </div>
-            </el-col>
+            </div>
 
-            <el-col :span="4">
-              <div class="font-bold color-#f76560 text-sm flex-y-center">
+            <!-- 视频 -->
+            <div>
+              <div class="font-bold color-#f76560 text-sm flex items-center">
                 <el-icon class="mr-2px"><VideoCamera /></el-icon>
                 视频
               </div>
-              <div class="mt-3">
+              <div class="mt-3 whitespace-nowrap">
                 <el-link href="https://www.bilibili.com/video/BV1eFUuYyEFj" target="_blank">
                   <div class="i-svg:bilibili text-lg" />
                 </el-link>
               </div>
-            </el-col>
-          </el-row>
-        </el-col>
-      </el-row>
+            </div>
+          </div>
+        </div>
+
+        <!-- 移动端图标区域-->
+        <div class="w-full sm:hidden mt-3">
+          <div class="flex justify-end space-x-4 overflow-x-auto">
+            <!-- 仓库图标 -->
+            <el-link href="https://gitee.com/youlaiorg/vue3-element-admin" target="_blank">
+              <div class="i-svg:gitee text-lg color-#F76560" />
+            </el-link>
+            <el-link href="https://github.com/youlaitech/vue3-element-admin" target="_blank">
+              <div class="i-svg:github text-lg color-#4080FF" />
+            </el-link>
+            <el-link href="https://gitcode.com/youlai/vue3-element-admin" target="_blank">
+              <div class="i-svg:gitcode text-lg color-#FF9A2E" />
+            </el-link>
+
+            <!-- 文档图标 -->
+            <el-link href="https://juejin.cn/post/7228990409909108793" target="_blank">
+              <div class="i-svg:juejin text-lg" />
+            </el-link>
+            <el-link href="https://youlai.blog.csdn.net/article/details/130191394" target="_blank">
+              <div class="i-svg:csdn text-lg" />
+            </el-link>
+            <el-link href="https://www.cnblogs.com/haoxianrui/p/17331952.html" target="_blank">
+              <div class="i-svg:cnblogs text-lg" />
+            </el-link>
+
+            <!-- 视频图标 -->
+            <el-link href="https://www.bilibili.com/video/BV1eFUuYyEFj" target="_blank">
+              <div class="i-svg:bilibili text-lg" />
+            </el-link>
+          </div>
+        </div>
+      </div>
     </el-card>
 
     <!-- 数据统计 -->
     <el-row :gutter="10" class="mt-5">
-      <!-- 访客数(UV) -->
-      <el-col :span="12">
+      <!-- 在线用户数量 -->
+      <el-col :span="8" :xs="24" class="mb-xs-3">
+        <el-card shadow="never" class="h-full flex flex-col">
+          <template #header>
+            <div class="flex-x-between">
+              <span class="text-gray">在线用户</span>
+              <el-tag type="danger" size="small">实时</el-tag>
+            </div>
+          </template>
+
+          <div class="flex-x-between mt-2 flex-1">
+            <div class="flex-y-center">
+              <span class="text-lg transition-all duration-300 hover:scale-110">
+                {{ onlineUserCount }}
+              </span>
+              <span v-if="isConnected" class="ml-2 text-xs text-[#67c23a]">
+                <el-icon><Connection /></el-icon>
+                已连接
+              </span>
+              <span v-else class="ml-2 text-xs text-[#f56c6c]">
+                <el-icon><Failed /></el-icon>
+                未连接
+              </span>
+            </div>
+            <div class="i-svg:people w-8 h-8 animate-[pulse_2s_infinite]" />
+          </div>
+
+          <div class="flex-x-between mt-2 text-sm text-gray">
+            <span>更新时间</span>
+            <span>{{ formattedTime }}</span>
+          </div>
+        </el-card>
+      </el-col>
+
+      <!-- 访客量UV) -->
+      <el-col :span="8" :xs="24" class="mb-xs-3">
         <el-skeleton :loading="visitStatsLoading" :rows="5" animated>
           <template #template>
             <el-card>
@@ -104,7 +176,7 @@
             </el-card>
           </template>
           <template v-if="!visitStatsLoading">
-            <el-card shadow="never">
+            <el-card shadow="never" class="h-full flex flex-col">
               <template #header>
                 <div class="flex-x-between">
                   <span class="text-gray">访客数(UV)</span>
@@ -112,9 +184,9 @@
                 </div>
               </template>
 
-              <div class="flex-x-between mt-2">
+              <div class="flex-x-between mt-2 flex-1">
                 <div class="flex-y-center">
-                  <span class="text-lg">{{ visitStatsData.todayUvCount }}</span>
+                  <span class="text-lg">{{ displayTransitionUvCount }}</span>
                   <span
                     :class="[
                       'text-xs',
@@ -134,7 +206,7 @@
 
               <div class="flex-x-between mt-2 text-sm text-gray">
                 <span>总访客数</span>
-                <span>{{ visitStatsData.totalUvCount }}</span>
+                <span>{{ displayTransitionTotalUvCount }}</span>
               </div>
             </el-card>
           </template>
@@ -142,14 +214,14 @@
       </el-col>
 
       <!-- 浏览量(PV) -->
-      <el-col :span="12">
+      <el-col :span="8" :xs="24">
         <el-skeleton :loading="visitStatsLoading" :rows="5" animated>
           <template #template>
             <el-card>
               <template #header>
                 <div>
                   <el-skeleton-item variant="h3" style="width: 40%" />
-                  <el-skeleton-item variant="rect" style="float: right; width: 1; height: 1em" />
+                  <el-skeleton-item variant="rect" style="float: right; width: 1em; height: 1em" />
                 </div>
               </template>
 
@@ -164,7 +236,7 @@
             </el-card>
           </template>
           <template v-if="!visitStatsLoading">
-            <el-card shadow="never">
+            <el-card shadow="never" class="h-full flex flex-col">
               <template #header>
                 <div class="flex-x-between">
                   <span class="text-gray">浏览量(PV)</span>
@@ -172,9 +244,9 @@
                 </div>
               </template>
 
-              <div class="flex-x-between mt-2">
+              <div class="flex-x-between mt-2 flex-1">
                 <div class="flex-y-center">
-                  <span class="text-lg">{{ visitStatsData.todayPvCount }}</span>
+                  <span class="text-lg">{{ displayTransitionPvCount }}</span>
                   <span
                     :class="[
                       'text-xs',
@@ -194,7 +266,7 @@
 
               <div class="flex-x-between mt-2 text-sm text-gray">
                 <span>总浏览量</span>
-                <span>{{ visitStatsData.totalPvCount }}</span>
+                <span>{{ displayTransitionTotalPvCount }}</span>
               </div>
             </el-card>
           </template>
@@ -203,7 +275,7 @@
     </el-row>
 
     <el-row :gutter="10" class="mt-5">
-      <!-- 访问趋势统计图 -->
+      <!-- 访问趋势统计图-->
       <el-col :xs="24" :span="16">
         <el-card>
           <template #header>
@@ -218,7 +290,7 @@
           <ECharts :options="visitTrendChartOptions" height="400px" />
         </el-card>
       </el-col>
-      <!-- 最新动态 -->
+      <!-- 最新动态-->
       <el-col :xs="24" :span="8">
         <el-card>
           <template #header>
@@ -226,7 +298,7 @@
               <span class="header-title">最新动态</span>
               <el-link
                 type="primary"
-                :underline="false"
+                underline="never"
                 href="https://gitee.com/youlaiorg/vue3-element-admin/releases"
                 target="_blank"
               >
@@ -262,7 +334,7 @@
                       :type="index === 0 ? 'primary' : 'info'"
                       :href="item.link"
                       target="_blank"
-                      :underline="false"
+                      underline="never"
                     >
                       详情
                       <el-icon class="link-icon"><TopRight /></el-icon>
@@ -285,9 +357,32 @@ defineOptions({
 });
 
 import { dayjs } from "element-plus";
-import LogAPI from "@/api/system/log";
+import { ref, watch, computed, onMounted } from "vue";
+import StatisticsAPI from "@/api/system/statistics";
 import { useUserStore } from "@/store/modules/user";
 import { formatGrowthRate } from "@/utils";
+import { useTransition, useDateFormat } from "@vueuse/core";
+import { Connection, Failed } from "@element-plus/icons-vue";
+import { useOnlineCount } from "@/composables";
+
+// 在线用户数量组件相关
+const { onlineUserCount, lastUpdateTime, isConnected } = useOnlineCount();
+
+// 记录上一次的用户数量用于计算趋势
+const previousCount = ref(0);
+
+// 监听用户数量变化，计算趋势
+watch(onlineUserCount, (newCount, oldCount) => {
+  if (oldCount > 0) {
+    previousCount.value = oldCount;
+  }
+});
+
+// 格式化时间戳
+const formattedTime = computed(() => {
+  if (!lastUpdateTime.value) return "--";
+  return useDateFormat(lastUpdateTime, "HH:mm:ss").value;
+});
 
 const userStore = useUserStore();
 
@@ -295,27 +390,28 @@ const userStore = useUserStore();
 const vesionList = ref([
   {
     id: "1",
-    title: "v2.4.0",
-    date: "2021-09-01 00:00:00",
-    content: "实现基础框架搭建，包含权限管理、路由系统等核心功能。",
+    title: "v2.8.0-SNAPSHOT",
+    date: "2025-10-xx 00:00:00",
+    content: "1. 整合 vue3-element-admin-ts 和 vue3-element-admin-js；2. 优化文档结构。",
     link: "https://gitee.com/youlaiorg/vue3-element-admin/releases",
+    tag: "开发中",
+  },
+  {
+    id: "2",
+    title: "v2.7.0",
+    date: "2025-05-18 00:00:00",
+    content:
+      "1. 新增 AI 助手功能，支持多种大语言模型；2. 菜单支持开启和关闭页面缓存；3. 升级 Element Plus 到 2.7.4。",
+    link: "https://gitee.com/youlaiorg/vue3-element-admin/releases/v2.7.0",
     tag: "里程碑",
   },
   {
-    id: "1",
-    title: "v2.4.0",
-    date: "2021-09-01 00:00:00",
-    content: "实现基础框架搭建，包含权限管理、路由系统等核心功能。",
-    link: "https://gitee.com/youlaiorg/vue3-element-admin/releases",
-    tag: "里程碑",
-  },
-  {
-    id: "1",
-    title: "v2.4.0",
-    date: "2021-09-01 00:00:00",
-    content: "实现基础框架搭建，包含权限管理、路由系统等核心功能。",
-    link: "https://gitee.com/youlaiorg/vue3-element-admin/releases",
-    tag: "里程碑",
+    id: "3",
+    title: "v2.6.2",
+    date: "2024-08-01 00:00:00",
+    content: "1. 优化 UnoCSS 配置；2. 修复字典组件回显问题；3. 升级依赖版本。",
+    link: "https://gitee.com/youlaiorg/vue3-element-admin/releases/v2.6.2",
+    tag: "优化",
   },
 ]);
 
@@ -351,16 +447,63 @@ const visitStatsData = ref({
   totalPvCount: 0,
 });
 
+// 数字过渡动画
+const transitionUvCount = useTransition(
+  computed(() => visitStatsData.value.todayUvCount),
+  {
+    duration: 1000,
+    transition: [0.25, 0.1, 0.25, 1.0], // CSS cubic-bezier
+  }
+);
+
+const transitionTotalUvCount = useTransition(
+  computed(() => visitStatsData.value.totalUvCount),
+  {
+    duration: 1200,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
+
+const transitionPvCount = useTransition(
+  computed(() => visitStatsData.value.todayPvCount),
+  {
+    duration: 1000,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
+
+const transitionTotalPvCount = useTransition(
+  computed(() => visitStatsData.value.totalPvCount),
+  {
+    duration: 1200,
+    transition: [0.25, 0.1, 0.25, 1.0],
+  }
+);
+
+// 过渡结果可能是 Ref<number>，为模板中使用做类型和格式处理（避免 TS 报错）
+const displayTransitionUvCount = computed(() =>
+  Math.round(Number(transitionUvCount.value ?? transitionUvCount))
+);
+const displayTransitionTotalUvCount = computed(() =>
+  Math.round(Number(transitionTotalUvCount.value ?? transitionTotalUvCount))
+);
+const displayTransitionPvCount = computed(() =>
+  Math.round(Number(transitionPvCount.value ?? transitionPvCount))
+);
+const displayTransitionTotalPvCount = computed(() =>
+  Math.round(Number(transitionTotalPvCount.value ?? transitionTotalPvCount))
+);
+
 // 访问趋势日期范围（单位：天）
 const visitTrendDateRange = ref(7);
 // 访问趋势图表配置
-const visitTrendChartOptions = ref({});
+const visitTrendChartOptions = ref();
 
 /**
  * 获取访客统计数据
  */
 const fetchVisitStatsData = () => {
-  LogAPI.getVisitStats()
+  StatisticsAPI.getVisitOverview()
     .then((data) => {
       visitStatsData.value = data;
     })
@@ -378,7 +521,7 @@ const fetchVisitTrendData = () => {
     .toDate();
   const endDate = new Date();
 
-  LogAPI.getVisitTrend({
+  StatisticsAPI.getVisitTrend({
     startDate: dayjs(startDate).format("YYYY-MM-DD"),
     endDate: dayjs(endDate).format("YYYY-MM-DD"),
   }).then((data) => {
@@ -392,14 +535,12 @@ const fetchVisitTrendData = () => {
  * @param data - 访问趋势数据
  */
 const updateVisitTrendChartOptions = (data) => {
-  console.log("Updating visit trend chart options");
-
   visitTrendChartOptions.value = {
     tooltip: {
       trigger: "axis",
     },
     legend: {
-      data: ["浏览量(PV)", "访客数(UV)"],
+      data: ["浏览量(PV)", "访客量(UV)"],
       bottom: 0,
     },
     grid: {
@@ -438,7 +579,7 @@ const updateVisitTrendChartOptions = (data) => {
         },
       },
       {
-        name: "访客数(UV)",
+        name: "访客量(UV)",
         type: "line",
         data: data.ipList,
         areaStyle: {
@@ -463,22 +604,21 @@ const updateVisitTrendChartOptions = (data) => {
  */
 const computeGrowthRateClass = (growthRate) => {
   if (!growthRate) {
-    return "color-[--el-color-info]";
+    return "text-[--el-color-info]";
   }
   if (growthRate > 0) {
-    return "color-[--el-color-danger]";
+    return "text-[--el-color-danger]";
   } else if (growthRate < 0) {
-    return "color-[--el-color-success]";
+    return "text-[--el-color-success]";
   } else {
-    return "color-[--el-color-info]";
+    return "text-[--el-color-info]";
   }
 };
 
 // 监听访问趋势日期范围的变化，重新获取趋势数据
 watch(
   () => visitTrendDateRange.value,
-  (newVal) => {
-    console.log("Visit trend date range changed:", newVal);
+  () => {
     fetchVisitTrendData();
   },
   { immediate: true }

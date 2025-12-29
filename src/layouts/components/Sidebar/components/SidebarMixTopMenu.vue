@@ -41,7 +41,7 @@
 
 <script setup>
 import { usePermissionStore, useAppStore, useSettingsStore } from "@/store";
-import { translateRouteTitle } from "@/utils/i18n";
+import { translateRouteTitle } from "@/lang/utils";
 import variables from "@/styles/variables.module.scss";
 import { SidebarColor } from "@/enums/settings";
 
@@ -77,8 +77,8 @@ appStore.activeTopMenu(activeTopMenuPath);
  */
 const handleMenuSelect = (routePath) => {
   appStore.activeTopMenu(routePath); // 设置激活的顶部菜单
-  permissionStore.setMixedLayoutLeftRoutes(routePath); // 更新左侧菜单
-  navigateToFirstLeftMenu(permissionStore.mixedLayoutLeftRoutes); // 跳转到左侧第一个菜单
+  permissionStore.setMixLayoutSideMenus(routePath); // 更新左侧菜单
+  navigateToFirstLeftMenu(permissionStore.mixLayoutSideMenus); // 跳转到左侧第一个菜单
 };
 
 /**
@@ -96,10 +96,7 @@ const navigateToFirstLeftMenu = (menus) => {
   } else if (firstMenu.name) {
     router.push({
       name: firstMenu.name,
-      query:
-        typeof firstMenu.meta?.params === "object"
-          ? firstMenu.meta.params
-          : undefined,
+      query: typeof firstMenu.meta?.params === "object" ? firstMenu.meta.params : undefined,
     });
   }
 };

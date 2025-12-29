@@ -2,7 +2,7 @@
  * 应用配置
  */
 
-import { LayoutMode, ComponentSize, SidebarColor, ThemeMode, LanguageEnum } from "./enums";
+import { LayoutMode, ComponentSize, SidebarColor, ThemeMode, LanguageEnum } from "@/enums";
 
 const env = import.meta.env;
 const { pkg } = __APP_INFO__;
