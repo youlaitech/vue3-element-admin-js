@@ -21,7 +21,7 @@ const UserAPI = {
    */
   getPage(queryParams) {
     return request({
-      url: `${USER_BASE_URL}/page`,
+      url: `${USER_BASE_URL}`,
       method: "get",
       params: queryParams,
     });

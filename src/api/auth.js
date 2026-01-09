@@ -29,7 +29,7 @@ const AuthAPI = {
     return request({
       url: `${AUTH_BASE_URL}/refresh-token`,
       method: "post",
-      data: { refreshToken },
+      params: { refreshToken },
       headers: {
         Authorization: "no-auth",
       },

@@ -35,7 +35,7 @@
           >
             <template v-if="item.type === 'select'">
               <template v-for="opt in item.options">
-                <el-option :label="opt.label" :value="opt.value" />
+                <ElOption :label="opt.label" :value="opt.value" />
               </template>
             </template>
           </component>
@@ -70,11 +70,11 @@ import InputTag from "@/components/InputTag/index.vue";
 const props = defineProps({
   searchConfig: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 // 自定义事件
-const emit = defineEmits(['queryClick', 'resetClick']);
+const emit = defineEmits(["queryClick", "resetClick"]);
 // 组件映射表
 const componentMap = {
   input: markRaw(ElInput),

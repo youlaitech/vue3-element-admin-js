@@ -1,23 +1,4 @@
 <!-- 列表选择器示例 -->
-<script setup>
-import selectConfig from "./config/select";
-import { useDictStore } from "@/store";
-const dictStore = useDictStore();
-
-const selectedUser = ref();
-function handleConfirm(data) {
-  selectedUser.value = data[0];
-}
-const text = computed(() => {
-  // 获取字典数据
-  const dictData = dictStore.getDictItems("gender");
-  const genderLabel = dictData.find((item) => item.value == selectedUser.value?.gender)?.label;
-  return selectedUser.value
-    ? `${selectedUser.value.username} - ${genderLabel} - ${selectedUser.value.deptName}`
-    : "";
-});
-</script>
-
 <template>
   <div class="app-container">
     <el-link
@@ -40,3 +21,22 @@ const text = computed(() => {
     </table-select>
   </div>
 </template>
+
+<script setup>
+import selectConfig from "./config/select";
+import { useDictStore } from "@/store";
+const dictStore = useDictStore();
+
+const selectedUser = ref();
+function handleConfirm(data) {
+  selectedUser.value = data[0];
+}
+const text = computed(() => {
+  // 获取字典数据
+  const dictData = dictStore.getDictItems("gender");
+  const genderLabel = dictData.find((item) => item.value == selectedUser.value?.gender)?.label;
+  return selectedUser.value
+    ? `${selectedUser.value.username} - ${genderLabel} - ${selectedUser.value.deptName}`
+    : "";
+});
+</script>

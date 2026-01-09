@@ -10,7 +10,7 @@ const ConfigAPI = {
    */
   getPage(queryParams) {
     return request({
-      url: `${CONFIG_BASE_URL}/page`,
+      url: `${CONFIG_BASE_URL}`,
       method: "get",
       params: queryParams,
     });

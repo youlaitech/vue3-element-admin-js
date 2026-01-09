@@ -237,11 +237,11 @@ import { nextTick, reactive, ref, watch, watchEffect } from "vue";
 const props = defineProps({
   modalConfig: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 // 自定义事件
-const emit = defineEmits(['submitClick']);
+const emit = defineEmits(["submitClick"]);
 
 const pk = props.modalConfig.pk ?? "id";
 const modalVisible = ref(false);

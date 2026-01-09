@@ -10,7 +10,7 @@ const RoleAPI = {
    */
   getPage(queryParams) {
     return request({
-      url: `${ROLE_BASE_URL}/page`,
+      url: `${ROLE_BASE_URL}`,
       method: "get",
       params: queryParams,
     });

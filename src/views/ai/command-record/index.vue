@@ -174,7 +174,7 @@ const getList = async () => {
   try {
     const response = await AiCommandApi.getPage(queryParams.value);
     pageData.value = response.data || [];
-    total.value = response.total || 0;
+    total.value = response.page?.total ?? 0;
   } catch (error) {
     console.error("获取AI命令记录失败:", error);
     ElMessage.error("获取数据失败");

@@ -190,7 +190,7 @@ const pageSize = 10;
 // 搜索参数
 const queryParams = reactive({
   pageNum: 1,
-  pageSize: pageSize,
+  pageSize,
 });
 
 // 计算popover的宽度
@@ -223,8 +223,10 @@ async function fetchPageData(resetPage = false) {
   loading.value = true;
   try {
     const res = await props.selectConfig.indexAction(queryParams);
-    pageData.value = res.list;
-    total.value = res.total;
+    const list = (res && res.data) || (res && res.list) || [];
+    const totalVal = (res && res.page && res.page.total) || (res && res.total) || 0;
+    pageData.value = list;
+    total.value = totalVal;
   } finally {
     loading.value = false;
   }

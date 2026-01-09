@@ -10,7 +10,7 @@ const NoticeAPI = {
    */
   getPage(queryParams) {
     return request({
-      url: `${NOTICE_BASE_URL}/page`,
+      url: `${NOTICE_BASE_URL}`,
       method: "get",
       params: queryParams,
     });

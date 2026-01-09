@@ -50,6 +50,9 @@ http.interceptors.response.use(
     const { code, data, msg } = response.data;
 
     if (code === ApiCodeEnum.SUCCESS) {
+      // 分页接口需要同时返回 data 与 page 元信息
+      const page = response.data?.page;
+      if (page != null) return { data, page };
       return data;
     }
 

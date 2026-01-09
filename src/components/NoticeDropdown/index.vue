@@ -130,7 +130,7 @@ watch(
  */
 function featchMyNotice() {
   NoticeAPI.getMyNoticePage({ pageNum: 1, pageSize: 5, isRead: 0 }).then((data) => {
-    noticeList.value = data.list;
+    noticeList.value = data.data;
   });
 }
 

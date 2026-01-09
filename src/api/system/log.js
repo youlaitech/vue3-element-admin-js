@@ -10,7 +10,7 @@ const LogAPI = {
    */
   getPage(queryParams) {
     return request({
-      url: `${LOG_BASE_URL}/page`,
+      url: `${LOG_BASE_URL}`,
       method: "get",
       params: queryParams,
     });

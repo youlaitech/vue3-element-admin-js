@@ -4,7 +4,7 @@ const contentConfig = {
     showOverflowTooltip: true,
   },
   toolbar: [],
-  indexAction: function (params) {
+  indexAction(params) {
     // 模拟发起网络请求获取列表数据
     console.log("indexAction:", params);
     return Promise.resolve({
@@ -72,7 +72,7 @@ const contentConfig = {
       align: "center",
       prop: "gender",
       templet: "list",
-      selectList: { "0": "女", "1": "男" },
+      selectList: { 0: "女", 1: "男" },
     },
     {
       label: "自定义",

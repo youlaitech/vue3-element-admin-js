@@ -88,8 +88,8 @@ function handleQuery() {
   loading.value = true;
   LogAPI.getPage(queryParams)
     .then((data) => {
-      pageData.value = data.list;
-      total.value = data.total;
+      pageData.value = data.data;
+      total.value = data.page?.total ?? 0;
     })
     .finally(() => {
       loading.value = false;

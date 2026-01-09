@@ -47,31 +47,30 @@ const currentComponent = (component, route) => {
     wrapperMap.set(componentName, wrapper);
   }
 
-  return wrapper;
-};
-
-// 动态计算主内容区高度
-const appMainHeight = computed(() => {
-  const settingsStore = useSettingsStore();
-
-  // 基础高度：100vh
-  let height = "100vh";
-
-  // 如果启用标签页，减去标签页高度
-  if (settingsStore.showTagsView) {
-    const tagsViewHeight = variables.tagsViewHeight;
-    height = `calc(100vh - ${tagsViewHeight})`;
+  // 添加组件数量限制
+  if (wrapperMap.size > 100) {
+    const firstKey = wrapperMap.keys().next().value;
+    if (firstKey) {
+      wrapperMap.delete(firstKey);
+    }
   }
 
-  return height;
+  return h(wrapper);
+};
+
+const appMainHeight = computed(() => {
+  if (useSettingsStore().showTagsView) {
+    return `calc(100vh - ${variables["navbar-height"]} - ${variables["tags-view-height"]})`;
+  } else {
+    return `calc(100vh - ${variables["navbar-height"]})`;
+  }
 });
 </script>
 
 <style lang="scss" scoped>
 .app-main {
   position: relative;
-  padding: 20px;
-  overflow: auto;
+  overflow-y: auto;
   background-color: var(--el-bg-color-page);
 }
 </style>

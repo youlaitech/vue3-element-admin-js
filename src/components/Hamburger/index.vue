@@ -30,6 +30,8 @@ const hamburgerClass = computed(() => {
   ) {
     return "hamburger--white";
   }
+
+  return "";
 });
 
 function toggleClick() {

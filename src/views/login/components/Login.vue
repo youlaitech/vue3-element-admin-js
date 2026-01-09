@@ -53,6 +53,9 @@
             <el-icon v-if="codeLoading" class="is-loading" size="20"><Loading /></el-icon>
             <img
               v-else-if="captchaBase64"
+              h-full
+              w-full
+              block
               border-rd-4px
               object-cover
               shadow="[0_0_0_1px_var(--el-border-color)_inset]"

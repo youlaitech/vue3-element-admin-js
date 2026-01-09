@@ -277,8 +277,8 @@ function handleQuery() {
   loading.value = true;
   RoleAPI.getPage(queryParams)
     .then((data) => {
-      roleList.value = data.list;
-      total.value = data.total;
+      roleList.value = data.data;
+      total.value = data.page?.total ?? 0;
     })
     .finally(() => {
       loading.value = false;

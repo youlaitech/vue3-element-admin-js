@@ -14,7 +14,7 @@ const DictAPI = {
    */
   getPage(queryParams) {
     return request({
-      url: `${DICT_BASE_URL}/page`,
+      url: `${DICT_BASE_URL}`,
       method: "get",
       params: queryParams,
     });
@@ -26,7 +26,7 @@ const DictAPI = {
    */
   getList() {
     return request({
-      url: `${DICT_BASE_URL}`,
+      url: `${DICT_BASE_URL}/options`,
       method: "get",
     });
   },
@@ -93,7 +93,7 @@ const DictAPI = {
    */
   getDictItemPage(dictCode, queryParams) {
     return request({
-      url: `${DICT_BASE_URL}/${dictCode}/items/page`,
+      url: `${DICT_BASE_URL}/${dictCode}/items`,
       method: "get",
       params: queryParams,
     });
@@ -106,7 +106,7 @@ const DictAPI = {
    */
   getDictItems(dictCode) {
     return request({
-      url: `${DICT_BASE_URL}/${dictCode}/items`,
+      url: `${DICT_BASE_URL}/${dictCode}/items/options`,
       method: "get",
     });
   },

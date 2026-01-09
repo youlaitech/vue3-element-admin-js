@@ -63,6 +63,9 @@
 
             <img
               v-else
+              h-full
+              w-full
+              block
               object-cover
               border-rd-4px
               p-1px

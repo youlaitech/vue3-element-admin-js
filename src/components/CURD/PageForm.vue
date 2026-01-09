@@ -87,16 +87,16 @@ import { reactive, ref, watch, watchEffect } from "vue";
 const props = defineProps({
   formItems: {
     type: Array,
-    required: true
+    required: true,
   },
   form: {
     type: Object,
-    default: () => ({})
+    default: () => ({}),
   },
   pk: {
     type: String,
-    default: "id"
-  }
+    default: "id",
+  },
 });
 
 const formRef = ref();

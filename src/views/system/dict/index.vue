@@ -174,8 +174,8 @@ function handleQuery() {
   loading.value = true;
   DictAPI.getPage(queryParams)
     .then((data) => {
-      tableData.value = data.list;
-      total.value = data.total;
+      tableData.value = data.data;
+      total.value = data.page?.total ?? 0;
     })
     .finally(() => {
       loading.value = false;

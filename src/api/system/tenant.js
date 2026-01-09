@@ -12,7 +12,7 @@ const TenantAPI = {
    */
   getTenantList() {
     return request({
-      url: `${TENANT_BASE_URL}`,
+      url: `${TENANT_BASE_URL}/options`,
       method: "get",
     });
   },
@@ -42,7 +42,7 @@ const TenantAPI = {
   /** 获取租户分页数据（平台租户管理） */
   getPage(queryParams) {
     return request({
-      url: `${TENANT_BASE_URL}/page`,
+      url: `${TENANT_BASE_URL}`,
       method: "get",
       params: queryParams,
     });

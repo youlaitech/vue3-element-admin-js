@@ -6,7 +6,7 @@ const GeneratorAPI = {
   /** 获取数据表分页列表 */
   getTablePage(params) {
     return request({
-      url: `${GENERATOR_BASE_URL}/table/page`,
+      url: `${GENERATOR_BASE_URL}/table`,
       method: "get",
       params,
     });

@@ -39,16 +39,16 @@ echarts.use([
 const props = defineProps({
   options: {
     type: Object,
-    required: true
+    required: true,
   },
   width: {
     type: String,
-    default: '100%'
+    default: "100%",
   },
   height: {
     type: String,
-    default: '300px'
-  }
+    default: "300px",
+  },
 });
 
 const chartRef = ref(null);

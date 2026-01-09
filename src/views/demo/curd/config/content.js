@@ -30,8 +30,8 @@ const contentConfig = {
   async exportsAction(params) {
     // 模拟获取到的是全量数据
     const res = await UserAPI.getPage(params);
-    console.log("exportsAction", res.list);
-    return res.list;
+    console.log("exportsAction", res.data);
+    return res.data;
   },
   pk: "id",
   toolbar: [

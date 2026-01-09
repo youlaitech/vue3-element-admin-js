@@ -3,7 +3,7 @@
     <!-- 桌面端显示 -->
     <template v-if="isDesktop">
       <!-- 搜索 -->
-      <MenuSearch />
+      <CommandPalette />
 
       <!-- 全屏 -->
       <Fullscreen />
@@ -77,6 +77,8 @@ const navbarRightClass = computed(() => {
   if (settingStore.sidebarColorScheme === SidebarColor.CLASSIC_BLUE) {
     return "navbar__right--white";
   }
+
+  return "";
 });
 
 /**

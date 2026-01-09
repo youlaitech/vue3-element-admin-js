@@ -561,7 +561,7 @@ const exportsFormRef = ref();
 const exportsFormData = reactive({
   filename: "",
   sheetname: "",
-  fields: fields,
+  fields,
   origin: ExportsOriginEnum.CURRENT,
 });
 const exportsFormRules = {
@@ -806,8 +806,8 @@ function handleModify(field, value, row) {
   if (props.contentConfig.modifyAction) {
     props.contentConfig.modifyAction({
       [pk]: row[pk],
-      field: field,
-      value: value,
+      field,
+      value,
     });
   } else {
     ElMessage.error("未配置modifyAction");
@@ -869,13 +869,19 @@ function fetchPageData(formData = {}, isRestart = false) {
     )
     .then((data) => {
       if (showPagination) {
+        let parsed = data;
         if (props.contentConfig.parseData) {
-          data = props.contentConfig.parseData(data);
+          parsed = props.contentConfig.parseData(data);
+        } else if (data && Array.isArray(data.data)) {
+          parsed = {
+            list: data.data,
+            total: (data.page && data.page.total) || 0,
+          };
         }
-        pagination.total = data.total;
-        pageData.value = data.list;
+        pagination.total = (parsed && parsed.total) || 0;
+        pageData.value = (parsed && parsed.list) || [];
       } else {
-        pageData.value = data;
+        pageData.value = (data && data.data) || data;
       }
     })
     .finally(() => {

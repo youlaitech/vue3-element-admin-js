@@ -89,4 +89,4 @@ export function toggleSidebarColor(isBuleSidebar) {
   } else {
     document.documentElement.classList.remove("sidebar-color-blue");
   }
-} 
+}

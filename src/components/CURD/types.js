@@ -31,7 +31,13 @@
  * @property {boolean|Object} [pagination] - pagination组件属性
  * @property {Function} indexAction - 列表的网络请求函数(需返回promise)
  * @property {Object} [request] - 默认的分页相关的请求参数
- * @property {Function} [parseData] - 数据格式解析的回调函数
+ * @property {Function} [parseData] - 数据格式解析回调
+ * @property {Object} [__pagedResponse] - 分页接口约定返回结构（描述用，非真实字段）
+ * @property {Array<any>} [__pagedResponse.data] - 当前页列表
+ * @property {{pageNum:number,pageSize:number,total:number}|null} [__pagedResponse.page] - 分页元信息
+ * @property {Object} [__legacyPagedResponse] - 旧分页结构（兼容）
+ * @property {Array<any>} [__legacyPagedResponse.list] - 旧结构列表
+ * @property {number} [__legacyPagedResponse.total] - 旧结构总数
  * @property {Function} [modifyAction] - 修改属性的网络请求函数(需返回promise)
  * @property {Function} [deleteAction] - 删除的网络请求函数(需返回promise)
  * @property {Function} [exportAction] - 后端导出的网络请求函数(需返回promise)
@@ -72,15 +78,3 @@
  * @property {Object} [form] - form组件属性
  * @property {Array<Object>} formItems - 表单项
  */
-
-export {
-  IObject,
-  IOperatData,
-  ComponentType,
-  ISearchConfig,
-  IContentConfig,
-  IModalConfig,
-  IForm,
-  IFormItems,
-  IPageForm
-}; 
