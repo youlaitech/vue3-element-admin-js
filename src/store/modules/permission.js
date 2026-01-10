@@ -6,6 +6,18 @@ import MenuAPI from "@/api/system/menu";
 const modules = import.meta.glob("../../views/**/**.vue");
 const Layout = () => import("../../layouts/index.vue");
 
+function resolveViewComponent(componentPath) {
+  const normalized = componentPath
+    .trim()
+    .replace(/^\/+/, "")
+    .replace(/\.vue$/i, "");
+  return (
+    modules[`../../views/${normalized}.vue`] ||
+    modules[`../../views/${normalized}/index.vue`] ||
+    modules[`../../views/error/404.vue`]
+  );
+}
+
 export const usePermissionStore = defineStore("permission", () => {
   // 所有路由（静态路由 + 动态路由）
   const routes = ref([]);
@@ -82,10 +94,7 @@ const transformRoutes = (routes, isTopLevel = true) => {
     } else {
       // 动态导入组件，Layout特殊处理，找不到组件时返回404
       normalizedRoute.component =
-        processedComponent === "Layout"
-          ? Layout
-          : modules[`../../views/${processedComponent}.vue`] ||
-            modules[`../../views/error/404.vue`];
+        processedComponent === "Layout" ? Layout : resolveViewComponent(processedComponent);
     }
 
     // 递归处理子路由

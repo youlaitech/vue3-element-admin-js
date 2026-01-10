@@ -92,11 +92,7 @@
           <el-table
             v-loading="loading"
             :data="pageData"
-            border
-            stripe
-            highlight-current-row
             class="table-section__content"
-            row-key="id"
             @selection-change="handleSelectionChange"
           >
             <el-table-column type="selection" width="50" align="center" />
@@ -118,7 +114,7 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="创建时间" align="center" prop="createTime" width="180" />
+            <el-table-column label="创建时间" align="center" prop="createTime" width="150" />
             <el-table-column label="操作" fixed="right" width="220">
               <template #default="scope">
                 <el-button

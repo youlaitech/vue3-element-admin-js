@@ -13,13 +13,12 @@
     <!-- 主内容区 -->
     <div
       class="layout__main"
-      :class="{
-        hasTagsView: showTagsView,
-        'layout__main--collapsed': !isSidebarOpen,
-      }"
+      :class="{ hasTagsView: showTagsView, 'layout__main--collapsed': !isSidebarOpen }"
     >
-      <LayoutNavbar />
-      <LayoutTagsView v-if="showTagsView" />
+      <div class="fixed-header">
+        <LayoutNavbar />
+        <LayoutTagsView v-if="showTagsView" />
+      </div>
       <LayoutMain />
     </div>
   </BaseLayout>
@@ -74,7 +73,7 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
 
   &__main {
     position: relative;
-    min-height: 100vh;
+    height: 100%;
     margin-left: $sidebar-width;
     transition: margin-left 0.28s;
 
@@ -82,12 +81,11 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
       margin-left: $sidebar-width-collapsed;
     }
 
-    &.hasTagsView {
-      padding-top: $navbar-height + $tags-view-height;
-    }
-
-    &:not(.hasTagsView) {
-      padding-top: $navbar-height;
+    .fixed-header {
+      position: sticky;
+      top: 0;
+      z-index: 9;
+      transition: width 0.28s;
     }
   }
 }

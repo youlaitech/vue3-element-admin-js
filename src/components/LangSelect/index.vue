@@ -1,6 +1,8 @@
 <template>
   <el-dropdown trigger="click" @command="handleLanguageChange">
-    <div class="i-svg:language" />
+    <div class="lang-trigger">
+      <div class="i-svg:language" />
+    </div>
     <template #dropdown>
       <el-dropdown-menu>
         <el-dropdown-item
@@ -47,3 +49,13 @@ function handleLanguageChange(lang) {
   ElMessage.success(t("langSelect.message.success"));
 }
 </script>
+
+<style lang="scss" scoped>
+.lang-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+</style>

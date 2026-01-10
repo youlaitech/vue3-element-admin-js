@@ -266,7 +266,7 @@ function handleDelete(id) {
 // 打开字典项
 function handleOpenDictData(row) {
   router.push({
-    path: "/system/dict-item",
+    name: "DictItem",
     query: { dictCode: row.dictCode, title: "【" + row.name + "】字典数据" },
   });
 }

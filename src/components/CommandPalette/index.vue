@@ -106,9 +106,9 @@ const {
 
 const displayList = computed(() => (results.value.length ? results.value : history.value));
 
-const handleInputKeydown = (_evt) => {
-  if (!(_evt instanceof KeyboardEvent)) return;
-  const e = _evt;
+const handleInputKeydown = (evt) => {
+  if (!(evt instanceof KeyboardEvent)) return;
+  const e = evt;
   const key = e.key.toLowerCase();
 
   if (key === "escape") {

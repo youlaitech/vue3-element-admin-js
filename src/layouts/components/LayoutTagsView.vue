@@ -73,12 +73,13 @@ function openContextMenu(tag, event) {
 
 <style lang="scss" scoped>
 .tags-container {
+  width: 100%;
   height: $tags-view-height;
-  background-color: var(--el-bg-color);
-  border-bottom: 1px solid var(--el-border-color-light);
+  padding: 0 15px;
+  border-top: 1px solid var(--el-border-color-light);
 
   .scroll-container {
-    height: 100%;
+    white-space: nowrap;
   }
 }
 </style>

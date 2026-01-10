@@ -1,7 +1,8 @@
 /**
  * 菜单搜索逻辑
  */
-import { ref, onMounted, onBeforeUnmount, toRaw } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { useMagicKeys } from "@vueuse/core";
 import router from "@/router";
 import { usePermissionStore } from "@/store";
 import { isExternal } from "@/utils";
@@ -55,21 +56,18 @@ export function useCommandPalette() {
   }
 
   function onSelect() {
-    const list = results.value.length ? results.value : history.value;
-    if (list.length === 0) return;
-    if (activeIndex.value < 0) return;
-    const item = list[activeIndex.value];
-    if (!item) return;
-    onGo(item);
+    if (results.value.length > 0 && activeIndex.value >= 0) {
+      onGo(results.value[activeIndex.value]);
+    }
   }
 
   function onNavigate(direction) {
-    const list = results.value.length ? results.value : history.value;
-    if (list.length === 0) return;
+    if (results.value.length === 0) return;
+
     if (direction === "up") {
-      activeIndex.value = activeIndex.value <= 0 ? list.length - 1 : activeIndex.value - 1;
+      activeIndex.value = activeIndex.value <= 0 ? results.value.length - 1 : activeIndex.value - 1;
     } else {
-      activeIndex.value = activeIndex.value >= list.length - 1 ? 0 : activeIndex.value + 1;
+      activeIndex.value = activeIndex.value >= results.value.length - 1 ? 0 : activeIndex.value + 1;
     }
   }
 
@@ -148,9 +146,7 @@ export function useCommandPalette() {
           name: typeof route.name === "string" ? route.name : undefined,
           icon: route.meta.icon,
           redirect: typeof route.redirect === "string" ? route.redirect : undefined,
-          params: route.meta.params
-            ? JSON.parse(JSON.stringify(toRaw(route.meta.params)))
-            : undefined,
+          params: route.meta.params ? JSON.parse(JSON.stringify(route.meta.params)) : undefined,
         });
       }
     });
@@ -159,13 +155,20 @@ export function useCommandPalette() {
   // ============================================
   // 快捷键
   // ============================================
+  const { Ctrl_k, Meta_k } = useMagicKeys({
+    passive: false,
+    onEventFired(e) {
+      if (e.ctrlKey && e.key === "k" && e.type === "keydown") {
+        e.preventDefault();
+      }
+    },
+  });
 
-  function handleKeydown(e) {
-    if ((e.ctrlKey || e.metaKey) && String(e.key || "").toLowerCase() === "k") {
-      e.preventDefault();
+  watch([Ctrl_k, Meta_k], (v) => {
+    if (v[0] || v[1]) {
       open();
     }
-  }
+  });
 
   // ============================================
   // 生命周期
@@ -174,11 +177,6 @@ export function useCommandPalette() {
   onMounted(() => {
     loadRoutes(permissionStore.routes);
     loadHistory();
-    document.addEventListener("keydown", handleKeydown);
-  });
-
-  onBeforeUnmount(() => {
-    document.removeEventListener("keydown", handleKeydown);
   });
 
   return {

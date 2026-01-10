@@ -47,17 +47,10 @@ const currentComponent = (component, route) => {
     wrapperMap.set(componentName, wrapper);
   }
 
-  // 添加组件数量限制
-  if (wrapperMap.size > 100) {
-    const firstKey = wrapperMap.keys().next().value;
-    if (firstKey) {
-      wrapperMap.delete(firstKey);
-    }
-  }
-
-  return h(wrapper);
+  return wrapper;
 };
 
+// 动态计算主内容区高度
 const appMainHeight = computed(() => {
   if (useSettingsStore().showTagsView) {
     return `calc(100vh - ${variables["navbar-height"]} - ${variables["tags-view-height"]})`;

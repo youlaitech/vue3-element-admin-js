@@ -1,16 +1,23 @@
 <template>
   <div class="notice">
-    <el-dropdown class="h-full items-center justify-center" trigger="click">
-      <el-badge v-if="noticeList.length > 0" :offset="[0, 15]" :value="noticeList.length" :max="99">
-        <el-icon>
-          <Bell />
-        </el-icon>
-      </el-badge>
+    <el-dropdown class="notice__dropdown" trigger="click">
+      <div class="notice__trigger">
+        <el-badge
+          v-if="noticeList.length > 0"
+          :offset="[0, 15]"
+          :value="noticeList.length"
+          :max="99"
+        >
+          <el-icon>
+            <Bell />
+          </el-icon>
+        </el-badge>
 
-      <div v-else>
-        <el-icon>
-          <Bell />
-        </el-icon>
+        <div v-else>
+          <el-icon>
+            <Bell />
+          </el-icon>
+        </div>
       </div>
 
       <template #dropdown>
@@ -170,6 +177,22 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .notice {
+  &__dropdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
   :deep(.el-badge) {
     display: flex;
     align-items: center;

@@ -36,17 +36,17 @@
 
         <div class="config-item flex-x-between">
           <span class="text-xs">{{ $t("settings.showTagsView") }}</span>
-          <el-switch v-model="settingsStore.tagsView" />
+          <el-switch v-model="settingsStore.showTagsView" />
         </div>
 
         <div class="config-item flex-x-between">
           <span class="text-xs">{{ $t("settings.showAppLogo") }}</span>
-          <el-switch v-model="settingsStore.sidebarLogo" />
+          <el-switch v-model="settingsStore.showAppLogo" />
         </div>
 
         <div class="config-item flex-x-between">
           <span class="text-xs">{{ $t("settings.showWatermark") }}</span>
-          <el-switch v-model="settingsStore.watermarkEnabled" />
+          <el-switch v-model="settingsStore.showWatermark" />
         </div>
 
         <div v-if="!isDark" class="config-item flex-x-between">
@@ -141,6 +141,7 @@
 import { DocumentCopy, RefreshLeft, Check, Moon, Sunny } from "@element-plus/icons-vue";
 import { useI18n } from "vue-i18n";
 import { markRaw, ref, computed } from "vue";
+import { useRoute } from "vue-router";
 import { useSettingsStore, usePermissionStore, useAppStore } from "@/store";
 import { LayoutMode, SidebarColor, ThemeMode } from "@/enums/settings";
 
@@ -179,13 +180,24 @@ const layoutOptions = [
   { value: LayoutMode.MIX, label: t("settings.mixLayout"), className: "mix" },
 ];
 
-const isDark = ref(settingsStore.theme === ThemeMode.DARK);
-const sidebarColor = ref(settingsStore.sidebarColorScheme);
+const isDark = computed({
+  get: () => settingsStore.theme === ThemeMode.DARK,
+  set: (val) => {
+    settingsStore.theme = val ? ThemeMode.DARK : ThemeMode.LIGHT;
+  },
+});
+
+const sidebarColor = computed({
+  get: () => settingsStore.sidebarColorScheme,
+  set: (val) => {
+    settingsStore.sidebarColorScheme = val;
+  },
+});
 
 const selectedThemeColor = computed({
   get: () => settingsStore.themeColor,
   set: (value) => {
-    settingsStore.changeThemeColor(value);
+    settingsStore.themeColor = value;
   },
 });
 
@@ -200,7 +212,7 @@ const drawerVisible = computed({
  * @param isDark 是否启用暗黑模式
  */
 const handleThemeChange = (isDark) => {
-  settingsStore.changeTheme(isDark ? ThemeMode.DARK : ThemeMode.LIGHT);
+  settingsStore.theme = isDark ? ThemeMode.DARK : ThemeMode.LIGHT;
 };
 
 /**
@@ -209,7 +221,7 @@ const handleThemeChange = (isDark) => {
  * @param val 颜色方案名称
  */
 const changeSidebarColor = (val) => {
-  settingsStore.changeSidebarColor(val);
+  settingsStore.sidebarColorScheme = val;
 };
 
 /**
@@ -218,7 +230,7 @@ const changeSidebarColor = (val) => {
  * @param layout - 布局模式
  */
 const handleLayoutChange = (layout) => {
-  settingsStore.changeLayout(layout);
+  settingsStore.layout = layout;
   if (layout === LayoutMode.MIX && route.name) {
     const topLevelRoute = findTopLevelRoute(permissionStore.routes, route.name);
     if (topLevelRoute && appStore.activeTopMenuPath !== topLevelRoute.path) {
@@ -321,14 +333,14 @@ const generateSettingsCode = () => {
     title: "pkg.name",
     version: "pkg.version",
     showSettings: true,
-    tagsView: settingsStore.tagsView,
-    sidebarLogo: settingsStore.sidebarLogo,
+    tagsView: settingsStore.showTagsView,
+    sidebarLogo: settingsStore.showAppLogo,
     layout: `LayoutMode.${settingsStore.layout.toUpperCase()}`,
     theme: `ThemeMode.${settingsStore.theme.toUpperCase()}`,
     size: "ComponentSize.DEFAULT",
     language: "LanguageEnum.ZH_CN",
     themeColor: `"${settingsStore.themeColor}"`,
-    watermarkEnabled: settingsStore.watermarkEnabled,
+    watermarkEnabled: settingsStore.showWatermark,
     watermarkContent: "pkg.name",
     sidebarColorScheme: `SidebarColor.${settingsStore.sidebarColorScheme.toUpperCase().replace("-", "_")}`,
   };
