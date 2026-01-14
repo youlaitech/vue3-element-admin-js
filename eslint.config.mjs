@@ -56,14 +56,7 @@ const elementPlusComponents = {
 export default [
   // 忽略文件配置
   {
-    ignores: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/*.min.*",
-      "**/auto-imports.d.ts",
-      "**/components.d.ts",
-      "types/**/*.d.ts",
-    ],
+    ignores: ["**/node_modules/**", "**/dist/**", "**/*.min.*"],
   },
 
   // 基础 JavaScript 配置
@@ -85,14 +78,6 @@ export default [
         ...globals.es2022, // ES2022 全局对象
         ...autoImportGlobals, // 自动导入的 API 函数
         ...elementPlusComponents, // Element Plus 组件
-        // 全局类型定义，解决 TypeScript 中定义但 ESLint 不识别的问题
-        PageQuery: "readonly",
-        PageResult: "readonly",
-        OptionType: "readonly",
-        ApiResponse: "readonly",
-        ExcelResult: "readonly",
-        TagView: "readonly",
-        AppSettings: "readonly",
         __APP_INFO__: "readonly",
       },
     },
@@ -114,7 +99,7 @@ export default [
       "no-multi-spaces": "error",
       "no-multiple-empty-lines": ["error", { max: 1, maxBOF: 0, maxEOF: 0 }],
 
-      // 禁用与 TypeScript 冲突的规则
+      // 禁用可能与自动导入/全局变量配置冲突的规则
       "no-unused-vars": "off",
       "no-undef": "off",
       "no-redeclare": "off",
@@ -130,7 +115,6 @@ export default [
         ecmaVersion: "latest",
         sourceType: "module",
         extraFileExtensions: [".vue"],
-        tsconfigRootDir: import.meta.dirname,
       },
     },
     rules: {

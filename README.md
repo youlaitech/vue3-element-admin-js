@@ -24,16 +24,13 @@
 
 ![](https://foruda.gitee.com/images/1708618984641188532/a7cca095_716974.png "rainbow.png")
 
-
 <div align="center">
   <a target="_blank" href="https://vue.youlai.tech">🖥️ 在线预览</a> |  <a target="_blank" href="https://juejin.cn/post/7228990409909108793">📑 阅读文档</a>|  <a target="_blank" href="https://www.youlai.tech//vue3-element-admin">🌐 官网</a> | <a href="./README.en-US.md">💬 English
 </div>
 
-
 ## 项目简介
 
 [vue3-element-admin-js](https://gitee.com/youlaiorg/vue3-element-admin-js) 基于 Vue3、Vite、JavaScript 和 Element-Plus 搭建的极简开箱即用企业级后台管理前端模板。 （配套 Java 后端 [youlai-boot](https://gitee.com/youlaiorg/youlai-boot) 和 Node 后端 [youlai-nest](https://gitee.com/youlaiorg/youlai-nest)）。
-
 
 ## 项目特色
 
@@ -46,7 +43,6 @@
 - **基础设施：** 提供国际化、多布局、暗黑模式、全屏、水印、接口文档和代码生成器等功能。
 - **持续更新**：项目持续开源更新，实时更新工具和依赖。
 
-
 ## 项目截图
 
 ![](https://www.youlai.tech/storage/blog/2025/01/18/20250118160647.png)
@@ -55,39 +51,34 @@
 
 ## 项目源码
 
-| 项目 | Gitee   | Github    | GitCode|
-| ---- | ----| ---- | ---- |
-| vue3-element-admin JS版| [vue3-element-admin-js](https://gitee.com/youlaiorg/vue3-element-admin-js) | [vue3-element-admin-js](https://github.com/youlaitech/vue3-element-admin-js) | [vue3-element-admin-js](https://gitcode.com/youlai/vue3-element-admin-js) |
-| vue3-element-admin 标准版| [vue3-element-admin](https://gitee.com/youlaiorg/vue3-element-admin) | [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin) | [vue3-element-admin](https://gitcode.com/youlai/vue3-element-admin) |
-| vue3-element-admin 精简版 | [vue3-element-template](https://gitee.com/youlaiorg/vue3-element-template) | [vue3-element-template](https://github.com/youlaitech/vue3-element-template) |-|
-| Java 后端 | [youlai-boot](https://gitee.com/youlaiorg/youlai-boot)       | [youlai-boot](https://github.com/haoxianrui/youlai-boot.git) |[youlai-boot](https://gitcode.com/youlai/youlai-boot.git)|
-| Node 后端 | [youlai-nest](https://gitee.com/youlaiorg/youlai-nest)       | [youlai-nest](https://github.com/haoxianrui/youlai-nest.git) |[youlai-nest](https://gitcode.com/youlai/youlai-nest.git)|
-
-
+| 项目                      | Gitee                                                                      | Github                                                                       | GitCode                                                                   |
+| ------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| vue3-element-admin JS版   | [vue3-element-admin-js](https://gitee.com/youlaiorg/vue3-element-admin-js) | [vue3-element-admin-js](https://github.com/youlaitech/vue3-element-admin-js) | [vue3-element-admin-js](https://gitcode.com/youlai/vue3-element-admin-js) |
+| vue3-element-admin 标准版 | [vue3-element-admin](https://gitee.com/youlaiorg/vue3-element-admin)       | [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin)       | [vue3-element-admin](https://gitcode.com/youlai/vue3-element-admin)       |
+| vue3-element-admin 精简版 | [vue3-element-template](https://gitee.com/youlaiorg/vue3-element-template) | [vue3-element-template](https://github.com/youlaitech/vue3-element-template) | -                                                                         |
+| Java 后端                 | [youlai-boot](https://gitee.com/youlaiorg/youlai-boot)                     | [youlai-boot](https://github.com/haoxianrui/youlai-boot.git)                 | [youlai-boot](https://gitcode.com/youlai/youlai-boot.git)                 |
+| Node 后端                 | [youlai-nest](https://gitee.com/youlaiorg/youlai-nest)                     | [youlai-nest](https://github.com/haoxianrui/youlai-nest.git)                 | [youlai-nest](https://gitcode.com/youlai/youlai-nest.git)                 |
 
 ## 项目文档
 
-| 文档名称          | 访问地址                                                                                   |
-|---------------|-------------------------------------------------------------------------------------------|
-| 项目 0 到 1  | [基于 Vue3 + Vite + TypeScript + Element-Plus 从0到1搭建后台管理系统](https://blog.csdn.net/u013737132/article/details/130191394)  |
-| 官方文档 | [https://www.youlai.tech/vue3-element-admin/](https://www.youlai.tech/vue3-element-admin/)  |
-| 代码规范     | [ESLint V9 + Prettier + Stylelint + EditorConfig 约束和统一前端代码规范](https://youlai.blog.csdn.net/article/details/145608723) |
-| Git 规范 | [Husky + Lint-staged + Commitlint + Commitizen + cz-git 配置 Git 提交规范](https://youlai.blog.csdn.net/article/details/145615236) |
-| 在线接口文档 | [https://www.apifox.cn/apidoc](https://www.apifox.cn/apidoc/shared-195e783f-4d85-4235-a038-eec696de4ea5) |
-
-
+| 文档名称     | 访问地址                                                                                                                           |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 项目 0 到 1  | [基于 Vue3 + Vite + Element-Plus 从0到1搭建后台管理系统](https://blog.csdn.net/u013737132/article/details/130191394)               |
+| 官方文档     | [https://www.youlai.tech/vue3-element-admin/](https://www.youlai.tech/vue3-element-admin/)                                         |
+| 代码规范     | [ESLint V9 + Prettier + Stylelint + EditorConfig 约束和统一前端代码规范](https://youlai.blog.csdn.net/article/details/145608723)   |
+| Git 规范     | [Husky + Lint-staged + Commitlint + Commitizen + cz-git 配置 Git 提交规范](https://youlai.blog.csdn.net/article/details/145615236) |
+| 在线接口文档 | [https://www.apifox.cn/apidoc](https://www.apifox.cn/apidoc/shared-195e783f-4d85-4235-a038-eec696de4ea5)                           |
 
 ## 项目启动
 
-
 - **环境准备**
 
-| 环境类型       | 版本要求                     | 下载链接                     |
-|----------------|-----------------------------|-----------------------------|
-| **开发工具**   | Visual Studio Code (最新版) | [官方下载](https://code.visualstudio.com/Download) |
-| **运行环境**   | Node.js 18.x (推荐18.16.1)  | [中文镜像](https://npmmirror.com/mirrors/node/v18.16.1/) |
-> ⚠️ 注意：Node.js 20.6.0版本存在兼容性问题，请勿使用
+| 环境类型     | 版本要求                    | 下载链接                                                 |
+| ------------ | --------------------------- | -------------------------------------------------------- |
+| **开发工具** | Visual Studio Code (最新版) | [官方下载](https://code.visualstudio.com/Download)       |
+| **运行环境** | Node.js 18.x (推荐18.16.1)  | [中文镜像](https://npmmirror.com/mirrors/node/v18.16.1/) |
 
+> ⚠️ 注意：Node.js 20.6.0版本存在兼容性问题，请勿使用
 
 - **快速开始**
 
@@ -110,7 +101,6 @@ pnpm install
 # 启动运行
 pnpm run dev
 ```
-
 
 ## 项目部署
 
@@ -144,7 +134,7 @@ server {
 
 ## 本地Mock
 
-项目同时支持在线和本地 Mock 接口，默认使用线上接口，如需替换为 Mock 接口，修改文件 `.env.development` 的 `VITE_MOCK_DEV_SERVER` 为  `true` **即可**。
+项目同时支持在线和本地 Mock 接口，默认使用线上接口，如需替换为 Mock 接口，修改文件 `.env.development` 的 `VITE_MOCK_DEV_SERVER` 为 `true` **即可**。
 
 ## 后端接口
 
@@ -154,19 +144,15 @@ server {
 2. 根据后端工程的说明文档 [README.md](https://gitee.com/youlaiorg/youlai-boot#%E9%A1%B9%E7%9B%AE%E8%BF%90%E8%A1%8C) 完成本地启动。
 3. 修改 `.env.development` 文件中的 `VITE_APP_API_URL` 的值，将其从 https://api.youlai.tech 更改为 http://localhost:8989 即可。
 
-
-
 ## 提交规范
 
 执行 `pnpm run commit` 唤起 git commit 交互，根据提示完成信息的输入和选择。
 
 ![](https://foruda.gitee.com/images/1687755823165218215/c1705416_716974.png)
 
-
 ## 项目统计
 
 ![](https://repobeats.axiom.co/api/embed/aa7cca3d6fa9c308fc659fa6e09af9a1910506c3.svg "Repobeats analytics image")
-
 
 Thanks to all the contributors!
 

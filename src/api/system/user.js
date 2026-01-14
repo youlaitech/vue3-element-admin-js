@@ -200,6 +200,13 @@ const UserAPI = {
       data,
     });
   },
+  unbindMobile(data) {
+    return request({
+      url: `${USER_BASE_URL}/mobile`,
+      method: "delete",
+      data,
+    });
+  },
 
   /**
    * 发送邮箱验证码（绑定或更换邮箱）
@@ -223,6 +230,13 @@ const UserAPI = {
     return request({
       url: `${USER_BASE_URL}/email`,
       method: "put",
+      data,
+    });
+  },
+  unbindEmail(data) {
+    return request({
+      url: `${USER_BASE_URL}/email`,
+      method: "delete",
       data,
     });
   },

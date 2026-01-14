@@ -87,7 +87,7 @@ export default {
     mixLayout: "Mix Mode",
     configManagement: "Config Management",
     copyConfigDescription:
-      "Generate current settings code and copy to clipboard, then overwrite src/settings.ts file",
+      "Generate current settings code and copy to clipboard, then overwrite src/settings.js file",
     resetConfigDescription: "Restore all settings to system default values",
   },
 };

@@ -345,7 +345,7 @@ const generateSettingsCode = () => {
     sidebarColorScheme: `SidebarColor.${settingsStore.sidebarColorScheme.toUpperCase().replace("-", "_")}`,
   };
 
-  return `const defaultSettings: AppSettings = {
+  return `const defaultSettings = {
   title: ${settings.title},
   version: ${settings.version},
   showSettings: ${settings.showSettings},

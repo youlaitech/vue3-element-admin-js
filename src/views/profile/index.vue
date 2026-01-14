@@ -15,7 +15,13 @@
                 size="small"
                 @click="triggerFileUpload"
               />
-              <input ref="fileInput" type="file" style="display: none" @change="handleFileChange" />
+              <input
+                ref="fileInput"
+                type="file"
+                style="display: none"
+                accept="image/*"
+                @change="handleFileChange"
+              />
             </div>
             <div class="user-name">
               <span class="nickname">{{ userProfile.nickname }}</span>
@@ -63,41 +69,9 @@
             </el-descriptions-item>
             <el-descriptions-item label="手机号码">
               {{ userProfile.mobile || "未绑定" }}
-              <el-button
-                v-if="userProfile.mobile"
-                type="primary"
-                link
-                @click="() => handleOpenDialog(DialogType.MOBILE)"
-              >
-                更换
-              </el-button>
-              <el-button
-                v-else
-                type="primary"
-                link
-                @click="() => handleOpenDialog(DialogType.MOBILE)"
-              >
-                绑定
-              </el-button>
             </el-descriptions-item>
             <el-descriptions-item label="邮箱">
               {{ userProfile.email || "未绑定" }}
-              <el-button
-                v-if="userProfile.email"
-                type="primary"
-                link
-                @click="() => handleOpenDialog(DialogType.EMAIL)"
-              >
-                更换
-              </el-button>
-              <el-button
-                v-else
-                type="primary"
-                link
-                @click="() => handleOpenDialog(DialogType.EMAIL)"
-              >
-                绑定
-              </el-button>
             </el-descriptions-item>
             <el-descriptions-item label="部门">
               {{ userProfile.deptName }}
@@ -122,6 +96,66 @@
             <el-button type="primary" link @click="() => handleOpenDialog(DialogType.PASSWORD)">
               修改
             </el-button>
+          </div>
+
+          <div class="security-item">
+            <div class="security-info">
+              <div class="security-title">手机号</div>
+              <div class="security-desc">
+                {{ mobileSecurityDesc }}
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <el-button
+                v-if="userProfile.mobile"
+                type="primary"
+                link
+                @click="() => handleOpenDialog(DialogType.MOBILE)"
+              >
+                更换
+              </el-button>
+              <el-button v-if="userProfile.mobile" type="danger" link @click="handleUnbindMobile">
+                解绑
+              </el-button>
+              <el-button
+                v-else
+                type="primary"
+                link
+                @click="() => handleOpenDialog(DialogType.MOBILE)"
+              >
+                绑定
+              </el-button>
+            </div>
+          </div>
+
+          <div class="security-item">
+            <div class="security-info">
+              <div class="security-title">邮箱</div>
+              <div class="security-desc">
+                {{ emailSecurityDesc }}
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <el-button
+                v-if="userProfile.email"
+                type="primary"
+                link
+                @click="() => handleOpenDialog(DialogType.EMAIL)"
+              >
+                更换
+              </el-button>
+              <el-button v-if="userProfile.email" type="danger" link @click="handleUnbindEmail">
+                解绑
+              </el-button>
+              <el-button
+                v-else
+                type="primary"
+                link
+                @click="() => handleOpenDialog(DialogType.EMAIL)"
+              >
+                绑定
+              </el-button>
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -183,6 +217,14 @@
             </template>
           </el-input>
         </el-form-item>
+        <el-form-item label="当前密码" prop="password">
+          <el-input
+            v-model="mobileUpdateForm.password"
+            type="password"
+            show-password
+            style="width: 250px"
+          />
+        </el-form-item>
       </el-form>
 
       <!-- 绑定邮箱 -->
@@ -205,11 +247,19 @@
             </template>
           </el-input>
         </el-form-item>
+        <el-form-item label="当前密码" prop="password">
+          <el-input
+            v-model="emailUpdateForm.password"
+            type="password"
+            show-password
+            style="width: 250px"
+          />
+        </el-form-item>
       </el-form>
 
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialog.visible = false">取消</el-button>
+          <el-button @click="handleCancel">取消</el-button>
           <el-button type="primary" @click="handleSubmit">确定</el-button>
         </span>
       </template>
@@ -220,7 +270,11 @@
 <script setup>
 import UserAPI from "@/api/system/user";
 import FileAPI from "@/api/file";
+import { useUserStore } from "@/store";
+import { redirectToLogin } from "@/utils/auth";
 import { Camera } from "@element-plus/icons-vue";
+
+const userStore = useUserStore();
 
 const userProfile = ref({});
 
@@ -237,10 +291,26 @@ const dialog = reactive({
   type: "", // 修改账号资料,修改密码、绑定手机、绑定邮箱
 });
 
-const userProfileForm = reactive({});
-const passwordChangeForm = reactive({});
-const mobileUpdateForm = reactive({});
-const emailUpdateForm = reactive({});
+const userProfileForm = reactive({
+  nickname: "",
+  avatar: "",
+  gender: undefined,
+});
+const passwordChangeForm = reactive({
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+});
+const mobileUpdateForm = reactive({
+  mobile: "",
+  code: "",
+  password: "",
+});
+const emailUpdateForm = reactive({
+  email: "",
+  code: "",
+  password: "",
+});
 
 const userProfileFormRef = ref();
 const passwordChangeFormRef = ref();
@@ -249,7 +319,9 @@ const emailBindingFormRef = ref();
 const fileInput = ref();
 
 const mobileCountdown = ref(0);
+const mobileTimer = ref();
 const emailCountdown = ref(0);
+const emailTimer = ref();
 
 // 密码修改表单校验规则
 const passwordChangeRules = {
@@ -288,6 +360,7 @@ const mobileBindingRules = {
     },
   ],
   code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
+  password: [{ required: true, message: "请输入当前密码", trigger: "blur" }],
 };
 
 // 邮箱绑定表单校验规则
@@ -301,13 +374,36 @@ const emailBindingRules = {
     },
   ],
   code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
+  password: [{ required: true, message: "请输入当前密码", trigger: "blur" }],
 };
 
+function maskMobile(mobile) {
+  if (!mobile) return "";
+  return mobile.replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2");
+}
+
+function maskEmail(email) {
+  if (!email) return "";
+  const [name, domain] = email.split("@");
+  if (!domain) return email;
+  if (name.length <= 2) return `${name[0] || ""}***@${domain}`;
+  return `${name.slice(0, 2)}***@${domain}`;
+}
+
+const mobileSecurityDesc = computed(() => {
+  return userProfile.value.mobile
+    ? `已绑定：${maskMobile(userProfile.value.mobile)}`
+    : "未绑定手机号";
+});
+
+const emailSecurityDesc = computed(() => {
+  return userProfile.value.email ? `已绑定：${maskEmail(userProfile.value.email)}` : "未绑定邮箱";
+});
+
 // 获取用户信息
-function getUserProfile() {
-  UserAPI.getProfile().then((data) => {
-    userProfile.value = data;
-  });
+async function loadUserProfile() {
+  const data = await UserAPI.getProfile();
+  userProfile.value = data;
 }
 
 // 打开弹窗
@@ -319,65 +415,119 @@ function handleOpenDialog(type) {
     case DialogType.ACCOUNT:
       dialog.title = "修改账号资料";
       userProfileForm.nickname = userProfile.value.nickname;
+      userProfileForm.avatar = userProfile.value.avatar;
       userProfileForm.gender = userProfile.value.gender;
       break;
     case DialogType.PASSWORD:
       dialog.title = "修改密码";
+      passwordChangeForm.oldPassword = "";
+      passwordChangeForm.newPassword = "";
+      passwordChangeForm.confirmPassword = "";
       break;
     case DialogType.MOBILE:
       dialog.title = userProfile.value.mobile ? "更换手机号码" : "绑定手机号码";
-      mobileUpdateForm.mobile = userProfile.value.mobile;
+      mobileUpdateForm.mobile = "";
+      mobileUpdateForm.code = "";
+      mobileUpdateForm.password = "";
       break;
     case DialogType.EMAIL:
       dialog.title = userProfile.value.email ? "更换邮箱" : "绑定邮箱";
-      emailUpdateForm.email = userProfile.value.email;
+      emailUpdateForm.email = "";
+      emailUpdateForm.code = "";
+      emailUpdateForm.password = "";
       break;
+  }
+}
+
+async function handleUnbindMobile() {
+  if (!userProfile.value.mobile) return;
+  try {
+    const { value } = await ElMessageBox.prompt("请输入当前密码以解绑手机号", "解绑手机号", {
+      type: "warning",
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      inputType: "password",
+      inputPlaceholder: "当前密码",
+      inputValidator: (val) => !!val || "请输入当前密码",
+    });
+    await UserAPI.unbindMobile({ password: value });
+    ElMessage.success("手机号解绑成功");
+    await loadUserProfile();
+  } catch {
+    // ignore
+  }
+}
+
+async function handleUnbindEmail() {
+  if (!userProfile.value.email) return;
+  try {
+    const { value } = await ElMessageBox.prompt("请输入当前密码以解绑邮箱", "解绑邮箱", {
+      type: "warning",
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      inputType: "password",
+      inputPlaceholder: "当前密码",
+      inputValidator: (val) => !!val || "请输入当前密码",
+    });
+    await UserAPI.unbindEmail({ password: value });
+    ElMessage.success("邮箱解绑成功");
+    await loadUserProfile();
+  } catch {
+    // ignore
   }
 }
 
 // 提交表单
 async function handleSubmit() {
   try {
-    let valid = false;
-    switch (dialog.type) {
-      case DialogType.ACCOUNT:
-        valid = await userProfileFormRef.value?.validate();
-        if (valid) {
-          await UserAPI.updateProfile(userProfileForm);
-          ElMessage.success("修改成功");
-          getUserProfile();
-          dialog.visible = false;
-        }
-        break;
-      case DialogType.PASSWORD:
-        valid = await passwordChangeFormRef.value?.validate();
-        if (valid) {
-          await UserAPI.updatePassword(passwordChangeForm);
-          ElMessage.success("修改成功");
-          dialog.visible = false;
-        }
-        break;
-      case DialogType.MOBILE:
-        valid = await mobileBindingFormRef.value?.validate();
-        if (valid) {
-          await UserAPI.updateMobile(mobileUpdateForm);
-          ElMessage.success("修改成功");
-          getUserProfile();
-          dialog.visible = false;
-        }
-        break;
-      case DialogType.EMAIL:
-        valid = await emailBindingFormRef.value?.validate();
-        if (valid) {
-          await UserAPI.updateEmail(emailUpdateForm);
-          ElMessage.success("修改成功");
-          getUserProfile();
-          dialog.visible = false;
-        }
-        break;
+    if (dialog.type === DialogType.ACCOUNT) {
+      const valid = await userProfileFormRef.value?.validate();
+      if (!valid) return;
+
+      await UserAPI.updateProfile(userProfileForm);
+      userStore.userInfo.nickname = userProfileForm.nickname;
+      ElMessage.success("账号资料修改成功");
+      dialog.visible = false;
+      await loadUserProfile();
+    } else if (dialog.type === DialogType.PASSWORD) {
+      const valid = await passwordChangeFormRef.value?.validate();
+      if (!valid) return;
+
+      await UserAPI.changePassword(passwordChangeForm);
+      dialog.visible = false;
+      await redirectToLogin("密码已修改，请重新登录");
+    } else if (dialog.type === DialogType.MOBILE) {
+      const valid = await mobileBindingFormRef.value?.validate();
+      if (!valid) return;
+
+      await UserAPI.bindOrChangeMobile(mobileUpdateForm);
+      ElMessage.success(userProfile.value.mobile ? "手机号更换成功" : "手机号绑定成功");
+      dialog.visible = false;
+      await loadUserProfile();
+    } else if (dialog.type === DialogType.EMAIL) {
+      const valid = await emailBindingFormRef.value?.validate();
+      if (!valid) return;
+
+      await UserAPI.bindOrChangeEmail(emailUpdateForm);
+      ElMessage.success(userProfile.value.email ? "邮箱更换成功" : "邮箱绑定成功");
+      dialog.visible = false;
+      await loadUserProfile();
     }
   } catch (error) {
     console.error("提交失败:", error);
+  }
+}
+
+function handleCancel() {
+  dialog.visible = false;
+  if (dialog.type === DialogType.ACCOUNT) {
+    userProfileFormRef.value?.resetFields();
+  } else if (dialog.type === DialogType.PASSWORD) {
+    passwordChangeFormRef.value?.resetFields();
+  } else if (dialog.type === DialogType.MOBILE) {
+    mobileBindingFormRef.value?.resetFields();
+  } else if (dialog.type === DialogType.EMAIL) {
+    emailBindingFormRef.value?.resetFields();
   }
 }
 
@@ -387,13 +537,23 @@ function handleSendMobileCode() {
     ElMessage.warning("请输入手机号码");
     return;
   }
+  const reg = /^1[3-9]\d{9}$/;
+  if (!reg.test(mobileUpdateForm.mobile)) {
+    ElMessage.error("手机号格式不正确");
+    return;
+  }
   UserAPI.sendMobileCode(mobileUpdateForm.mobile).then(() => {
     ElMessage.success("验证码已发送");
     mobileCountdown.value = 60;
-    const timer = setInterval(() => {
-      mobileCountdown.value--;
-      if (mobileCountdown.value <= 0) {
-        clearInterval(timer);
+    if (mobileTimer.value) {
+      clearInterval(mobileTimer.value);
+    }
+    mobileTimer.value = setInterval(() => {
+      if (mobileCountdown.value > 0) {
+        mobileCountdown.value -= 1;
+      } else {
+        clearInterval(mobileTimer.value);
+        mobileTimer.value = undefined;
       }
     }, 1000);
   });
@@ -405,13 +565,23 @@ function handleSendEmailCode() {
     ElMessage.warning("请输入邮箱");
     return;
   }
+  const reg = /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/;
+  if (!reg.test(emailUpdateForm.email)) {
+    ElMessage.error("邮箱格式不正确");
+    return;
+  }
   UserAPI.sendEmailCode(emailUpdateForm.email).then(() => {
     ElMessage.success("验证码已发送");
     emailCountdown.value = 60;
-    const timer = setInterval(() => {
-      emailCountdown.value--;
-      if (emailCountdown.value <= 0) {
-        clearInterval(timer);
+    if (emailTimer.value) {
+      clearInterval(emailTimer.value);
+    }
+    emailTimer.value = setInterval(() => {
+      if (emailCountdown.value > 0) {
+        emailCountdown.value -= 1;
+      } else {
+        clearInterval(emailTimer.value);
+        emailTimer.value = undefined;
       }
     }, 1000);
   });
@@ -424,23 +594,40 @@ function triggerFileUpload() {
 
 // 处理文件上传
 async function handleFileChange(event) {
-  const file = event.target.files[0];
+  const file = event.target?.files?.[0];
   if (!file) return;
 
   try {
-    const formData = new FormData();
-    formData.append("file", file);
-    const data = await FileAPI.uploadFile(formData);
-    await UserAPI.updateAvatar(data.url);
+    const data = await FileAPI.uploadFile(file);
+    await UserAPI.updateProfile({
+      avatar: data.url,
+    });
+
+    userStore.userInfo.avatar = data.url;
     ElMessage.success("头像更新成功");
-    getUserProfile();
+    await loadUserProfile();
   } catch (error) {
     console.error("上传失败:", error);
   }
 }
 
-onMounted(() => {
-  getUserProfile();
+onMounted(async () => {
+  if (mobileTimer.value) {
+    clearInterval(mobileTimer.value);
+  }
+  if (emailTimer.value) {
+    clearInterval(emailTimer.value);
+  }
+  await loadUserProfile();
+});
+
+onBeforeUnmount(() => {
+  if (mobileTimer.value) {
+    clearInterval(mobileTimer.value);
+  }
+  if (emailTimer.value) {
+    clearInterval(emailTimer.value);
+  }
 });
 </script>
 

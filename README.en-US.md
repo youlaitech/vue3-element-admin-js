@@ -21,22 +21,15 @@
   </a>
 </div>
 
-
 ![](https://foruda.gitee.com/images/1708618984641188532/a7cca095_716974.png "rainbow.png")
 
 <div align="center">
  <a target="_blank" href="http://vue3.youlai.tech">👀 Live Preview</a> |  <a target="_blank" href="https://juejin.cn/post/7228990409909108793">📖 Read Documentation</a> |  <a target="_blank" href="https://www.youlai.tech/vue3-element-admin">🌐 Official Website</a> | 🌐 <a href="./README.md">中文
 </div>
 
-
-
-
 ## Introduction
 
-[vue3-element-admin](https://gitee.com/youlaiorg/vue3-element-admin) is a free and open-source admin template for backend management frontend, built with popular technologies such as Vue3, Vite5, TypeScript, Element-Plus, and Pinia (with accompanying [backend source code](https://gitee.com/youlaiorg/youlai-boot)).
-
-
-
+[vue3-element-admin](https://gitee.com/youlaiorg/vue3-element-admin) is a free and open-source admin template for backend management frontend, built with popular technologies such as Vue3, Vite, JavaScript, Element-Plus, and Pinia (with accompanying [backend source code](https://gitee.com/youlaiorg/youlai-boot)).
 
 ## Project Features
 
@@ -60,19 +53,18 @@
 
 ## Project Links
 
-| Project  | Gitee                                                        | Github                                                       | GitCode                                                      |
-|----------| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Frontend | [vue3-element-admin](https://gitee.com/youlaiorg/vue3-element-admin) | [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin) | [vue3-element-admin](https://gitcode.net/youlai/vue3-element-admin) |
-| Lite     | [vue3-element-template](https://gitee.com/youlaiorg/vue3-element-template) | [vue3-element-template](https://github.com/youlaitech/vue3-element-template) |-|
-| Backend  | [youlai-boot](https://gitee.com/youlaiorg/youlai-boot)       | [youlai-boot](https://github.com/haoxianrui/youlai-boot.git) | [youlai-boot](https://gitcode.net/youlai/youlai-boot)        |
+| Project  | Gitee                                                                      | Github                                                                       | GitCode                                                             |
+| -------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Frontend | [vue3-element-admin](https://gitee.com/youlaiorg/vue3-element-admin)       | [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin)       | [vue3-element-admin](https://gitcode.net/youlai/vue3-element-admin) |
+| Lite     | [vue3-element-template](https://gitee.com/youlaiorg/vue3-element-template) | [vue3-element-template](https://github.com/youlaitech/vue3-element-template) | -                                                                   |
+| Backend  | [youlai-boot](https://gitee.com/youlaiorg/youlai-boot)                     | [youlai-boot](https://github.com/haoxianrui/youlai-boot.git)                 | [youlai-boot](https://gitcode.net/youlai/youlai-boot)               |
 
 ## Environment Setup
 
-| Environment         | Name and Version                                             | Download Link                                               |
-| -------------------- | :----------------------------------------------------------- | ------------------------------------------------------------ |
-| **Development Tool** | VSCode                                                       | [Download](https://code.visualstudio.com/Download)           |
-| **Runtime Environment** | Node ≥18                                                    | [Download](http://nodejs.cn/download)                        |
-
+| Environment             | Name and Version | Download Link                                      |
+| ----------------------- | :--------------- | -------------------------------------------------- |
+| **Development Tool**    | VSCode           | [Download](https://code.visualstudio.com/Download) |
+| **Runtime Environment** | Node ≥18         | [Download](http://nodejs.cn/download)              |
 
 ## Project Setup
 
@@ -151,7 +143,7 @@ The project supports both online API and local mock API. By default, it uses the
 
 ## Project Documentation
 
-- [Building a Backend Management System from Scratch with Vue3, Vite, TypeScript, and Element-Plus](https://blog.csdn.net/u013737132/article/details/130191394)
+- [Building a Backend Management System from Scratch with Vue3, Vite, and Element-Plus](https://blog.csdn.net/u013737132/article/details/130191394)
 
 - [ESLint+Prettier+Stylelint+EditorConfig for Standardized and Unified Frontend Code Style](https://blog.csdn.net/u013737132/article/details/130190788)
 - [Git Commit Conventions with Husky, Lint-staged, Commitlint, Commitizen, and cz-git](https://blog.csdn.net/u013737132/article/details/130191363)
@@ -170,7 +162,6 @@ Execute `pnpm run commit` to invoke interactive git commit and complete the info
 >
 > This measure is taken to ensure the quality of the community and prevent marketing advertising from infiltrating. Thank you for your understanding!
 
-| Official Account | Community |
-|:----:|:----:|
+|                                                    Official Account                                                     |                                           Community                                           |
+| :---------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------: |
 | ![Youlai Tech WeChat Official Account QR Code](https://foruda.gitee.com/images/1687689212187063809/3c69eaee_716974.png) | ![Community QR Code](https://foruda.gitee.com/images/1687689212139273561/6a65ef69_716974.png) |
-

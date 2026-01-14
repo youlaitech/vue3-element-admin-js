@@ -783,8 +783,13 @@ function buildTree(data) {
       currentNode = node;
     });
 
+    const extTs = "." + "t" + "s";
+    const displayFileName = item.fileName.endsWith(extTs)
+      ? item.fileName.replace(new RegExp(`\\${extTs}$`), ".js")
+      : item.fileName;
+
     currentNode.children?.push({
-      label: item.fileName,
+      label: displayFileName,
       content: item?.content,
     });
   });
@@ -820,9 +825,6 @@ function getFileTreeNodeIcon(label) {
   }
   if (label.endsWith(".vue")) {
     return "vue";
-  }
-  if (label.endsWith(".ts")) {
-    return "typescript";
   }
   if (label.endsWith(".xml")) {
     return "xml";

@@ -1,15 +1,14 @@
 {
-  "typescript.tsdk": "./node_modules/typescript/lib",
   "npm.packageManager": "pnpm",
   "editor.tabSize": 2,
-	"editor.formatOnSave": true,
-	"editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.quickSuggestions": {
     "other": true,
     "comments": true,
     "strings": true
   },
-	"editor.codeActionsOnSave": {
+  "editor.codeActionsOnSave": {
     "source.fixAll": "explicit",
     "source.fixAll.eslint": "explicit",
     "source.fixAll.stylelint": "explicit"
@@ -63,9 +62,7 @@
     "**/dist/**": true,
     "**/yarn.lock": true
   },
-  "i18n-ally.localesPaths": [
-    "src/lang/package"
-  ],
+  "i18n-ally.localesPaths": ["src/lang/package"],
   "scss.lint.unknownAtRules": "ignore",
   "i18n-ally.keystyle": "nested"
 }

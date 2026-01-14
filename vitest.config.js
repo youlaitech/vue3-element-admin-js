@@ -12,7 +12,7 @@ export default defineConfig({
     globals: true,
 
     // 测试环境设置文件
-    setupFiles: ["./tests/setup.ts"],
+    setupFiles: ["./tests/setup.js"],
 
     // 覆盖率配置
     coverage: {
@@ -21,7 +21,6 @@ export default defineConfig({
       exclude: [
         "node_modules/",
         "tests/",
-        "**/*.d.ts",
         "**/*.config.*",
         "**/mockData",
         "**/.{idea,git,cache,output,temp}",
@@ -29,7 +28,7 @@ export default defineConfig({
     },
 
     // 测试文件匹配规则
-    include: ["tests/**/*.{test,spec}.{js,ts}"],
+    include: ["tests/**/*.{test,spec}.js"],
 
     // 测试超时时间
     testTimeout: 10000,

@@ -74,7 +74,6 @@ export default defineConfig(({ mode }) => {
         vueTemplate: true,
         // 导入函数类型声明文件路径 (false:关闭自动生成)
         dts: false,
-        // dts: "src/types/auto-imports.d.ts",
       }),
       // 组件自动导入
       Components({
