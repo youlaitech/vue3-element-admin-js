@@ -30,11 +30,18 @@ const GeneratorAPI = {
   },
 
   /** 获取代码生成预览数据 */
-  getPreviewData(tableName, pageType) {
+  getPreviewData(tableName, pageType, type) {
+    const params = {};
+    if (pageType) {
+      params.pageType = pageType;
+    }
+    if (type) {
+      params.type = type;
+    }
     return request({
       url: `${GENERATOR_BASE_URL}/${tableName}/preview`,
       method: "get",
-      params: pageType ? { pageType } : undefined,
+      params: Object.keys(params).length ? params : undefined,
     });
   },
 
@@ -51,11 +58,18 @@ const GeneratorAPI = {
    * @param url
    * @param fileName
    */
-  download(tableName, pageType) {
+  download(tableName, pageType, type) {
+    const params = {};
+    if (pageType) {
+      params.pageType = pageType;
+    }
+    if (type) {
+      params.type = type;
+    }
     return request({
       url: `${GENERATOR_BASE_URL}/${tableName}/download`,
       method: "get",
-      params: pageType ? { pageType } : undefined,
+      params: Object.keys(params).length ? params : undefined,
       responseType: "blob",
     }).then((response) => {
       const contentDisposition = response?.headers?.["content-disposition"];

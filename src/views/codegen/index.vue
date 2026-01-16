@@ -424,6 +424,7 @@ import DictAPI from "@/api/system/dict";
 import MenuAPI from "@/api/system/menu";
 
 const treeData = ref([]);
+const frontendType = "js";
 
 const queryFormRef = ref();
 const queryParams = reactive({
@@ -635,7 +636,7 @@ function handleNextClick() {
         ElMessage.error("表名不能为空");
         return;
       }
-      GeneratorAPI.download(tableName);
+      GeneratorAPI.download(tableName, undefined, frontendType);
     }
   }
 }
@@ -718,7 +719,7 @@ const checkAllSelected = (key, isCheckAllRef) => {
 
 function handlePreview(tableName) {
   treeData.value = [];
-  GeneratorAPI.getPreviewData(tableName)
+  GeneratorAPI.getPreviewData(tableName, undefined, frontendType)
     .then((data) => {
       dialog.title = `代码生成 ${tableName}`;
       const tree = buildTree(data);
