@@ -91,7 +91,7 @@
             </el-button>
 
             <el-button
-              v-hasPerm="['sys:menu:edit']"
+              v-hasPerm="['sys:menu:update']"
               type="primary"
               link
               size="small"
