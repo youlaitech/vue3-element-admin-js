@@ -13,12 +13,13 @@
     <!-- 主内容区 -->
     <div
       class="layout__main"
-      :class="{ hasTagsView: showTagsView, 'layout__main--collapsed': !isSidebarOpen }"
+      :class="{
+        hasTagsView: showTagsView,
+        'layout__main--collapsed': !isSidebarOpen,
+      }"
     >
-      <div class="fixed-header">
-        <LayoutNavbar />
-        <LayoutTagsView v-if="showTagsView" />
-      </div>
+      <LayoutNavbar />
+      <LayoutTagsView v-if="showTagsView" />
       <LayoutMain />
     </div>
   </BaseLayout>
@@ -53,20 +54,19 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
     }
 
     .layout-sidebar {
-      display: flex;
-      flex-direction: column;
+      position: relative;
       height: 100%;
-
-      &:not(.has-logo) {
-        .el-scrollbar {
-          height: 100%;
-        }
-      }
+      background-color: var(--menu-background);
+      transition: width 0.28s;
 
       &.has-logo {
         .el-scrollbar {
-          height: calc(100% - #{$navbar-height});
+          height: calc(100vh - $navbar-height);
         }
+      }
+
+      :deep(.el-menu) {
+        border: none;
       }
     }
   }
@@ -75,6 +75,7 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
     position: relative;
     height: 100%;
     margin-left: $sidebar-width;
+    overflow-y: auto;
     transition: margin-left 0.28s;
 
     &--collapsed {
@@ -87,6 +88,38 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
       z-index: 9;
       transition: width 0.28s;
     }
+  }
+}
+
+/* 移动端样式*/
+.mobile {
+  .layout__sidebar {
+    width: $sidebar-width !important;
+    transition:
+      transform 0.28s,
+      width 0s;
+  }
+
+  &.hideSidebar {
+    .layout__sidebar {
+      transform: translateX(-$sidebar-width);
+    }
+  }
+
+  &.openSidebar {
+    .layout__sidebar {
+      transform: translateX(0);
+    }
+  }
+
+  .layout__main {
+    margin-left: 0 !important;
+  }
+}
+
+.hasTagsView {
+  :deep(.app-main) {
+    height: calc(100vh - $navbar-height - $tags-view-height) !important;
   }
 }
 </style>

@@ -30,7 +30,7 @@ export function useNotice() {
       ...params,
     };
     const page = await NoticeAPI.getMyNoticePage(query);
-    list.value = page.list || [];
+    list.value = page.data || [];
   }
 
   async function read(id) {

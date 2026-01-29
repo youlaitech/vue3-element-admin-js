@@ -7,7 +7,6 @@ defineOptions({
   name: "Other",
   inheritAttrs: false,
 });
-import { useRoute } from "vue-router";
 
 // 获取query参数
 const query = useRoute().query.type;

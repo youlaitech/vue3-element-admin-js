@@ -8,38 +8,49 @@ const contentConfig = {
   indexAction(params) {
     // 模拟发起网络请求获取列表数据
     console.log("indexAction:", params);
+    const list = [
+      {
+        id: 1,
+        username: "root",
+        avatar: "https://foruda.gitee.com/images/1723603502796844527/03cdca2a_716974.gif",
+        percent: 99,
+        price: 10,
+        url: "https://www.baidu.com",
+        icon: "el-icon-setting",
+        gender: 1,
+        status: 1,
+        status2: 1,
+        sort: 99,
+        createTime: 1715647982437,
+      },
+      {
+        id: 2,
+        username: "jerry",
+        avatar: "https://foruda.gitee.com/images/1723603502796844527/03cdca2a_716974.gif",
+        percent: 88,
+        price: 999,
+        url: "https://www.google.com",
+        icon: "el-icon-user",
+        gender: 0,
+        status: 0,
+        status2: 0,
+        sort: 0,
+        createTime: 1715648977426,
+      },
+    ];
+
+    const pageNum = Number(params?.pageNum ?? 1) || 1;
+    const pageSize = Number(params?.pageSize ?? list.length) || list.length;
+    const start = (pageNum - 1) * pageSize;
+    const end = start + pageSize;
+
     return Promise.resolve({
-      total: 2,
-      list: [
-        {
-          id: 1,
-          username: "root",
-          avatar: "https://foruda.gitee.com/images/1723603502796844527/03cdca2a_716974.gif",
-          percent: 99,
-          price: 10,
-          url: "https://www.baidu.com",
-          icon: "el-icon-setting",
-          gender: 1,
-          status: 1,
-          status2: 1,
-          sort: 99,
-          createTime: 1715647982437,
-        },
-        {
-          id: 2,
-          username: "jerry",
-          avatar: "https://foruda.gitee.com/images/1723603502796844527/03cdca2a_716974.gif",
-          percent: 88,
-          price: 999,
-          url: "https://www.google.com",
-          icon: "el-icon-user",
-          gender: 0,
-          status: 0,
-          status2: 0,
-          sort: 0,
-          createTime: 1715648977426,
-        },
-      ],
+      data: list.slice(start, end),
+      page: {
+        pageNum,
+        pageSize,
+        total: list.length,
+      },
     });
   },
   modifyAction(data) {

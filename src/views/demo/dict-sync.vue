@@ -50,48 +50,86 @@
                       <el-option value="danger" label="danger">
                         <el-tag type="danger">danger</el-tag>
                       </el-option>
+                      <el-option value="info" label="info">
+                        <el-tag type="info">info</el-tag>
+                      </el-option>
+                      <el-option value="primary" label="primary">
+                        <el-tag type="primary">primary</el-tag>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                   <el-form-item>
-                    <el-button type="primary" @click="updateDictItem">更新</el-button>
+                    <el-button type="primary" :loading="saving" @click="saveDict">保存</el-button>
+                    <el-button @click="loadMaleDict">重置</el-button>
                   </el-form-item>
                 </el-form>
               </div>
+              <el-empty v-else description="暂无字典数据" />
             </div>
           </el-card>
         </el-col>
 
+        <!-- 卡2: 字典组件展示 -->
         <el-col :span="8">
           <el-card shadow="hover" class="dict-card">
             <template #header>
-              <span>性别字典显示效果</span>
+              <div class="flex justify-between items-center">
+                <span>字典组件展示</span>
+                <el-button type="primary" size="small" @click="refreshDictComponent">
+                  手动刷新
+                </el-button>
+              </div>
             </template>
-            <div>
-              <DictTag v-model="genderValue" code="gender" />
-              <div class="mt-4">
-                <el-select v-model="genderValue" placeholder="选择性别">
-                  <el-option
-                    v-for="item in genderOptions"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
+            <div class="dict-component-demo">
+              <h4 class="mt-4 mb-3">性别组件</h4>
+              <el-radio-group v-model="selectedGender">
+                <el-radio
+                  v-for="item in dictStore.getDictItems('gender')"
+                  :key="item.value"
+                  :value="item.value"
+                >
+                  {{ item.label }}
+                </el-radio>
+              </el-radio-group>
+
+              <h4 class="mt-4 mb-3">性别标签</h4>
+              <div>
+                <el-tag
+                  v-for="item in dictStore.getDictItems('gender')"
+                  :key="item.value"
+                  :type="item.tagType || undefined"
+                  class="mr-2"
+                >
+                  {{ item.label }}
+                </el-tag>
+              </div>
+
+              <div class="mt-4 pt-3 border-top">
+                <div class="text-muted mb-2">已选择： {{ selectedGender }}</div>
+                <div class="text-muted">最后更新： {{ lastUpdateTime }}</div>
               </div>
             </div>
           </el-card>
         </el-col>
 
+        <!-- 卡3: 字典缓存数据 -->
         <el-col :span="8">
           <el-card shadow="hover" class="dict-card">
             <template #header>
-              <span>实时日志</span>
-            </template>
-            <div class="log-container">
-              <div v-for="(log, index) in logs" :key="index" class="log-item">
-                <span class="log-time">{{ log.time }}</span>
-                <span class="log-message">{{ log.message }}</span>
+              <div class="flex justify-between items-center">
+                <span>字典缓存数据</span>
+                <div>
+                  <el-tag v-if="dictCacheStatus" type="success" class="ml-2" size="small">
+                    已缓存
+                  </el-tag>
+                  <el-tag v-else type="danger" class="ml-2" size="small">未缓存</el-tag>
+                </div>
               </div>
+            </template>
+            <div class="cache-content">
+              <pre class="cache-data">{{
+                JSON.stringify(dictStore.getDictItems("gender"), null, 2)
+              }}</pre>
             </div>
           </el-card>
         </el-col>
@@ -101,104 +139,169 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import { setupWebSocket, cleanupWebSocket } from "@/composables/websocket";
 import { useDictStoreHook } from "@/store/modules/dict";
-import DictTag from "@/components/DictTag/index.vue";
+import { useDateFormat } from "@vueuse/core";
+import DictAPI from "@/api/system/dict";
+import { useDictSync } from "@/composables";
 
+// 性别字典编码
+const DICT_CODE = "gender";
+// 男性字典项ID
+const MALE_ITEM_ID = "1";
+
+// 字典store
+const dictStore = useDictStoreHook();
+// 保存状态
+const saving = ref(false);
+// 最后更新时间
+const lastUpdateTime = ref("-");
+// 字典表单数据
 const dictForm = ref(null);
-const genderValue = ref(1);
-const genderOptions = ref([
-  { label: "男", value: 1 },
-  { label: "女", value: 2 },
-]);
-const logs = ref([]);
+// 选中的性别
+const selectedGender = ref("");
 
-// WebSocket状态
-const wsConnected = ref(false);
-const wsStatusText = ref("未连接");
+// 初始化WebSocket
+const dictWebSocket = useDictSync();
 
-// 加载男性别字典数据
-const loadMaleDict = async () => {
-  try {
-    // 这里应该调用API获取字典数据
-    console.log("重新加载男性别字典");
-  } catch (error) {
-    console.error("加载字典失败:", error);
-  }
-};
+// 获取连接状态
+const wsConnected = computed(() => dictWebSocket.isConnected);
 
-// 更新字典项
-const updateDictItem = async () => {
-  try {
-    // 这里应该调用API更新字典
-    console.log("更新字典项:", dictForm.value);
-  } catch (error) {
-    console.error("更新字典失败:", error);
-  }
-};
+// WebSocket连接状态显示文本
+const wsStatusText = computed(() => (wsConnected.value ? "已连接" : "未连接"));
 
-// 添加日志
-const addLog = (message) => {
-  logs.value.unshift({
-    time: new Date().toLocaleTimeString(),
-    message,
-  });
-  if (logs.value.length > 10) {
-    logs.value = logs.value.slice(0, 10);
-  }
-};
+// 保存WebSocket清理函数
+let unregisterCallback = null;
 
-onMounted(() => {
-  // 模拟加载字典数据
-  dictForm.value = {
-    dictCode: "gender_male",
-    label: "男",
-    value: "1",
-    tagType: "success",
-  };
-
-  // 启动WebSocket
-  setupWebSocket();
-  wsConnected.value = true;
-  wsStatusText.value = "已连接";
-  addLog("WebSocket连接成功");
+// 当前选中字典的缓存状态
+const dictCacheStatus = computed(() => {
+  // 检查字典是否在缓存中
+  return dictStore.getDictItems(DICT_CODE).length > 0;
 });
 
+// 设置WebSocket
+const setupWebSocket = () => {
+  // 初始化WebSocket连接
+  dictWebSocket.initialize();
+
+  // 注册字典消息回调
+  unregisterCallback = dictWebSocket.onDictChange((message) => {
+    // 只有当消息是关于性别字典的更新时才处理
+    if (message.dictCode === DICT_CODE) {
+      // 更新最后更新时间
+      lastUpdateTime.value = useDateFormat(new Date(), "YYYY-MM-DD HH:mm:ss").value;
+
+      // 触发字典组件重新加载
+      nextTick(() => {
+        refreshDictComponent();
+      });
+    }
+  });
+};
+
+// 刷新字典组件，强制重新加载字典数据
+const refreshDictComponent = async () => {
+  // 这里重新获取字典数据以触发按需加载
+  await dictStore.loadDictItems(DICT_CODE);
+  ElMessage.success("字典组件已刷新");
+};
+
+// 加载男性字典表单数据
+const loadMaleDict = async () => {
+  // 获取男性字典项表单数据 - 使用接口 /dicts/gender/items/1/form
+  const data = await DictAPI.getDictItemFormData(DICT_CODE, MALE_ITEM_ID);
+  dictForm.value = data;
+};
+
+// 保存字典值
+const saveDict = async () => {
+  if (!dictForm.value) return;
+
+  saving.value = true;
+  try {
+    await DictAPI.updateDictItem(DICT_CODE, MALE_ITEM_ID, dictForm.value);
+
+    // 更新时间
+    lastUpdateTime.value = useDateFormat(new Date(), "YYYY-MM-DD HH:mm:ss").value;
+
+    ElMessage.success("保存成功，后端将通过WebSocket通知所有客户端");
+  } catch (error) {
+    console.error("保存字典项失败", error);
+    ElMessage.error("保存失败");
+  } finally {
+    saving.value = false;
+  }
+};
+
+// 组件挂载时加载性别字典
+onMounted(async () => {
+  await loadMaleDict();
+  // 加载初始字典数据
+  await dictStore.loadDictItems(DICT_CODE);
+  // 初始化选中性别为男
+  selectedGender.value = "1";
+  // 设置WebSocket
+  setupWebSocket();
+});
+
+// 组件卸载时清理WebSocket
 onUnmounted(() => {
-  cleanupWebSocket();
-  wsConnected.value = false;
-  wsStatusText.value = "已断开";
-  addLog("WebSocket连接已断开");
+  unregisterCallback?.();
 });
 </script>
 
 <style scoped>
 .dict-card {
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  overflow: hidden;
+}
+
+.dict-card :deep(.el-card__body) {
+  flex: 1;
+  overflow: auto;
+}
+
+.dict-component-demo {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  padding: 12px;
+}
+
+.cache-content {
+  height: 100%;
+  overflow: hidden;
+}
+
+pre {
+  padding: 8px;
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  background-color: var(--el-fill-color-light);
+  border-radius: 4px;
+}
+
+.cache-data {
+  height: 100%;
+  padding: 8px;
+  overflow-y: auto;
+  font-size: 12px;
+  background-color: var(--el-fill-color-light);
+  border-radius: 4px;
 }
 
 .dict-form {
-  max-width: 300px;
+  margin-bottom: 20px;
 }
 
-.log-container {
-  max-height: 300px;
-  overflow-y: auto;
+.text-muted {
+  font-size: 0.9em;
+  color: var(--el-text-color-secondary);
 }
 
-.log-item {
-  padding: 4px 0;
-  font-size: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.log-time {
-  margin-right: 8px;
-  color: #999;
-}
-
-.log-message {
-  color: #666;
+.border-top {
+  border-top: 1px solid var(--el-border-color-light);
 }
 </style>

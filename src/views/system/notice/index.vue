@@ -1,13 +1,8 @@
 <template>
   <div class="app-container">
+    <!-- 搜索区域 -->
     <div class="filter-section">
-      <el-form
-        ref="queryFormRef"
-        :model="queryParams"
-        :inline="true"
-        label-suffix=":"
-        label-width="auto"
-      >
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-suffix=":">
         <el-form-item label="标题" prop="title">
           <el-input
             v-model="queryParams.title"
@@ -19,9 +14,9 @@
         <el-form-item label="发布状态" prop="publishStatus">
           <el-select
             v-model="queryParams.publishStatus"
-            class="!w-[100px]"
             clearable
             placeholder="全部"
+            style="width: 100px"
           >
             <el-option :value="0" label="未发布" />
             <el-option :value="1" label="已发布" />
@@ -71,13 +66,13 @@
         <el-table-column label="通知标题" prop="title" min-width="200" />
         <el-table-column align="center" label="通知类型" width="150">
           <template #default="scope">
-            <DictLabel v-model="scope.row.type" :code="'notice_type'" />
+            <DictTag v-model="scope.row.type" :code="'notice_type'" />
           </template>
         </el-table-column>
         <el-table-column align="center" label="发布人" prop="publisherName" width="150" />
         <el-table-column align="center" label="通知等级" width="100">
           <template #default="scope">
-            <DictLabel v-model="scope.row.level" code="notice_level" />
+            <DictTag v-model="scope.row.level" code="notice_level" />
           </template>
         </el-table-column>
         <el-table-column align="center" label="通告目标类型" prop="targetType" min-width="100">
@@ -164,7 +159,7 @@
         v-model:total="total"
         v-model:page="queryParams.pageNum"
         v-model:limit="queryParams.pageSize"
-        @pagination="handleQuery()"
+        @pagination="fetchData()"
       />
     </el-card>
 
@@ -182,10 +177,10 @@
         </el-form-item>
 
         <el-form-item label="通知类型" prop="type">
-          <Dict v-model="formData.type" code="notice_type" />
+          <DictSelect v-model="formData.type" code="notice_type" />
         </el-form-item>
         <el-form-item label="通知等级" prop="level">
-          <Dict v-model="formData.level" code="notice_level" />
+          <DictSelect v-model="formData.level" code="notice_level" />
         </el-form-item>
         <el-form-item label="目标类型" prop="targetType">
           <el-radio-group v-model="formData.targetType">
@@ -193,8 +188,8 @@
             <el-radio :value="2">指定</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="formData.targetType == 2" label="指定用户" prop="targetUserIds">
-          <el-select v-model="formData.targetUserIds" multiple search placeholder="请选择指定用户">
+        <el-form-item v-if="formData.targetType == 2" label="指定用户" prop="targetUsers">
+          <el-select v-model="formData.targetUsers" multiple search placeholder="请选择指定用户">
             <el-option
               v-for="item in userOptions"
               :key="item.value"
@@ -321,11 +316,17 @@ const currentNotice = ref({});
 
 // 查询通知公告
 function handleQuery() {
+  queryParams.pageNum = 1;
+  fetchData();
+}
+
+//发送请求接口
+function fetchData() {
   loading.value = true;
   NoticeAPI.getPage(queryParams)
-    .then((data) => {
-      pageData.value = data.data;
-      total.value = data.page?.total ?? 0;
+    .then((res) => {
+      pageData.value = res.data;
+      total.value = res.page?.total ?? 0;
     })
     .finally(() => {
       loading.value = false;
@@ -354,10 +355,14 @@ function handleOpenDialog(id) {
   if (id) {
     dialog.title = "修改公告";
     NoticeAPI.getFormData(id).then((data) => {
-      Object.assign(formData, data);
+      const normalized = {
+        ...data,
+        targetUsers: normalizeTargetUsers(data?.targetUsers),
+      };
+      Object.assign(formData, normalized);
     });
   } else {
-    Object.assign(formData, { level: 0, targetType: 0 });
+    Object.assign(formData, { level: "L", targetType: 1, targetUsers: [] });
     dialog.title = "新增公告";
   }
 }
@@ -383,6 +388,9 @@ function handleSubmit() {
   dataFormRef.value.validate((valid) => {
     if (valid) {
       loading.value = true;
+      if (formData.targetType !== 2) {
+        formData.targetUsers = [];
+      }
       const id = formData.id;
       if (id) {
         NoticeAPI.update(id, formData)
@@ -411,6 +419,25 @@ function resetForm() {
   dataFormRef.value.clearValidate();
   formData.id = undefined;
   formData.targetType = 1;
+  formData.targetUsers = [];
+}
+
+function normalizeTargetUsers(value) {
+  if (!value) {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : value.split(",").filter(Boolean);
+    } catch {
+      return value.split(",").filter(Boolean);
+    }
+  }
+  return [];
 }
 
 // 关闭通知公告弹窗

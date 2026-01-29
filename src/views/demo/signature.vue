@@ -26,6 +26,7 @@ import FileAPI from "@/api/file";
 const imgUrl = ref("");
 const canvas = ref();
 let ctx;
+let strokeColor = "#000";
 
 // 正在绘制中，用来控制 move 和 end 事件
 let painting = false;
@@ -78,6 +79,8 @@ const onEventEnd = () => {
 
 onMounted(() => {
   ctx = canvas.value.getContext("2d");
+  const rootStyle = getComputedStyle(document.documentElement);
+  strokeColor = rootStyle.getPropertyValue("--el-text-color-primary").trim() || "#000";
 });
 const handleToFile = async () => {
   if (isCanvasBlank(canvas.value)) {
@@ -142,7 +145,7 @@ function paint(startX, startY, endX, endY, ctx) {
   ctx.beginPath();
   ctx.globalAlpha = 1;
   ctx.lineWidth = 2;
-  ctx.strokeStyle = "#000";
+  ctx.strokeStyle = strokeColor;
   ctx.moveTo(startX, startY);
   ctx.lineTo(endX, endY);
   ctx.closePath();
@@ -154,10 +157,10 @@ function paint(startX, startY, endX, endY, ctx) {
   width: 100%;
   height: 100%;
   padding: 0 20px;
-  background-color: #fff;
+  background-color: var(--el-bg-color);
 
   canvas {
-    border: 1px solid #e6e6e6;
+    border: 1px solid var(--el-border-color);
   }
 
   header {

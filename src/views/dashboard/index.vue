@@ -447,9 +447,11 @@ const visitStatsData = ref({
   totalPvCount: 0,
 });
 
+const toNumber = (value) => Number(value ?? 0);
+
 // 数字过渡动画
 const transitionUvCount = useTransition(
-  computed(() => visitStatsData.value.todayUvCount),
+  computed(() => toNumber(visitStatsData.value.todayUvCount)),
   {
     duration: 1000,
     transition: [0.25, 0.1, 0.25, 1.0], // CSS cubic-bezier
@@ -457,7 +459,7 @@ const transitionUvCount = useTransition(
 );
 
 const transitionTotalUvCount = useTransition(
-  computed(() => visitStatsData.value.totalUvCount),
+  computed(() => toNumber(visitStatsData.value.totalUvCount)),
   {
     duration: 1200,
     transition: [0.25, 0.1, 0.25, 1.0],
@@ -465,7 +467,7 @@ const transitionTotalUvCount = useTransition(
 );
 
 const transitionPvCount = useTransition(
-  computed(() => visitStatsData.value.todayPvCount),
+  computed(() => toNumber(visitStatsData.value.todayPvCount)),
   {
     duration: 1000,
     transition: [0.25, 0.1, 0.25, 1.0],
@@ -473,7 +475,7 @@ const transitionPvCount = useTransition(
 );
 
 const transitionTotalPvCount = useTransition(
-  computed(() => visitStatsData.value.totalPvCount),
+  computed(() => toNumber(visitStatsData.value.totalPvCount)),
   {
     duration: 1200,
     transition: [0.25, 0.1, 0.25, 1.0],
@@ -482,22 +484,22 @@ const transitionTotalPvCount = useTransition(
 
 // 过渡结果可能是 Ref<number>，为模板中使用做类型和格式处理（避免 TS 报错）
 const displayTransitionUvCount = computed(() =>
-  Math.round(Number(transitionUvCount.value ?? transitionUvCount))
+  Math.round(Number(transitionUvCount?.value ?? transitionUvCount))
 );
 const displayTransitionTotalUvCount = computed(() =>
-  Math.round(Number(transitionTotalUvCount.value ?? transitionTotalUvCount))
+  Math.round(Number(transitionTotalUvCount?.value ?? transitionTotalUvCount))
 );
 const displayTransitionPvCount = computed(() =>
-  Math.round(Number(transitionPvCount.value ?? transitionPvCount))
+  Math.round(Number(transitionPvCount?.value ?? transitionPvCount))
 );
 const displayTransitionTotalPvCount = computed(() =>
-  Math.round(Number(transitionTotalPvCount.value ?? transitionTotalPvCount))
+  Math.round(Number(transitionTotalPvCount?.value ?? transitionTotalPvCount))
 );
 
 // 访问趋势日期范围（单位：天）
 const visitTrendDateRange = ref(7);
 // 访问趋势图表配置
-const visitTrendChartOptions = ref();
+const visitTrendChartOptions = ref({});
 
 /**
  * 获取访客统计数据
@@ -540,7 +542,7 @@ const updateVisitTrendChartOptions = (data) => {
       trigger: "axis",
     },
     legend: {
-      data: ["浏览量(PV)", "访客量(UV)"],
+      data: ["浏览量(PV)", "访客量UV)"],
       bottom: 0,
     },
     grid: {
@@ -579,7 +581,7 @@ const updateVisitTrendChartOptions = (data) => {
         },
       },
       {
-        name: "访客量(UV)",
+        name: "访客量UV)",
         type: "line",
         data: data.ipList,
         areaStyle: {

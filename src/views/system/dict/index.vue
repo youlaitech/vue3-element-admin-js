@@ -1,8 +1,9 @@
 <!-- 字典 -->
 <template>
   <div class="app-container">
+    <!-- 搜索区域 -->
     <div class="filter-section">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="关键字" prop="keywords">
           <el-input
             v-model="queryParams.keywords"
@@ -12,8 +13,8 @@
           />
         </el-form-item>
         <el-form-item class="search-buttons">
-          <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
-          <el-button icon="refresh" @click="handleResetQuery()">重置</el-button>
+          <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
+          <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -87,7 +88,7 @@
         v-model:total="total"
         v-model:page="queryParams.pageNum"
         v-model:limit="queryParams.pageSize"
-        @pagination="handleQuery"
+        @pagination="fetchData"
       />
     </el-card>
 
@@ -98,33 +99,31 @@
       width="500px"
       @close="handleCloseDialog"
     >
-      <el-form ref="dataFormRef" :model="formData" :rules="computedRules" label-width="100px">
-        <el-card shadow="never">
-          <el-form-item label="字典名称" prop="name">
-            <el-input v-model="formData.name" placeholder="请输入字典名称" />
-          </el-form-item>
+      <el-form ref="dataFormRef" :model="formData" :rules="computedRules" label-width="80px">
+        <el-form-item label="字典名称" prop="name">
+          <el-input v-model="formData.name" placeholder="请输入字典名称" />
+        </el-form-item>
 
-          <el-form-item label="字典编码" prop="dictCode">
-            <el-input v-model="formData.dictCode" placeholder="请输入字典编码" />
-          </el-form-item>
+        <el-form-item label="字典编码" prop="dictCode">
+          <el-input v-model="formData.dictCode" placeholder="请输入字典编码" />
+        </el-form-item>
 
-          <el-form-item label="状态">
-            <el-radio-group v-model="formData.status">
-              <el-radio :value="1">启用</el-radio>
-              <el-radio :value="0">禁用</el-radio>
-            </el-radio-group>
-          </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="formData.status">
+            <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
 
-          <el-form-item label="备注">
-            <el-input v-model="formData.remark" type="textarea" placeholder="请输入备注" />
-          </el-form-item>
-        </el-card>
+        <el-form-item label="备注">
+          <el-input v-model="formData.remark" type="textarea" placeholder="请输入备注" />
+        </el-form-item>
       </el-form>
 
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmitClick">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
+          <el-button @click="handleCloseDialog">取消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -134,7 +133,7 @@
 <script setup>
 defineOptions({
   name: "Dict",
-  inherititems: false,
+  inheritAttrs: false,
 });
 
 import DictAPI from "@/api/system/dict";
@@ -169,24 +168,30 @@ const computedRules = computed(() => {
   return rules;
 });
 
-// 查询
-function handleQuery() {
+// 获取数据
+function fetchData() {
   loading.value = true;
   DictAPI.getPage(queryParams)
-    .then((data) => {
-      tableData.value = data.data;
-      total.value = data.page?.total ?? 0;
+    .then((res) => {
+      tableData.value = res.data;
+      total.value = res.page?.total ?? 0;
     })
     .finally(() => {
       loading.value = false;
     });
 }
 
+// 查询（重置页码后获取数据）
+function handleQuery() {
+  queryParams.pageNum = 1;
+  fetchData();
+}
+
 // 重置查询
 function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.pageNum = 1;
-  handleQuery();
+  fetchData();
 }
 
 // 行选择
@@ -203,7 +208,7 @@ function handleAddClick() {
 // 编辑字典
 function handleEditClick(id) {
   dialog.visible = true;
-  dialog.title = "编辑字典";
+  dialog.title = "修改字典";
   DictAPI.getFormData(id).then((data) => {
     Object.assign(formData, data);
   });
@@ -211,21 +216,26 @@ function handleEditClick(id) {
 
 // 提交表单
 function handleSubmitClick() {
-  dataFormRef.value.validate((valid) => {
-    if (valid) {
+  dataFormRef.value.validate((isValid) => {
+    if (isValid) {
+      loading.value = true;
       const id = formData.id;
       if (id) {
-        DictAPI.update(id, formData).then(() => {
-          ElMessage.success("修改成功");
-          handleCloseDialog();
-          handleResetQuery();
-        });
+        DictAPI.update(id, formData)
+          .then(() => {
+            ElMessage.success("修改成功");
+            handleCloseDialog();
+            handleQuery();
+          })
+          .finally(() => (loading.value = false));
       } else {
-        DictAPI.create(formData).then(() => {
-          ElMessage.success("新增成功");
-          handleCloseDialog();
-          handleResetQuery();
-        });
+        DictAPI.create(formData)
+          .then(() => {
+            ElMessage.success("新增成功");
+            handleCloseDialog();
+            handleQuery();
+          })
+          .finally(() => (loading.value = false));
       }
     }
   });
@@ -234,8 +244,10 @@ function handleSubmitClick() {
 // 关闭弹窗
 function handleCloseDialog() {
   dialog.visible = false;
+
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
+
   formData.id = undefined;
 }
 
@@ -267,7 +279,7 @@ function handleDelete(id) {
 function handleOpenDictData(row) {
   router.push({
     name: "DictItem",
-    query: { dictCode: row.dictCode, title: "【" + row.name + "】字典数据" },
+    query: { dictCode: row.dictCode, title: `【${row.name}】字典数据` },
   });
 }
 

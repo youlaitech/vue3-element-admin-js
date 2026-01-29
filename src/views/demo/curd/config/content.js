@@ -2,7 +2,7 @@ import UserAPI from "@/api/system/user";
 import RoleAPI from "@/api/system/role";
 
 const contentConfig = {
-  pageName: "sys:user",
+  permPrefix: "sys:user", // 不写不进行按钮权限校验
   table: {
     border: true,
     highlightCurrentRow: true,
@@ -41,10 +41,9 @@ const contentConfig = {
     "export",
     {
       name: "custom1",
-      icon: "plus",
       text: "自定义1",
-      auth: "import",
-      type: "info",
+      perm: "add",
+      attrs: { icon: "plus", color: "#626AEF" },
     },
   ],
   defaultToolbar: ["refresh", "filter", "imports", "exports", "search"],
@@ -103,15 +102,21 @@ const contentConfig = {
       templet: "tool",
       operat: [
         {
-          icon: "Document",
           name: "detail",
           text: "详情",
+          attrs: { icon: "Document", type: "primary" },
         },
         {
           name: "reset_pwd",
-          auth: "password:reset",
-          icon: "refresh-left",
           text: "重置密码",
+          // perm: "password-reset",
+          attrs: {
+            icon: "refresh-left",
+            style: {
+              "--el-button-text-color": "#626AEF",
+              "--el-button-hover-link-text-color": "#9197f4",
+            },
+          },
         },
         "edit",
         "delete",

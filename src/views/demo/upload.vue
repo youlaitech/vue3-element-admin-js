@@ -7,7 +7,7 @@
       target="_blank"
       class="mb-10"
     >
-      示例源码 请点击>>>>
+      示例源码 请点击>>>
     </el-link>
 
     <el-form>

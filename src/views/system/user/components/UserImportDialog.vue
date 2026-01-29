@@ -10,12 +10,11 @@
       <el-scrollbar max-height="60vh">
         <el-form
           ref="importFormRef"
-          label-width="auto"
           style="padding-right: var(--el-dialog-padding-primary)"
           :model="importFormData"
           :rules="importFormRules"
         >
-          <el-form-item label="文件名" prop="files">
+          <el-form-item label="文件" prop="files">
             <el-upload
               ref="uploadRef"
               v-model:file-list="importFormData.files"
@@ -33,11 +32,11 @@
               </div>
               <template #tip>
                 <div class="el-upload__tip">
-                  格式为*.xlsx / *.xls，文件不超过一个
+                  格式为 *.xlsx / *.xls，文件不超过1M
                   <el-link
                     type="primary"
                     icon="download"
-                    :underline="false"
+                    underline="never"
                     @click="handleDownloadTemplate"
                   >
                     下载模板
@@ -58,9 +57,9 @@
             :disabled="importFormData.files.length === 0"
             @click="handleUpload"
           >
-            确 定
+            确定
           </el-button>
-          <el-button @click="handleClose">取 消</el-button>
+          <el-button @click="handleClose">取消</el-button>
         </div>
       </template>
     </el-dialog>

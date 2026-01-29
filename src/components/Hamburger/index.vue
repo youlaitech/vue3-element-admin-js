@@ -30,6 +30,9 @@ const hamburgerClass = computed(() => {
   ) {
     return "hamburger--white";
   }
+
+  // 默认返回空字符串
+  return "";
 });
 
 function toggleClick() {

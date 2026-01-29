@@ -1,4 +1,3 @@
-<!-- 部门树 -->
 <template>
   <el-card shadow="never">
     <el-input v-model="deptName" placeholder="部门名称" clearable>
@@ -22,6 +21,7 @@
 
 <script setup>
 import DeptAPI from "@/api/system/dept";
+
 const props = defineProps({
   modelValue: {
     type: [String, Number],
@@ -29,9 +29,9 @@ const props = defineProps({
   },
 });
 
-const deptList = ref(); // 部门列表
-const deptTreeRef = ref(); // 部门树
-const deptName = ref(); // 部门名称
+const deptList = ref();
+const deptTreeRef = ref();
+const deptName = ref();
 
 const emits = defineEmits(["node-click"]);
 
@@ -39,10 +39,10 @@ const deptId = useVModel(props, "modelValue", emits);
 
 watchEffect(
   () => {
-    deptTreeRef.value.filter(deptName.value);
+    deptTreeRef.value?.filter(deptName.value);
   },
   {
-    flush: "post", // watchEffect会在DOM挂载或者更新之前就会触发，此属性控制在DOM元素更新后运行
+    flush: "post",
   }
 );
 

@@ -1,7 +1,6 @@
 <!-- 单图上传组件 -->
 <template>
   <el-upload
-    v-model="modelValue"
     class="single-upload"
     list-type="picture-card"
     :show-file-list="false"
@@ -12,13 +11,22 @@
     :on-error="onError"
   >
     <template #default>
-      <el-image v-if="modelValue" :src="modelValue" />
-      <el-icon v-if="modelValue" class="single-upload__delete-btn" @click.stop="handleDelete">
-        <CircleCloseFilled />
-      </el-icon>
-      <el-icon v-else class="single-upload__add-btn">
-        <Plus />
-      </el-icon>
+      <template v-if="modelValue">
+        <el-image
+          class="single-upload__image"
+          :src="modelValue"
+          :preview-src-list="[modelValue]"
+          @click.stop="handlePreview"
+        />
+        <el-icon class="single-upload__delete-btn" @click.stop="handleDelete">
+          <CircleCloseFilled />
+        </el-icon>
+      </template>
+      <template v-else>
+        <el-icon>
+          <Plus />
+        </el-icon>
+      </template>
     </template>
   </el-upload>
 </template>
@@ -138,6 +146,13 @@ function handleUpload(options) {
 }
 
 /**
+ * 预览图片
+ */
+function handlePreview() {
+  console.log("预览图片,停止冒泡");
+}
+
+/**
  * 删除图片
  */
 function handleDelete() {
@@ -165,21 +180,14 @@ const onError = (error) => {
 
 <style scoped lang="scss">
 :deep(.el-upload--picture-card) {
-  /*  width: var(--el-upload-picture-card-size);
-  height: var(--el-upload-picture-card-size); */
-  width: v-bind("props.style.width");
-  height: v-bind("props.style.height");
+  position: relative;
+  width: v-bind("props.style.width ?? '150px'");
+  height: v-bind("props.style.height ?? '150px'");
 }
 
 .single-upload {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  border: 1px var(--el-border-color) solid;
-  border-radius: 5px;
-
-  &:hover {
-    border-color: var(--el-color-primary);
+  &__image {
+    border-radius: 6px;
   }
 
   &__delete-btn {
@@ -189,7 +197,7 @@ const onError = (error) => {
     font-size: 16px;
     color: #ff7901;
     cursor: pointer;
-    background: #fff;
+    background: var(--el-bg-color);
     border-radius: 100%;
 
     :hover {

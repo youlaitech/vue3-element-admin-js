@@ -6,7 +6,7 @@
         <el-card class="user-card">
           <div class="user-info">
             <div class="avatar-wrapper">
-              <el-avatar :src="userProfile.avatar" :size="100" />
+              <el-avatar :src="userStore.userInfo.avatar" :size="100" />
               <el-button
                 type="info"
                 class="avatar-edit-btn"
@@ -174,7 +174,7 @@
           <el-input v-model="userProfileForm.nickname" />
         </el-form-item>
         <el-form-item label="性别">
-          <Dict v-model="userProfileForm.gender" code="gender" />
+          <DictSelect v-model="userProfileForm.gender" code="gender" />
         </el-form-item>
       </el-form>
 
@@ -325,24 +325,17 @@ const emailTimer = ref();
 
 // 密码修改表单校验规则
 const passwordChangeRules = {
-  oldPassword: [
-    { required: true, message: "请输入原密码", trigger: "blur" },
-    { min: 6, message: "密码长度不能小于6位", trigger: "blur" },
-  ],
-  newPassword: [
-    { required: true, message: "请输入新密码", trigger: "blur" },
-    { min: 6, message: "密码长度不能小于6位", trigger: "blur" },
-  ],
+  oldPassword: [{ required: true, message: "请输入原密码", trigger: "blur" }],
+  newPassword: [{ required: true, message: "请输入新密码", trigger: "blur" }],
   confirmPassword: [
-    { required: true, message: "请确认新密码", trigger: "blur" },
-    { min: 6, message: "密码长度不能小于6位", trigger: "blur" },
+    { required: true, message: "请再次输入新密码", trigger: "blur" },
     {
       validator: (rule, value, callback) => {
         if (value !== passwordChangeForm.newPassword) {
           callback(new Error("两次输入的密码不一致"));
-        } else {
-          callback();
+          return;
         }
+        callback();
       },
       trigger: "blur",
     },
@@ -413,19 +406,16 @@ function handleOpenDialog(type) {
 
   switch (type) {
     case DialogType.ACCOUNT:
-      dialog.title = "修改账号资料";
+      dialog.title = "账号资料";
       userProfileForm.nickname = userProfile.value.nickname;
       userProfileForm.avatar = userProfile.value.avatar;
       userProfileForm.gender = userProfile.value.gender;
       break;
     case DialogType.PASSWORD:
       dialog.title = "修改密码";
-      passwordChangeForm.oldPassword = "";
-      passwordChangeForm.newPassword = "";
-      passwordChangeForm.confirmPassword = "";
       break;
     case DialogType.MOBILE:
-      dialog.title = userProfile.value.mobile ? "更换手机号码" : "绑定手机号码";
+      dialog.title = userProfile.value.mobile ? "更换手机号" : "绑定手机号";
       mobileUpdateForm.mobile = "";
       mobileUpdateForm.code = "";
       mobileUpdateForm.password = "";
@@ -485,7 +475,6 @@ async function handleSubmit() {
       if (!valid) return;
 
       await UserAPI.updateProfile(userProfileForm);
-      userStore.userInfo.nickname = userProfileForm.nickname;
       ElMessage.success("账号资料修改成功");
       dialog.visible = false;
       await loadUserProfile();
@@ -514,7 +503,7 @@ async function handleSubmit() {
       await loadUserProfile();
     }
   } catch (error) {
-    console.error("提交失败:", error);
+    // ignore
   }
 }
 
@@ -534,7 +523,7 @@ function handleCancel() {
 // 发送手机验证码
 function handleSendMobileCode() {
   if (!mobileUpdateForm.mobile) {
-    ElMessage.warning("请输入手机号码");
+    ElMessage.error("请输入手机号");
     return;
   }
   const reg = /^1[3-9]\d{9}$/;
@@ -543,17 +532,13 @@ function handleSendMobileCode() {
     return;
   }
   UserAPI.sendMobileCode(mobileUpdateForm.mobile).then(() => {
-    ElMessage.success("验证码已发送");
+    ElMessage.success("验证码发送成功");
     mobileCountdown.value = 60;
-    if (mobileTimer.value) {
-      clearInterval(mobileTimer.value);
-    }
     mobileTimer.value = setInterval(() => {
       if (mobileCountdown.value > 0) {
         mobileCountdown.value -= 1;
       } else {
         clearInterval(mobileTimer.value);
-        mobileTimer.value = undefined;
       }
     }, 1000);
   });
@@ -562,7 +547,7 @@ function handleSendMobileCode() {
 // 发送邮箱验证码
 function handleSendEmailCode() {
   if (!emailUpdateForm.email) {
-    ElMessage.warning("请输入邮箱");
+    ElMessage.error("请输入邮箱");
     return;
   }
   const reg = /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/;
@@ -571,17 +556,13 @@ function handleSendEmailCode() {
     return;
   }
   UserAPI.sendEmailCode(emailUpdateForm.email).then(() => {
-    ElMessage.success("验证码已发送");
+    ElMessage.success("验证码发送成功");
     emailCountdown.value = 60;
-    if (emailTimer.value) {
-      clearInterval(emailTimer.value);
-    }
     emailTimer.value = setInterval(() => {
       if (emailCountdown.value > 0) {
         emailCountdown.value -= 1;
       } else {
         clearInterval(emailTimer.value);
-        emailTimer.value = undefined;
       }
     }, 1000);
   });
@@ -594,20 +575,19 @@ function triggerFileUpload() {
 
 // 处理文件上传
 async function handleFileChange(event) {
-  const file = event.target?.files?.[0];
-  if (!file) return;
-
-  try {
-    const data = await FileAPI.uploadFile(file);
-    await UserAPI.updateProfile({
-      avatar: data.url,
-    });
-
-    userStore.userInfo.avatar = data.url;
-    ElMessage.success("头像更新成功");
-    await loadUserProfile();
-  } catch (error) {
-    console.error("上传失败:", error);
+  const target = event.target;
+  const file = target?.files?.[0];
+  if (file) {
+    try {
+      const data = await FileAPI.uploadFile(file);
+      await UserAPI.updateProfile({
+        avatar: data.url,
+      });
+      userStore.userInfo.avatar = data.url;
+    } catch (error) {
+      console.error("头像上传失败：" + error);
+      ElMessage.error("头像上传失败");
+    }
   }
 }
 

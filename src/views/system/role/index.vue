@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
+    <!-- 搜索区域 -->
     <div class="filter-section">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item prop="keywords" label="关键字">
           <el-input
             v-model="queryParams.keywords"
@@ -63,7 +64,7 @@
               size="small"
               link
               icon="position"
-              @click="handleOpenAssignPermDialog(scope.row)"
+              @click="openRolePermissionAssignment(scope.row)"
             >
               分配权限
             </el-button>
@@ -94,7 +95,7 @@
         v-model:total="total"
         v-model:page="queryParams.pageNum"
         v-model:limit="queryParams.pageSize"
-        @pagination="handleQuery"
+        @pagination="fetchData"
       />
     </el-card>
 
@@ -116,10 +117,10 @@
 
         <el-form-item label="数据权限" prop="dataScope">
           <el-select v-model="formData.dataScope">
-            <el-option :key="0" label="全部数据" :value="0" />
-            <el-option :key="1" label="部门及子部门数据" :value="1" />
-            <el-option :key="2" label="本部门数据" :value="2" />
-            <el-option :key="3" label="本人数据" :value="3" />
+            <el-option :key="1" label="全部数据" :value="1" />
+            <el-option :key="2" label="部门及子部门数据" :value="2" />
+            <el-option :key="3" label="本部门数据" :value="3" />
+            <el-option :key="4" label="本人数据" :value="4" />
           </el-select>
         </el-form-item>
 
@@ -142,8 +143,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确定</el-button>
+          <el-button @click="handleCloseDialog">取消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -204,9 +205,9 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button v-hasPerm="'sys:role:assign'" type="primary" @click="handleAssignPermSubmit">
-            确 定
+            确定
           </el-button>
-          <el-button @click="assignPermDialogVisible = false">取 消</el-button>
+          <el-button @click="assignPermDialogVisible = false">取消</el-button>
         </div>
       </template>
     </el-drawer>
@@ -275,24 +276,30 @@ const isExpanded = ref(true);
 
 const parentChildLinked = ref(true);
 
-// 查询
-function handleQuery() {
+// 获取数据
+function fetchData() {
   loading.value = true;
   RoleAPI.getPage(queryParams)
-    .then((data) => {
-      roleList.value = data.data;
-      total.value = data.page?.total ?? 0;
+    .then((res) => {
+      roleList.value = res.data;
+      total.value = res.page?.total ?? 0;
     })
     .finally(() => {
       loading.value = false;
     });
 }
 
+// 查询（重置页码后获取数据）
+function handleQuery() {
+  queryParams.pageNum = 1;
+  fetchData();
+}
+
 // 重置查询
 function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.pageNum = 1;
-  handleQuery();
+  fetchData();
 }
 
 // 行复选框选中
@@ -381,7 +388,7 @@ function handleDelete(roleId) {
 }
 
 // 打开分配菜单权限弹窗
-async function handleOpenAssignPermDialog(row) {
+async function openRolePermissionAssignment(row) {
   const roleId = row.id;
   if (roleId) {
     assignPermDialogVisible.value = true;

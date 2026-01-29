@@ -1,7 +1,8 @@
 import UserAPI from "@/api/system/user";
+import { deptArr, roleArr } from "./options";
 
 const modalConfig = {
-  pageName: "sys:user",
+  permPrefix: "sys:user",
   dialog: {
     title: "新增用户",
     width: 800,
@@ -44,11 +45,11 @@ const modalConfig = {
     {
       label: "所属部门",
       prop: "deptId",
-      rules: [{ required: true, message: "所属部门不能为空", trigger: "blur" }],
+      rules: [{ required: true, message: "所属部门不能为空", trigger: "change" }],
       type: "tree-select",
       attrs: {
         placeholder: "请选择所属部门",
-        data: [],
+        data: deptArr,
         filterable: true,
         "check-strictly": true,
         "render-after-expand": false,
@@ -59,17 +60,18 @@ const modalConfig = {
       label: "性别",
       prop: "gender",
       initialValue: 1,
+      attrs: { style: { width: "100%" } },
     },
     {
       label: "角色",
       prop: "roleIds",
-      rules: [{ required: true, message: "用户角色不能为空", trigger: "blur" }],
+      rules: [{ required: true, message: "用户角色不能为空", trigger: "change" }],
       type: "select",
       attrs: {
         placeholder: "请选择",
         multiple: true,
       },
-      options: [],
+      options: roleArr,
       initialValue: [],
     },
     {
@@ -113,6 +115,12 @@ const modalConfig = {
         { label: "禁用", value: 0 },
       ],
       initialValue: 1,
+    },
+    {
+      type: "custom",
+      label: "二级弹窗",
+      prop: "openModal",
+      slotName: "openModal",
     },
   ],
 };

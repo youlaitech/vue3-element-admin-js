@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
+    <!-- 搜索区域 -->
     <div class="filter-section">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="关键字" prop="keywords">
           <el-input
             v-model="queryParams.keywords"
@@ -11,7 +12,7 @@
         </el-form-item>
 
         <el-form-item label="部门状态" prop="status">
-          <el-select v-model="queryParams.status" placeholder="全部" clearable class="!w-[100px]">
+          <el-select v-model="queryParams.status" placeholder="全部" clearable style="width: 100px">
             <el-option :value="1" label="正常" />
             <el-option :value="0" label="禁用" />
           </el-select>
@@ -29,7 +30,7 @@
       <div class="table-section__toolbar">
         <div class="table-section__toolbar--actions">
           <el-button
-            v-hasPerm="['sys:dept:add']"
+            v-hasPerm="['sys:dept:create']"
             type="success"
             icon="plus"
             @click="handleOpenDialog()"
@@ -72,7 +73,7 @@
         <el-table-column label="操作" fixed="right" align="left" width="200">
           <template #default="scope">
             <el-button
-              v-hasPerm="['sys:dept:add']"
+              v-hasPerm="['sys:dept:create']"
               type="primary"
               link
               size="small"
@@ -82,7 +83,7 @@
               新增
             </el-button>
             <el-button
-              v-hasPerm="['sys:dept:edit']"
+              v-hasPerm="['sys:dept:update']"
               type="primary"
               link
               size="small"
@@ -147,8 +148,8 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确定</el-button>
+          <el-button @click="handleCloseDialog">取消</el-button>
         </div>
       </template>
     </el-dialog>

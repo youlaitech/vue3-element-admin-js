@@ -19,11 +19,7 @@
           >
             <el-menu-item v-for="item in topMenuItems" :key="item.path" :index="item.path">
               <template v-if="item.meta">
-                <div
-                  v-if="item.meta.icon"
-                  :class="`i-svg:${item.meta.icon}`"
-                  class="mr-1 w-18px h-18px"
-                />
+                <MenuIcon :icon="item.meta.icon" />
                 <span v-if="item.meta.title" class="ml-1">
                   {{ translateRouteTitle(item.meta.title) }}
                 </span>
@@ -66,13 +62,7 @@
       </div>
 
       <!-- 主内容区 -->
-      <div
-        class="layout__main"
-        :class="{
-          hasTagsView: showTagsView,
-          'layout__main--collapsed': !isSidebarOpen,
-        }"
-      >
+      <div :class="{ hasTagsView: showTagsView }" class="layout__main">
         <LayoutTagsView v-if="showTagsView" />
         <LayoutMain />
       </div>
@@ -88,6 +78,7 @@ import { useAppStore, usePermissionStore, useSettingsStore } from "@/store";
 import { isExternal } from "@/utils/index";
 import { translateRouteTitle } from "@/lang/utils";
 import { SidebarColor } from "@/enums/settings";
+import { ElIcon } from "element-plus";
 import BaseLayout from "./BaseLayout.vue";
 import LayoutLogo from "./components/LayoutLogo.vue";
 import LayoutTagsView from "./components/LayoutTagsView.vue";
@@ -96,6 +87,29 @@ import LayoutToolbar from "./components/LayoutToolbar.vue";
 import LayoutSidebarItem from "./components/LayoutSidebarItem.vue";
 import Hamburger from "@/components/Hamburger/index.vue";
 import variables from "@/styles/variables.module.scss";
+
+// 菜单图标渲染组件
+const MenuIcon = defineComponent({
+  props: { icon: String },
+  setup(props) {
+    const isElIcon = computed(() => props.icon?.startsWith("el-icon"));
+    const iconName = computed(() => props.icon?.replace("el-icon-", ""));
+
+    return () => {
+      if (!props.icon) {
+        return h("div", { class: "i-svg:menu" });
+      }
+
+      // Element Plus 图标
+      if (isElIcon.value) {
+        return h(ElIcon, null, () => h(resolveComponent(iconName.value)));
+      }
+
+      // SVG 图标
+      return h("div", { class: `i-svg:${props.icon}` });
+    };
+  },
+});
 
 const route = useRoute();
 const router = useRouter();
@@ -143,7 +157,7 @@ const activeSideMenuPath = computed(() => {
 
 function resolvePath(routePath) {
   if (isExternal(routePath)) return routePath;
-  if (routePath.startsWith("/")) return `${activeTopMenuPath.value}${routePath}`;
+  if (routePath.startsWith("/")) return activeTopMenuPath.value + routePath;
   return `${activeTopMenuPath.value}/${routePath}`;
 }
 
@@ -156,26 +170,16 @@ function navigateToFirstMenu(menus) {
   const [first] = menus;
   if (first.children?.length) {
     navigateToFirstMenu(first.children);
-    return;
-  }
-  if (first.name) {
+  } else if (first.name) {
     router.push({
       name: first.name,
       query: typeof first.meta?.params === "object" ? first.meta.params : undefined,
     });
-    return;
-  }
-  if (first.path) {
-    router.push(resolvePath(first.path));
   }
 }
 
 function handleTopMenuSelect(menuPath) {
   if (menuPath === activeTopMenuPath.value) return;
-  if (isExternal(menuPath)) {
-    window.open(menuPath, "_blank");
-    return;
-  }
 
   appStore.activeTopMenu(menuPath);
   permissionStore.setMixLayoutSideMenus(menuPath);
@@ -186,8 +190,13 @@ watch(
   () => route.path,
   (newPath) => {
     const topMenuPath = extractTopMenuPath(newPath);
-    if (topMenuPath !== activeTopMenuPath.value) {
+    const isTopMenuChanged = topMenuPath !== activeTopMenuPath.value;
+
+    if (isTopMenuChanged) {
       appStore.activeTopMenu(topMenuPath);
+    }
+
+    if (isTopMenuChanged || permissionStore.mixLayoutSideMenus.length === 0) {
       permissionStore.setMixLayoutSideMenus(topMenuPath);
     }
   },
@@ -198,63 +207,144 @@ watch(
 <style lang="scss" scoped>
 .layout {
   &__header {
-    position: fixed;
+    position: sticky;
     top: 0;
-    right: 0;
-    left: 0;
-    z-index: 1000;
+    z-index: 999;
+    width: 100%;
     height: $navbar-height;
-    background-color: var(--el-bg-color);
-    border-bottom: 1px solid var(--el-border-color-light);
-    transition: all 0.28s;
+    background-color: var(--menu-background);
+    border-bottom: 1px solid var(--el-border-color-lighter);
 
     &-content {
       display: flex;
       align-items: center;
       height: 100%;
-      padding: 0 20px;
+      padding: 0;
     }
 
     &-logo {
-      margin-right: 20px;
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
     }
 
     &-menu {
+      display: flex;
       flex: 1;
-      margin: 0 20px;
+      align-items: center;
+      min-width: 0;
+      height: 100%;
+      overflow: hidden;
+
+      :deep(.el-menu) {
+        height: 100%;
+        background-color: transparent;
+        border: none;
+      }
+
+      :deep(.el-menu--horizontal) {
+        display: flex;
+        align-items: center;
+        height: 100%;
+
+        .el-menu-item {
+          height: 100%;
+          line-height: $navbar-height;
+          border-bottom: none;
+
+          &.is-active {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-bottom: 2px solid var(--el-color-primary);
+          }
+        }
+      }
     }
 
     &-actions {
       display: flex;
+      flex-shrink: 0;
       align-items: center;
+      height: 100%;
+      padding: 0 16px;
     }
   }
 
   &__container {
     display: flex;
-    min-height: 100vh;
-    padding-top: $navbar-height;
-  }
+    height: calc(100vh - $navbar-height);
+    padding-top: 0;
 
-  &__sidebar {
-    &--left {
-      width: $sidebar-width;
-      background-color: $menu-background;
-      transition: width 0.28s;
+    .layout__sidebar {
+      &--left {
+        position: relative;
+        width: $sidebar-width;
+        height: 100%;
+        background-color: var(--menu-background);
+        transition: width 0.28s;
 
-      &--collapsed {
-        width: $sidebar-width-collapsed;
+        &.layout__sidebar--collapsed {
+          width: $sidebar-width-collapsed !important;
+        }
+
+        :deep(.el-scrollbar) {
+          height: calc(100vh - $navbar-height - 50px);
+        }
+
+        :deep(.el-menu) {
+          height: 100%;
+          border: none;
+        }
+
+        .layout__sidebar-toggle {
+          position: absolute;
+          bottom: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 50px;
+          line-height: 50px;
+          background-color: var(--menu-background);
+          box-shadow: 0 0 6px -2px var(--el-color-primary);
+        }
       }
     }
+
+    .layout__main {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      margin-left: 0;
+      overflow-y: auto;
+    }
+  }
+}
+
+:deep(.mobile) {
+  .layout__container {
+    .layout__sidebar--left {
+      position: fixed;
+      top: $navbar-height;
+      bottom: 0;
+      left: 0;
+      z-index: 1000;
+      transition: transform 0.28s;
+    }
   }
 
-  &__main {
-    flex: 1;
-    transition: margin-left 0.28s;
-
-    &.hasTagsView {
-      padding-top: $tags-view-height;
+  &.hideSidebar {
+    .layout__sidebar--left {
+      width: $sidebar-width !important;
+      transform: translateX(-$sidebar-width);
     }
+  }
+}
+
+:deep(.hasTagsView) {
+  .app-main {
+    height: calc(100vh - $navbar-height - $tags-view-height) !important;
   }
 }
 </style>

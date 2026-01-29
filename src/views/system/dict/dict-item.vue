@@ -1,7 +1,7 @@
-<!-- 字典项 -->
+<!-- 字典值 -->
 <template>
   <div class="app-container">
-    <div class="search-bar mt-5">
+    <div class="filter-section">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="关键字" prop="keywords">
           <el-input
@@ -11,19 +11,26 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" icon="search" @click="handleQuery()">搜索</el-button>
-          <el-button icon="refresh" @click="handleResetQuery()">重置</el-button>
+        <el-form-item class="search-buttons">
+          <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
+          <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
 
-    <el-card shadow="never">
-      <div class="mb-[10px]">
-        <el-button type="success" icon="plus" @click="handleOpenDialog()">新增</el-button>
-        <el-button type="danger" :disabled="ids.length === 0" icon="delete" @click="handleDelete()">
-          删除
-        </el-button>
+    <el-card shadow="never" class="table-section">
+      <div class="table-section__toolbar">
+        <div class="table-section__toolbar--actions">
+          <el-button type="success" icon="plus" @click="handleOpenDialog()">新增</el-button>
+          <el-button
+            type="danger"
+            :disabled="ids.length === 0"
+            icon="delete"
+            @click="handleDelete()"
+          >
+            删除
+          </el-button>
+        </div>
       </div>
 
       <el-table
@@ -31,6 +38,7 @@
         highlight-current-row
         :data="tableData"
         border
+        class="table-section__content"
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
@@ -74,7 +82,7 @@
         v-model:total="total"
         v-model:page="queryParams.pageNum"
         v-model:limit="queryParams.pageSize"
-        @pagination="handleQuery"
+        @pagination="fetchData"
       />
     </el-card>
 
@@ -82,46 +90,63 @@
     <el-dialog
       v-model="dialog.visible"
       :title="dialog.title"
-      width="820px"
+      width="600px"
       @close="handleCloseDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="computedRules" label-width="100px">
-        <el-card shadow="never">
-          <el-form-item label="字典项标签" prop="label">
-            <el-input v-model="formData.label" placeholder="请输入字典标签" />
-          </el-form-item>
-          <el-form-item label="字典项值" prop="value">
-            <el-input v-model="formData.value" placeholder="请输入字典值" />
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-radio-group v-model="formData.status">
-              <el-radio :value="1">启用</el-radio>
-              <el-radio :value="0">禁用</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="排序">
-            <el-input-number v-model="formData.sort" controls-position="right" />
-          </el-form-item>
-          <el-form-item label="标签类型">
-            <el-tag v-if="formData.tagType" :type="formData.tagType" class="mr-2">
-              {{ formData.label }}
-            </el-tag>
-            <el-radio-group v-model="formData.tagType">
-              <el-radio value="success" border size="small">success</el-radio>
-              <el-radio value="warning" border size="small">warning</el-radio>
-              <el-radio value="info" border size="small">info</el-radio>
-              <el-radio value="primary" border size="small">primary</el-radio>
-              <el-radio value="danger" border size="small">danger</el-radio>
-              <el-radio value="" border size="small">清空</el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </el-card>
+        <el-form-item label="字典项标签" prop="label">
+          <el-input v-model="formData.label" placeholder="请输入字典标签" />
+        </el-form-item>
+        <el-form-item label="字典项值" prop="value">
+          <el-input v-model="formData.value" placeholder="请输入字典值" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="formData.status">
+            <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="排序">
+          <el-input-number v-model="formData.sort" controls-position="right" />
+        </el-form-item>
+        <el-form-item>
+          <template #label>
+            <div class="flex-y-center">
+              标签类型
+              <el-tooltip>
+                <template #content>回显样式，为空时则显示 '文本'</template>
+                <el-icon class="ml-1 cursor-pointer">
+                  <QuestionFilled />
+                </el-icon>
+              </el-tooltip>
+            </div>
+          </template>
+          <el-select
+            v-model="formData.tagType"
+            placeholder="请选择标签类型"
+            clearable
+            @clear="formData.tagType = ''"
+          >
+            <template #label="{ value }">
+              <el-tag v-if="value" :type="value">
+                {{ formData.label ? formData.label : "字典标签" }}
+              </el-tag>
+            </template>
+            <!-- <el-option label="默认文本" value="" /> -->
+            <el-option v-for="type in tagType" :key="type" :label="type" :value="type">
+              <div flex-y-center gap-10px>
+                <el-tag :type="type">{{ formData.label ?? "字典标签" }}</el-tag>
+                <span>{{ type }}</span>
+              </div>
+            </el-option>
+          </el-select>
+        </el-form-item>
       </el-form>
 
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmitClick">确 定</el-button>
-          <el-button @click="handleCloseDialog">取 消</el-button>
+          <el-button @click="handleCloseDialog">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -156,6 +181,9 @@ const dialog = reactive({
 
 const formData = reactive({});
 
+// 标签类型
+const tagType = ["primary", "success", "info", "warning", "danger"];
+
 const computedRules = computed(() => {
   const rules = {
     value: [{ required: true, message: "请输入字典值", trigger: "blur" }],
@@ -164,24 +192,30 @@ const computedRules = computed(() => {
   return rules;
 });
 
-// 查询
-function handleQuery() {
+// 获取数据
+function fetchData() {
   loading.value = true;
   DictAPI.getDictItemPage(dictCode.value, queryParams)
-    .then((data) => {
-      tableData.value = data.data;
-      total.value = data.page?.total ?? 0;
+    .then((res) => {
+      tableData.value = res.data;
+      total.value = res.page?.total ?? 0;
     })
     .finally(() => {
       loading.value = false;
     });
 }
 
+// 查询（重置页码后获取数据）
+function handleQuery() {
+  queryParams.pageNum = 1;
+  fetchData();
+}
+
 // 重置查询
 function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.pageNum = 1;
-  handleQuery();
+  fetchData();
 }
 
 // 行选择
@@ -192,36 +226,39 @@ function handleSelectionChange(selection) {
 // 打开弹窗
 function handleOpenDialog(row) {
   dialog.visible = true;
-  dialog.title = row ? "编辑字典项" : "新增字典项";
+  dialog.title = row ? "编辑字典值" : "新增字典值";
 
   if (row?.id) {
     DictAPI.getDictItemFormData(dictCode.value, row.id).then((data) => {
       Object.assign(formData, data);
     });
-  } else {
-    formData.id = undefined;
-    formData.status = 1;
-    formData.sort = 0;
   }
 }
 
 // 提交表单
 function handleSubmitClick() {
-  dataFormRef.value.validate((valid) => {
-    if (valid) {
+  dataFormRef.value.validate((isValid) => {
+    if (isValid) {
+      loading.value = true;
       const id = formData.id;
+
+      formData.dictCode = dictCode.value;
       if (id) {
-        DictAPI.updateDictItem(dictCode.value, id, formData).then(() => {
-          ElMessage.success("修改成功");
-          handleCloseDialog();
-          handleResetQuery();
-        });
+        DictAPI.updateDictItem(dictCode.value, id, formData)
+          .then(() => {
+            ElMessage.success("修改成功");
+            handleCloseDialog();
+            handleQuery();
+          })
+          .finally(() => (loading.value = false));
       } else {
-        DictAPI.createDictItem(dictCode.value, formData).then(() => {
-          ElMessage.success("新增成功");
-          handleCloseDialog();
-          handleResetQuery();
-        });
+        DictAPI.createDictItem(dictCode.value, formData)
+          .then(() => {
+            ElMessage.success("新增成功");
+            handleCloseDialog();
+            handleQuery();
+          })
+          .finally(() => (loading.value = false));
       }
     }
   });
@@ -229,10 +266,15 @@ function handleSubmitClick() {
 
 // 关闭弹窗
 function handleCloseDialog() {
-  dialog.visible = false;
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
+
   formData.id = undefined;
+  formData.sort = 1;
+  formData.status = 1;
+  formData.tagType = "";
+
+  dialog.visible = false;
 }
 
 // 删除字典项

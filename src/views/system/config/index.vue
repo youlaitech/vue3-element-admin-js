@@ -1,8 +1,9 @@
 <!-- 系统配置 -->
 <template>
   <div class="app-container">
+    <!-- 搜索区域 -->
     <div class="filter-section">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
+      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="关键字" prop="keywords">
           <el-input
             v-model="queryParams.keywords"
@@ -22,7 +23,7 @@
       <div class="table-section__toolbar">
         <div class="table-section__toolbar--actions">
           <el-button
-            v-hasPerm="['sys:config:add']"
+            v-hasPerm="['sys:config:create']"
             type="success"
             icon="plus"
             @click="handleOpenDialog()"
@@ -50,8 +51,8 @@
       >
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column key="configName" label="配置名称" prop="configName" min-width="100" />
-        <el-table-column key="configKey" label="配置键" prop="configKey" min-width="100" />
-        <el-table-column key="configValue" label="配置值" prop="configValue" min-width="100" />
+        <el-table-column key="configKey" label="配置项" prop="configKey" min-width="100" />
+        <el-table-column key="configValue" label="配置项" prop="configValue" min-width="100" />
         <el-table-column key="remark" label="描述" prop="remark" min-width="100" />
         <el-table-column fixed="right" label="操作" width="220">
           <template #default="scope">
@@ -84,7 +85,7 @@
         v-model:total="total"
         v-model:page="queryParams.pageNum"
         v-model:limit="queryParams.pageSize"
-        @pagination="handleQuery"
+        @pagination="fetchData"
       />
     </el-card>
 
@@ -105,11 +106,11 @@
         <el-form-item label="配置名称" prop="configName">
           <el-input v-model="formData.configName" placeholder="请输入配置名称" :maxlength="50" />
         </el-form-item>
-        <el-form-item label="配置键" prop="configKey">
+        <el-form-item label="配置项" prop="configKey">
           <el-input v-model="formData.configKey" placeholder="请输入配置键" :maxlength="50" />
         </el-form-item>
-        <el-form-item label="配置值" prop="configValue">
-          <el-input v-model="formData.configValue" placeholder="请输入配置值" :maxlength="100" />
+        <el-form-item label="配置项" prop="configValue">
+          <el-input v-model="formData.configValue" placeholder="请输入配置项" :maxlength="100" />
         </el-form-item>
         <el-form-item label="描述" prop="remark">
           <el-input
@@ -139,6 +140,8 @@ defineOptions({
 });
 
 import ConfigAPI from "@/api/system/config";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { useDebounceFn } from "@vueuse/core";
 
 const queryFormRef = ref();
 const dataFormRef = ref();
@@ -175,24 +178,30 @@ const rules = reactive({
   configValue: [{ required: true, message: "请输入系统配置值", trigger: "blur" }],
 });
 
-// 查询系统配置
-function handleQuery() {
+// 获取数据
+function fetchData() {
   loading.value = true;
   ConfigAPI.getPage(queryParams)
-    .then((data) => {
-      pageData.value = data.data;
-      total.value = data.page?.total ?? 0;
+    .then((res) => {
+      pageData.value = res.data;
+      total.value = res.page?.total ?? 0;
     })
     .finally(() => {
       loading.value = false;
     });
 }
 
+// 查询（重置页码后获取数据）
+function handleQuery() {
+  queryParams.pageNum = 1;
+  fetchData();
+}
+
 // 重置查询
 function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.pageNum = 1;
-  handleQuery();
+  fetchData();
 }
 
 // 行复选框选中项变化

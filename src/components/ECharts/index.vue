@@ -20,6 +20,7 @@ import * as echarts from "echarts/core";
 import { BarChart, LineChart, PieChart } from "echarts/charts";
 // 引入标题，提示框，直角坐标系，数据集，内置数据转换器组件，
 import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
+import { LegacyGridContainLabel } from "echarts/features";
 // 引入 Canvas 渲染器，注意引入 CanvasRenderer 或者 SVGRenderer 是必须的一步
 import { CanvasRenderer } from "echarts/renderers";
 
@@ -34,6 +35,7 @@ echarts.use([
   GridComponent,
   TooltipComponent,
   LegendComponent,
+  LegacyGridContainLabel,
 ]);
 
 const props = defineProps({

@@ -48,7 +48,6 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
 import OperationColumn from "@/components/OperationColumn/index.vue";
 
 const checked1 = ref(true);

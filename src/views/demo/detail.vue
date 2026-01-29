@@ -6,9 +6,6 @@
   </div>
 </template>
 <script setup>
-import { ref } from "vue";
-import { useRoute } from "vue-router";
-
 defineOptions({
   name: "DemoDetail",
 });

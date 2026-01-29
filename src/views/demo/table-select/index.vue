@@ -7,7 +7,7 @@
       target="_blank"
       class="mb-10"
     >
-      示例源码 请点击>>>>
+      示例源码 请点击>>>
     </el-link>
     <table-select :text="text" :select-config="selectConfig" @confirm-click="handleConfirm">
       <template #status="scope">
@@ -16,7 +16,7 @@
         </el-tag>
       </template>
       <template #gender="scope">
-        <DictLabel v-model="scope.row.gender" code="gender" />
+        <DictTag v-model="scope.row.gender" code="gender" />
       </template>
     </table-select>
   </div>

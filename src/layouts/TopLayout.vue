@@ -59,19 +59,12 @@ const isLogoCollapsed = computed(() => width.value < 768);
     height: $navbar-height;
     background-color: $menu-background;
 
-    &-left,
-    &-right {
-      display: flex;
-      align-items: center;
-      height: 100%;
-    }
-
     &-left {
       display: flex;
       flex: 1;
       align-items: center;
       min-width: 0;
-      padding-left: 20px;
+      height: 100%;
     }
 
     &-logo {
@@ -104,24 +97,51 @@ const isLogoCollapsed = computed(() => width.value < 768);
         min-width: 0;
         height: $navbar-height;
         overflow: hidden;
+        line-height: $navbar-height;
+        background-color: transparent;
+        border: none;
+
+        .el-menu-item {
+          height: $navbar-height;
+          line-height: $navbar-height;
+        }
+
+        .el-sub-menu {
+          .el-sub-menu__title {
+            height: $navbar-height;
+            line-height: $navbar-height;
+          }
+
+          &.has-active-child {
+            .el-sub-menu__title {
+              color: var(--el-color-primary) !important;
+              border-bottom: 2px solid var(--el-color-primary) !important;
+
+              .menu-icon {
+                color: var(--el-color-primary) !important;
+              }
+            }
+          }
+        }
+
+        .el-menu--popup {
+          min-width: 160px;
+        }
       }
     }
 
     &-right {
-      padding-right: 20px;
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      height: 100%;
+      padding-left: 12px;
     }
   }
 
   &__main {
-    position: relative;
-
-    &.hasTagsView {
-      padding-top: $tags-view-height;
-    }
-
-    &:not(.hasTagsView) {
-      padding-top: 0;
-    }
+    height: calc(100vh - $navbar-height);
+    overflow-y: auto;
   }
 }
 </style>

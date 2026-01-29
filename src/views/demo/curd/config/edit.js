@@ -1,20 +1,21 @@
 import UserAPI from "@/api/system/user";
 import { DeviceEnum } from "@/enums/settings";
 import { useAppStore } from "@/store";
+import { deptArr, roleArr } from "./options";
 
 const modalConfig = {
-  pageName: "sys:user",
+  permPrefix: "sys:user",
   component: "drawer",
   drawer: {
     title: "修改用户",
     size: useAppStore().device === DeviceEnum.MOBILE ? "80%" : 500,
   },
   pk: "id",
+  beforeSubmit(data) {
+    console.log("beforeSubmit", data);
+  },
   formAction(data) {
     return UserAPI.update(data.id, data);
-  },
-  beforeSubmit(data) {
-    console.log("提交之前处理", data);
   },
   formItems: [
     {
@@ -43,7 +44,7 @@ const modalConfig = {
       type: "tree-select",
       attrs: {
         placeholder: "请选择所属部门",
-        data: [],
+        data: deptArr,
         filterable: true,
         "check-strictly": true,
         "render-after-expand": false,
@@ -54,6 +55,7 @@ const modalConfig = {
       label: "性别",
       prop: "gender",
       initialValue: 1,
+      attrs: { style: { width: "100%" } },
     },
     {
       label: "角色",
@@ -64,7 +66,7 @@ const modalConfig = {
         placeholder: "请选择",
         multiple: true,
       },
-      options: [],
+      options: roleArr,
       initialValue: [],
     },
     {
@@ -104,6 +106,7 @@ const modalConfig = {
       prop: "status",
       type: "switch",
       attrs: {
+        inlinePrompt: true,
         activeText: "正常",
         inactiveText: "禁用",
         activeValue: 1,

@@ -24,6 +24,14 @@ const AuthAPI = {
     });
   },
 
+  switchTenant(tenantId) {
+    return request({
+      url: `${AUTH_BASE_URL}/switch-tenant`,
+      method: "post",
+      params: { tenantId },
+    });
+  },
+
   /** 刷新 token 接口*/
   refreshToken(refreshToken) {
     return request({

@@ -95,30 +95,6 @@ const formComponents = {
   register: defineAsyncComponent(() => import("./components/Register.vue")),
   resetPwd: defineAsyncComponent(() => import("./components/ResetPwd.vue")),
 };
-
-let notificationInstance = null;
-
-const showVoteNotification = () => {
-  notificationInstance = ElNotification({
-    title: "Gitee 2025 开源评选 · 诚邀支持",
-    message: `我正在参与 Gitee 2025 最受欢迎开源软件投票活动，欢迎支持！<br/><a href="https://gitee.com/activity/2025opensource?ident=I6VXEH" target="_blank" style="color: var(--el-color-primary); text-decoration: none; font-weight: 500;">点击投票</a>`,
-    type: "success",
-    position: "bottom-left",
-    duration: 0,
-    dangerouslyUseHTMLString: true,
-  });
-};
-
-onMounted(() => {
-  setTimeout(showVoteNotification, 500);
-});
-
-onBeforeUnmount(() => {
-  if (notificationInstance) {
-    notificationInstance.close();
-    notificationInstance = null;
-  }
-});
 </script>
 
 <style lang="scss" scoped>

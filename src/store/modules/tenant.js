@@ -1,6 +1,8 @@
 import { store } from "@/store";
 import TenantAPI from "@/api/system/tenant";
 import { STORAGE_KEYS } from "@/constants";
+import AuthAPI from "@/api/auth";
+import { AuthStorage } from "@/utils/auth";
 
 /**
  * 租户 Store
@@ -133,36 +135,46 @@ export const useTenantStore = defineStore("tenant", () => {
    * @param tenantId 目标租户ID
    */
   async function switchTenant(tenantId) {
-    try {
-      // 调用后端切换接口
-      const tenantInfo = await TenantAPI.switchTenant(tenantId);
+    await refreshTokenIfSupported(tenantId);
 
-      // 后端返回切换后的租户信息
-      if (tenantInfo) {
-        setCurrentTenant(tenantInfo);
-      } else {
-        // 如果后端未返回，从租户列表中找到对应的租户信息
-        const tenant = tenantList.value.find((t) => t.id === tenantId);
-        if (tenant) {
-          setCurrentTenant(tenant);
-        } else {
-          // 如果列表中没有，重新获取租户信息
-          try {
-            const info = await TenantAPI.getCurrentTenant();
-            if (info) {
-              setCurrentTenant(info);
-            } else {
-              throw new Error("无法获取租户信息");
-            }
-          } catch (error) {
-            console.error("获取租户信息失败:", error);
-            throw new Error("切换租户后无法获取租户信息");
-          }
-        }
-      }
+    const tenantInfo = await TenantAPI.switchTenant(tenantId);
+    if (tenantInfo) {
+      setCurrentTenant(tenantInfo);
+      return;
+    }
+
+    const matched = tenantList.value.find((t) => t.id === tenantId);
+    if (matched) {
+      setCurrentTenant(matched);
+      return;
+    }
+
+    const fallback = await safeGetCurrentTenant();
+    if (fallback) {
+      setCurrentTenant(fallback);
+      return;
+    }
+
+    throw new Error("切换租户后无法获取租户信息");
+  }
+
+  async function safeGetCurrentTenant() {
+    try {
+      return await TenantAPI.getCurrentTenant();
     } catch (error) {
-      console.error("切换租户失败:", error);
-      throw error;
+      console.debug("[Tenant] 获取当前租户失败，尝试本地/默认选择:", error);
+      return null;
+    }
+  }
+
+  async function refreshTokenIfSupported(tenantId) {
+    try {
+      const token = await AuthAPI.switchTenant(tenantId);
+      if (token?.accessToken && token?.refreshToken) {
+        AuthStorage.setTokens(token.accessToken, token.refreshToken, AuthStorage.getRememberMe());
+      }
+    } catch {
+      // 忽略：非平台用户或后端未启用该接口时，回退到旧接口
     }
   }
 

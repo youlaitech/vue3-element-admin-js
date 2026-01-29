@@ -90,6 +90,23 @@ const TenantAPI = {
       params: { status },
     });
   },
+
+  /** 获取租户菜单ID集合 */
+  getTenantMenuIds(tenantId) {
+    return request({
+      url: `${TENANT_BASE_URL}/${tenantId}/menuIds`,
+      method: "get",
+    });
+  },
+
+  /** 更新租户菜单 */
+  updateTenantMenus(tenantId, menuIds) {
+    return request({
+      url: `${TENANT_BASE_URL}/${tenantId}/menus`,
+      method: "put",
+      data: menuIds,
+    });
+  },
 };
 
 export default TenantAPI;
