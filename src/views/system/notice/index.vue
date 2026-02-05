@@ -166,11 +166,31 @@
     <!-- 通知公告表单弹窗 -->
     <el-dialog
       v-model="dialog.visible"
-      :title="dialog.title"
-      top="3vh"
-      width="80%"
+      :show-close="false"
+      :fullscreen="dialog.fullscreen"
+      top="6vh"
+      width="70%"
+      custom-class="notice-dialog"
       @close="handleCloseDialog"
     >
+      <template #header>
+        <div class="flex-x-between">
+          <span>{{ dialog.title }}</span>
+          <div class="dialog-toolbar">
+            <el-button circle @click="toggleDialogFullscreen">
+              <template #icon>
+                <FullScreen v-if="!dialog.fullscreen" />
+                <CopyDocument v-else />
+              </template>
+            </el-button>
+            <el-button circle @click="handleCloseDialog">
+              <template #icon>
+                <Close />
+              </template>
+            </el-button>
+          </div>
+        </div>
+      </template>
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="通知标题" prop="title">
           <el-input v-model="formData.title" placeholder="通知标题" clearable />
@@ -199,7 +219,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="通知内容" prop="content">
-          <WangEditor v-model="formData.content" />
+          <WangEditor v-model="formData.content" height="350px" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -260,6 +280,7 @@ defineOptions({
 
 import NoticeAPI from "@/api/system/notice";
 import UserAPI from "@/api/system/user";
+import { FullScreen, CopyDocument, Close } from "@element-plus/icons-vue";
 
 const queryFormRef = ref();
 const dataFormRef = ref();
@@ -281,6 +302,7 @@ const pageData = ref([]);
 const dialog = reactive({
   title: "",
   visible: false,
+  fullscreen: false,
 });
 
 // 通知公告表单数据
@@ -345,8 +367,11 @@ function handleSelectionChange(selection) {
   selectIds.value = selection.map((item) => item.id);
 }
 
-// 打开通知公告弹窗
+/**
+ * 打开通知公告弹窗
+ */
 function handleOpenDialog(id) {
+  dialog.fullscreen = false;
   UserAPI.getOptions().then((data) => {
     userOptions.value = data;
   });
@@ -444,7 +469,13 @@ function normalizeTargetUsers(value) {
 // 关闭通知公告弹窗
 function handleCloseDialog() {
   dialog.visible = false;
+  dialog.fullscreen = false;
   resetForm();
+}
+
+// 弹窗全屏切换
+function toggleDialogFullscreen() {
+  dialog.fullscreen = !dialog.fullscreen;
 }
 
 // 删除通知公告
@@ -474,16 +505,6 @@ function handleDelete(id) {
     }
   );
 }
-
-const closeDetailDialog = () => {
-  detailDialog.visible = false;
-};
-
-const openDetailDialog = async (id) => {
-  const noticeDetail = await NoticeAPI.getDetail(id);
-  currentNotice.value = noticeDetail;
-  detailDialog.visible = true;
-};
 
 onMounted(() => {
   handleQuery();
