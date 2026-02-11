@@ -1,7 +1,7 @@
 import { SidebarColor, ThemeMode } from "@/enums";
 import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from "@/utils/theme";
 import { STORAGE_KEYS } from "@/constants";
-import { appConfig, defaults } from "@/settings";
+import { defaults } from "@/settings";
 
 export const useSettingsStore = defineStore("setting", () => {
   // 界面显示
@@ -25,14 +25,13 @@ export const useSettingsStore = defineStore("setting", () => {
   const grayMode = useStorage(STORAGE_KEYS.GRAY_MODE, false);
   const colorWeak = useStorage(STORAGE_KEYS.COLOR_WEAK, false);
 
-  // AI 助手：系统级 && 用户级
-  const userEnableAi = useStorage(STORAGE_KEYS.ENABLE_AI_ASSISTANT, false);
-  const enableAiAssistant = computed(() => appConfig.aiEnabled && userEnableAi.value);
-
   // 主题变化监听
   watch(
     [theme, themeColor],
     ([t, c]) => {
+      if (document.documentElement?.dataset?.themeTransition) {
+        return;
+      }
       toggleDarkMode(t === ThemeMode.DARK);
       applyTheme(generateThemeColors(c, t));
     },
@@ -65,7 +64,6 @@ export const useSettingsStore = defineStore("setting", () => {
     showTagsView.value = defaults.showTagsView;
     showAppLogo.value = defaults.showAppLogo;
     showWatermark.value = defaults.showWatermark;
-    userEnableAi.value = false;
     grayMode.value = false;
     colorWeak.value = false;
     sidebarColorScheme.value = defaults.sidebarColorScheme;
@@ -79,8 +77,6 @@ export const useSettingsStore = defineStore("setting", () => {
     showTagsView,
     showAppLogo,
     showWatermark,
-    enableAiAssistant,
-    userEnableAi,
     grayMode,
     colorWeak,
     sidebarColorScheme,
