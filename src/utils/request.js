@@ -2,6 +2,7 @@ import axios from "axios";
 import qs from "qs";
 import { ApiCodeEnum } from "@/enums/api";
 import { useUserStoreHook } from "@/store/modules/user";
+import { usePermissionStoreHook } from "@/store/modules/permission";
 import { AuthStorage, redirectToLogin } from "@/utils/auth";
 import { ElMessage } from "element-plus";
 
@@ -50,9 +51,7 @@ http.interceptors.response.use(
     const { code, data, msg } = response.data;
 
     if (code === ApiCodeEnum.SUCCESS) {
-      // 分页接口需要同时返回 data 与 page 元信息
-      const page = response.data?.page;
-      if (page != null) return { data, page };
+      // 分页接口由后端统一返回 { list, total }
       return data;
     }
 
@@ -86,6 +85,10 @@ http.interceptors.response.use(
       return Promise.reject(new Error(msg || "Token Invalid"));
     }
 
+    if (code === ApiCodeEnum.PERMISSION_DENIED) {
+      return handlePermissionDenied(msg);
+    }
+
     ElMessage.error(msg || "请求失败");
     return Promise.reject(new Error(msg || "Error"));
   }
@@ -97,31 +100,41 @@ export default http;
 // Token 刷新重试
 // ============================================
 
-let refreshing = false;
-const queue = [];
+/**
+ * 权限不足处理：刷新用户信息与动态路由，并提示用户
+ */
+async function handlePermissionDenied(msg) {
+  const permissionStore = usePermissionStoreHook();
+  await permissionStore.reloadPermissionSnapshotOnce();
+  ElMessage.error(msg || "权限不足");
+  return Promise.reject(new Error(msg || "Forbidden"));
+}
+
+/**
+ * 访问令牌过期后，自动刷新 token 并重试请求（队列化避免并发刷新）。
+ */
 
 async function retryWithRefresh(config) {
-  return new Promise((resolve, reject) => {
-    queue.push({ resolve, reject });
+  const retryConfig = config;
+  if (retryConfig.__retry) {
+    await redirectToLogin("登录已过期，请重新登录");
+    return Promise.reject(new Error("Token Invalid"));
+  }
+  retryConfig.__retry = true;
 
-    if (refreshing) return;
-    refreshing = true;
+  try {
+    const userStore = useUserStoreHook();
+    await userStore.refreshTokenOnce();
 
-    useUserStoreHook()
-      .refreshToken()
-      .then(() => {
-        const token = AuthStorage.getAccessToken();
-        if (token) config.headers.Authorization = `Bearer ${token}`;
+    const token = AuthStorage.getAccessToken();
+    if (token) {
+      retryConfig.headers = retryConfig.headers || {};
+      retryConfig.headers.Authorization = `Bearer ${token}`;
+    }
 
-        queue.forEach(({ resolve }) => http(config).then(resolve).catch(reject));
-      })
-      .catch(async () => {
-        queue.forEach(({ reject }) => reject(new Error("Token refresh failed")));
-        await redirectToLogin("登录已过期，请重新登录");
-      })
-      .finally(() => {
-        queue.length = 0;
-        refreshing = false;
-      });
-  });
+    return http(retryConfig);
+  } catch {
+    await redirectToLogin("登录已过期，请重新登录");
+    return Promise.reject(new Error("Token refresh failed"));
+  }
 }

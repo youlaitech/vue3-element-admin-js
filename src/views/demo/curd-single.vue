@@ -182,9 +182,9 @@ const contentConfig = reactive({
     return Promise.resolve();
   },
   async exportsAction(params) {
-    const res = await UserAPI.getPage(params);
-    console.log("exportsAction", res.data);
-    return res.data;
+    const data = await UserAPI.getPage(params);
+    console.log("exportsAction", data.list);
+    return data.list;
   },
   pk: "id",
   toolbar: [

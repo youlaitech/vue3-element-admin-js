@@ -576,12 +576,12 @@ function resolvePlanLabel(planId) {
 function fetchData() {
   loading.value = true;
   TenantAPI.getPage(queryParams)
-    .then((res) => {
-      pageData.value = res.data.map((item) => ({
+    .then((data) => {
+      pageData.value = data.list.map((item) => ({
         ...item,
         planId: item.planId != null ? Number(item.planId) : undefined,
       }));
-      total.value = res.page?.total ?? 0;
+      total.value = data.total ?? 0;
     })
     .finally(() => {
       loading.value = false;

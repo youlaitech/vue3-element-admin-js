@@ -121,7 +121,21 @@
             <el-option :key="2" label="部门及子部门数据" :value="2" />
             <el-option :key="3" label="本部门数据" :value="3" />
             <el-option :key="4" label="本人数据" :value="4" />
+            <el-option :key="5" label="自定义部门数据" :value="5" />
           </el-select>
+        </el-form-item>
+
+        <!-- 自定义部门选择 -->
+        <el-form-item v-if="formData.dataScope === 5" label="选择部门" prop="deptIds">
+          <el-tree-select
+            v-model="formData.deptIds"
+            :data="deptOptions"
+            multiple
+            :render-after-expand="false"
+            check-strictly
+            placeholder="请选择部门"
+            style="width: 100%"
+          />
         </el-form-item>
 
         <el-form-item label="状态" prop="status">
@@ -220,6 +234,7 @@ import { DeviceEnum } from "@/enums/settings";
 
 import RoleAPI from "@/api/system/role";
 import MenuAPI from "@/api/system/menu";
+import DeptAPI from "@/api/system/dept";
 
 defineOptions({
   name: "Role",
@@ -245,6 +260,8 @@ const queryParams = reactive({
 const roleList = ref();
 // 菜单权限下拉
 const menuPermOptions = ref([]);
+// 部门下拉选项
+const deptOptions = ref([]);
 
 // 弹窗
 const dialog = reactive({
@@ -264,6 +281,7 @@ const rules = reactive({
   name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
   code: [{ required: true, message: "请输入角色编码", trigger: "blur" }],
   dataScope: [{ required: true, message: "请选择数据权限", trigger: "blur" }],
+  deptIds: [{ required: true, message: "请选择部门", trigger: "blur" }],
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 });
 
@@ -280,9 +298,9 @@ const parentChildLinked = ref(true);
 function fetchData() {
   loading.value = true;
   RoleAPI.getPage(queryParams)
-    .then((res) => {
-      roleList.value = res.data;
-      total.value = res.page?.total ?? 0;
+    .then((data) => {
+      roleList.value = data.list;
+      total.value = data.total ?? 0;
     })
     .finally(() => {
       loading.value = false;
@@ -308,8 +326,14 @@ function handleSelectionChange(selection) {
 }
 
 // 打开角色弹窗
-function handleOpenDialog(roleId) {
+async function handleOpenDialog(roleId) {
   dialog.visible = true;
+
+  // 获取部门下拉选项
+  if (deptOptions.value.length === 0) {
+    deptOptions.value = await DeptAPI.getOptions();
+  }
+
   if (roleId) {
     dialog.title = "修改角色";
     RoleAPI.getFormData(roleId).then((data) => {
@@ -324,10 +348,16 @@ function handleOpenDialog(roleId) {
 function handleSubmit() {
   roleFormRef.value.validate((valid) => {
     if (valid) {
+      // 如果不是自定义数据权限，清空部门ID列表
+      const submitData = { ...formData };
+      if (submitData.dataScope !== 5) {
+        submitData.deptIds = undefined;
+      }
+
       loading.value = true;
       const roleId = formData.id;
       if (roleId) {
-        RoleAPI.update(roleId, formData)
+        RoleAPI.update(roleId, submitData)
           .then(() => {
             ElMessage.success("修改成功");
             handleCloseDialog();
@@ -335,7 +365,7 @@ function handleSubmit() {
           })
           .finally(() => (loading.value = false));
       } else {
-        RoleAPI.create(formData)
+        RoleAPI.create(submitData)
           .then(() => {
             ElMessage.success("新增成功");
             handleCloseDialog();
@@ -357,6 +387,8 @@ function handleCloseDialog() {
   formData.id = undefined;
   formData.sort = 1;
   formData.status = 1;
+  formData.dataScope = undefined;
+  formData.deptIds = undefined;
 }
 
 // 删除角色

@@ -222,11 +222,9 @@ async function fetchPageData(resetPage = false) {
   }
   loading.value = true;
   try {
-    const res = await props.selectConfig.indexAction(queryParams);
-    const list = (res && res.data) || (res && res.list) || [];
-    const totalVal = (res && res.page && res.page.total) || (res && res.total) || 0;
-    pageData.value = list;
-    total.value = totalVal;
+    const data = await props.selectConfig.indexAction(queryParams);
+    pageData.value = data?.list ?? [];
+    total.value = data?.total ?? 0;
   } finally {
     loading.value = false;
   }

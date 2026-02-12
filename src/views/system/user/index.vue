@@ -352,12 +352,9 @@ const rules = reactive({
 async function fetchUserList() {
   loading.value = true;
   try {
-    const res = await UserAPI.getPage(queryParams);
-    userList.value = res.data;
-    total.value = res.page?.total ?? 0;
-  } catch (error) {
-    ElMessage.error("获取用户列表失败");
-    console.error("获取用户列表失败:", error);
+    const data = await UserAPI.getPage(queryParams);
+    userList.value = data.list;
+    total.value = data.total ?? 0;
   } finally {
     loading.value = false;
   }

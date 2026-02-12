@@ -34,7 +34,7 @@ const RoleAPI = {
    */
   getRoleMenuIds(roleId) {
     return request({
-      url: `${ROLE_BASE_URL}/${roleId}/menuIds`,
+      url: `${ROLE_BASE_URL}/${roleId}/menu-ids`,
       method: "get",
     });
   },
@@ -61,6 +61,18 @@ const RoleAPI = {
   getFormData(id) {
     return request({
       url: `${ROLE_BASE_URL}/${id}/form`,
+      method: "get",
+    });
+  },
+
+  /**
+   * 获取角色的部门ID集合(自定义数据权限)
+   * @param {string} roleId 角色ID
+   * @returns {Promise} 角色的部门ID集合
+   */
+  getRoleDeptIds(roleId) {
+    return request({
+      url: `${ROLE_BASE_URL}/${roleId}/dept-ids`,
       method: "get",
     });
   },
