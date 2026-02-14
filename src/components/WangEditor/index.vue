@@ -12,6 +12,8 @@
   <div style="z-index: 999; border: 1px solid var(--el-border-color)">
     <!-- 工具栏 -->
     <Toolbar
+      v-if="editorRef"
+      :key="editorKey"
       :editor="editorRef"
       mode="simple"
       :default-config="toolbarConfig"
@@ -19,11 +21,13 @@
     />
     <!-- 编辑器 -->
     <Editor
+      :key="editorKey"
       v-model="modelValue"
       :style="{ height: height, overflowY: 'hidden' }"
       :default-config="editorConfig"
       mode="simple"
       @on-created="handleCreated"
+      @on-change="handleChange"
     />
   </div>
 </template>
@@ -42,52 +46,53 @@ defineProps({
   },
 });
 
-// 双向绑定
-const modelValue = defineModel("modelValue", {
+// 双向绑定 - 直接使用 v-model，无需手动 setHtml
+const modelValue = defineModel({
   type: String,
   required: false,
+  default: "",
 });
 
-// 编辑器实例，必须用 shallowRef，重要！
+// 编辑器实例，必须用 shallowRef
 const editorRef = shallowRef();
 
+const editorKey = ref(0);
+const innerUpdating = ref(false);
+
 // 工具栏配置
-const toolbarConfig = ref({});
+const toolbarConfig = {};
 
 // 编辑器配置
-const editorConfig = ref({
+const editorConfig = {
   placeholder: "请输入内容..",
   MENU_CONF: {
     uploadImage: {
-      customUpload(file, insertFn) {
-        // 上传图片
-        FileAPI.uploadFile(file).then((res) => {
-          // 插入图片
-          insertFn(res.url, res.name, res.url);
-        });
+      async customUpload(file, insertFn) {
+        const data = await FileAPI.uploadFile(file);
+        insertFn(data.url, data.name, data.url);
       },
     },
   },
-});
+};
 
-// 记录 editor 实例，重要！
+// 记录 editor 实例
 const handleCreated = (editor) => {
   editorRef.value = editor;
-  const value = modelValue.value ?? "";
-  if (value) {
-    editor.setHtml(value);
-  }
+};
+
+const handleChange = () => {
+  innerUpdating.value = true;
+  Promise.resolve().then(() => {
+    innerUpdating.value = false;
+  });
 };
 
 watch(
   () => modelValue.value,
-  (value) => {
-    const editor = editorRef.value;
-    if (!editor) return;
-    const nextValue = value ?? "";
-    if (nextValue !== editor.getHtml()) {
-      editor.setHtml(nextValue);
-    }
+  () => {
+    if (innerUpdating.value) return;
+    editorRef.value = null;
+    editorKey.value += 1;
   }
 );
 
