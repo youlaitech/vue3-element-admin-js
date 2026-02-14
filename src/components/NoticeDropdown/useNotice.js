@@ -13,6 +13,7 @@ export function useNotice() {
 
   // 状态
   const list = ref([]);
+  const unreadTotal = ref(0);
   const detail = ref(null);
   const dialogVisible = ref(false);
 
@@ -31,6 +32,7 @@ export function useNotice() {
     };
     const page = await NoticeAPI.getMyNoticePage(query);
     list.value = page.list || [];
+    unreadTotal.value = page.total ?? 0;
   }
 
   async function read(id) {
@@ -45,6 +47,7 @@ export function useNotice() {
   async function readAll() {
     await NoticeAPI.readAll();
     list.value = [];
+    unreadTotal.value = 0;
   }
 
   function goMore() {
@@ -66,12 +69,18 @@ export function useNotice() {
         // 避免重复
         if (list.value.some((item) => item.id === data.id)) return;
 
+        unreadTotal.value += 1;
+
         list.value.unshift({
           id: data.id,
           title: data.title,
           type: data.type,
           publishTime: data.publishTime,
         });
+
+        if (list.value.length > PAGE_SIZE) {
+          list.value.length = PAGE_SIZE;
+        }
 
         ElNotification({
           title: "您收到一条新的通知消息！",
@@ -103,6 +112,7 @@ export function useNotice() {
 
   return {
     list,
+    unreadTotal,
     detail,
     dialogVisible,
     fetchList,
