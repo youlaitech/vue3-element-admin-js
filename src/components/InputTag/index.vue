@@ -28,7 +28,10 @@ const inputVisible = ref(false);
 const inputRef = ref();
 
 // 定义 model，用于与父组件的 v-model绑定
-const tags = defineModel();
+const tags = defineModel({
+  type: Array,
+  default: () => [],
+});
 
 defineProps({
   config: {
