@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
     <div class="filter-section">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
         <el-form-item prop="keywords" label="关键字">
@@ -11,6 +10,7 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
+
         <el-form-item prop="createTime" label="操作时间">
           <el-date-picker
             v-model="queryParams.createTime"
@@ -69,11 +69,10 @@ defineOptions({
 
 import LogAPI from "@/api/system/log";
 
+// 表单引用
 const queryFormRef = ref();
 
-const loading = ref(false);
-const total = ref(0);
-
+// 查询参数
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -81,10 +80,14 @@ const queryParams = reactive({
   createTime: undefined,
 });
 
-// 日志表格数据
+// 列表数据
 const pageData = ref();
+const total = ref(0);
+const loading = ref(false);
 
-/** 获取数据 */
+/**
+ * 加载日志列表数据
+ */
 function fetchData() {
   loading.value = true;
   LogAPI.getPage(queryParams)
@@ -96,12 +99,18 @@ function fetchData() {
       loading.value = false;
     });
 }
-/** 查询（重置页码后获取数据）*/
+
+/**
+ * 查询按钮点击事件
+ */
 function handleQuery() {
   queryParams.pageNum = 1;
   fetchData();
 }
-/** 重置查询 */
+
+/**
+ * 重置查询
+ */
 function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.pageNum = 1;

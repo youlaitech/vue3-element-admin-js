@@ -153,10 +153,10 @@
 
     <!-- 租户表单弹窗 -->
     <el-dialog
-      v-model="dialog.visible"
-      :title="dialog.title"
+      v-model="dialogState.visible"
+      :title="dialogState.title"
       width="600px"
-      @close="handleCloseDialog"
+      @close="closeDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="租户名称" prop="name">
@@ -239,7 +239,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmit">确定</el-button>
-          <el-button @click="handleCloseDialog">取消</el-button>
+          <el-button @click="closeDialog">取消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -485,7 +485,7 @@ const pageData = ref([]);
 
 const menuPermOptions = ref([]);
 
-const dialog = reactive({
+const dialogState = reactive({
   title: "",
   visible: false,
 });
@@ -943,9 +943,9 @@ function handleSelectionChange(selection) {
 }
 
 async function handleOpenDialog(tenantId) {
-  dialog.visible = true;
+  dialogState.visible = true;
   if (tenantId != null && tenantId !== "") {
-    dialog.title = "修改租户";
+    dialogState.title = "修改租户";
     const data = await TenantAPI.getFormData(tenantId);
     Object.assign(formData, data);
     formData.adminUsername = "";
@@ -954,7 +954,7 @@ async function handleOpenDialog(tenantId) {
       formData.planId = undefined;
     }
   } else {
-    dialog.title = "新增租户";
+    dialogState.title = "新增租户";
     Object.assign(formData, {
       id: undefined,
       name: "",
@@ -972,8 +972,8 @@ async function handleOpenDialog(tenantId) {
   }
 }
 
-function handleCloseDialog() {
-  dialog.visible = false;
+function closeDialog() {
+  dialogState.visible = false;
   dataFormRef.value?.resetFields();
   dataFormRef.value?.clearValidate();
   Object.assign(formData, {
@@ -1032,7 +1032,7 @@ const handleSubmit = useDebounceFn(async () => {
       ElMessage.success(`新增成功：管理员账号 ${result?.adminUsername || ""}`);
     }
 
-    handleCloseDialog();
+    closeDialog();
     handleResetQuery();
   } catch {
     ElMessage.error(formData.id != null && String(formData.id) !== "" ? "修改失败" : "新增失败");

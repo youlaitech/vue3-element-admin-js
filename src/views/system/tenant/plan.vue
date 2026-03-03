@@ -107,10 +107,10 @@
 
     <!-- 租户套餐表单弹窗 -->
     <el-dialog
-      v-model="dialog.visible"
-      :title="dialog.title"
+      v-model="dialogState.visible"
+      :title="dialogState.title"
       width="520px"
-      @close="handleCloseDialog"
+      @close="closeDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="套餐名称" prop="name">
@@ -140,7 +140,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmit">确定</el-button>
-          <el-button @click="handleCloseDialog">取消</el-button>
+          <el-button @click="closeDialog">取消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -242,7 +242,7 @@ const queryParams = reactive({
 const pageData = ref([]);
 const menuPermOptions = ref([]);
 
-const dialog = reactive({
+const dialogState = reactive({
   title: "",
   visible: false,
 });
@@ -296,9 +296,9 @@ function handleResetQuery() {
 
 // 打开新增/编辑弹窗
 async function handleOpenDialog(planId) {
-  dialog.visible = true;
+  dialogState.visible = true;
   if (planId) {
-    dialog.title = "修改套餐";
+    dialogState.title = "修改套餐";
     const data = await TenantPlanAPI.getFormData(String(planId));
     Object.assign(formData, data);
     if (formData.status == null) {
@@ -308,7 +308,7 @@ async function handleOpenDialog(planId) {
       formData.sort = 1;
     }
   } else {
-    dialog.title = "新增套餐";
+    dialogState.title = "新增套餐";
     Object.assign(formData, {
       id: undefined,
       name: "",
@@ -321,8 +321,8 @@ async function handleOpenDialog(planId) {
 }
 
 // 关闭弹窗并重置表单
-function handleCloseDialog() {
-  dialog.visible = false;
+function closeDialog() {
+  dialogState.visible = false;
   dataFormRef.value?.resetFields();
   dataFormRef.value?.clearValidate();
   Object.assign(formData, {
@@ -349,7 +349,7 @@ const handleSubmit = useDebounceFn(async () => {
       await TenantPlanAPI.create(formData);
       ElMessage.success("新增成功");
     }
-    handleCloseDialog();
+    closeDialog();
     handleResetQuery();
   } finally {
     loading.value = false;

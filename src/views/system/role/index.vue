@@ -103,10 +103,10 @@
 
     <!-- 角色表单弹窗 -->
     <el-dialog
-      v-model="dialog.visible"
-      :title="dialog.title"
+      v-model="dialogState.visible"
+      :title="dialogState.title"
       width="600px"
-      @close="handleCloseDialog"
+      @close="closeDialog"
     >
       <el-form ref="roleFormRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="角色名称" prop="name">
@@ -160,7 +160,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmit">确定</el-button>
-          <el-button @click="handleCloseDialog">取消</el-button>
+          <el-button @click="closeDialog">取消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -266,7 +266,7 @@ const menuPermOptions = ref([]);
 const deptOptions = ref([]);
 
 // 弹窗
-const dialog = reactive({
+const dialogState = reactive({
   title: "",
   visible: false,
 });
@@ -329,7 +329,7 @@ function handleSelectionChange(selection) {
 
 // 打开角色弹窗
 async function handleOpenDialog(roleId) {
-  dialog.visible = true;
+  dialogState.visible = true;
 
   // 获取部门下拉选项
   if (deptOptions.value.length === 0) {
@@ -337,12 +337,12 @@ async function handleOpenDialog(roleId) {
   }
 
   if (roleId) {
-    dialog.title = "修改角色";
+    dialogState.title = "修改角色";
     RoleAPI.getFormData(roleId).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    dialog.title = "新增角色";
+    dialogState.title = "新增角色";
   }
 }
 
@@ -362,7 +362,7 @@ function handleSubmit() {
         RoleAPI.update(roleId, submitData)
           .then(() => {
             ElMessage.success("修改成功");
-            handleCloseDialog();
+            closeDialog();
             handleResetQuery();
           })
           .finally(() => (loading.value = false));
@@ -370,7 +370,7 @@ function handleSubmit() {
         RoleAPI.create(submitData)
           .then(() => {
             ElMessage.success("新增成功");
-            handleCloseDialog();
+            closeDialog();
             handleResetQuery();
           })
           .finally(() => (loading.value = false));
@@ -380,8 +380,8 @@ function handleSubmit() {
 }
 
 // 关闭弹窗
-function handleCloseDialog() {
-  dialog.visible = false;
+function closeDialog() {
+  dialogState.visible = false;
 
   roleFormRef.value.resetFields();
   roleFormRef.value.clearValidate();

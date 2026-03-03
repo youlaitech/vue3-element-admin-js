@@ -126,10 +126,10 @@
     </el-card>
 
     <el-drawer
-      v-model="dialog.visible"
-      :title="dialog.title"
+      v-model="dialogState.visible"
+      :title="dialogState.title"
       :size="drawerSize"
-      @close="handleCloseDialog"
+      @close="closeDialog"
     >
       <el-form ref="menuFormRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="父级菜单" prop="parentId">
@@ -348,7 +348,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmit">确定</el-button>
-          <el-button @click="handleCloseDialog">取消</el-button>
+          <el-button @click="closeDialog">取消</el-button>
         </div>
       </template>
     </el-drawer>
@@ -374,7 +374,7 @@ const queryFormRef = ref();
 const menuFormRef = ref();
 
 const loading = ref(false);
-const dialog = reactive({
+const dialogState = reactive({
   title: "新增菜单",
   visible: false,
 });
@@ -471,15 +471,15 @@ function handleOpenDialog(parentId, menuId) {
       menuOptions.value = [{ value: "0", label: "顶级菜单", children: data }];
     })
     .then(() => {
-      dialog.visible = true;
+      dialogState.visible = true;
       if (menuId) {
-        dialog.title = "编辑菜单";
+        dialogState.title = "编辑菜单";
         MenuAPI.getFormData(menuId).then((data) => {
           initialMenuFormData.value = { ...data };
           formData.value = data;
         });
       } else {
-        dialog.title = "新增菜单";
+        dialogState.title = "新增菜单";
         formData.value.parentId = parentId?.toString();
       }
     });
@@ -517,13 +517,13 @@ function handleSubmit() {
         }
         MenuAPI.update(menuId, formData.value).then(() => {
           ElMessage.success("修改成功");
-          handleCloseDialog();
+          closeDialog();
           handleQuery();
         });
       } else {
         MenuAPI.create(formData.value).then(() => {
           ElMessage.success("新增成功");
-          handleCloseDialog();
+          closeDialog();
           handleQuery();
         });
       }
@@ -577,8 +577,8 @@ function resetForm() {
 }
 
 // 关闭弹窗
-function handleCloseDialog() {
-  dialog.visible = false;
+function closeDialog() {
+  dialogState.visible = false;
   resetForm();
 }
 
