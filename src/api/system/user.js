@@ -120,17 +120,15 @@ const UserAPI = {
 
   /**
    * 导入用户
-   * @param {string} deptId 部门ID
    * @param {File} file 导入文件
    * @returns {Promise} 导入结果
    */
-  import(deptId, file) {
+  import(file) {
     const formData = new FormData();
     formData.append("file", file);
     return request({
       url: `${USER_BASE_URL}/import`,
       method: "post",
-      params: { deptId },
       data: formData,
       headers: {
         "Content-Type": "multipart/form-data",

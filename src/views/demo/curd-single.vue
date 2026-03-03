@@ -173,7 +173,7 @@ const contentConfig = reactive({
   },
   deleteAction: UserAPI.deleteByIds,
   importAction(file) {
-    return UserAPI.import("1", file);
+    return UserAPI.import(file);
   },
   exportAction: UserAPI.export,
   importTemplate: UserAPI.downloadTemplate,
