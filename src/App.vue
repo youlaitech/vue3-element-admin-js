@@ -22,7 +22,7 @@ const settingsStore = useSettingsStore();
 
 const locale = computed(() => appStore.locale);
 const size = computed(() => appStore.size);
-const watermarkEnabled = computed(() => settingsStore.watermarkEnabled);
+const watermarkEnabled = computed(() => settingsStore.showWatermark);
 
 // 明亮/暗黑主题水印字体颜色适配
 const fontColor = computed(() => {
