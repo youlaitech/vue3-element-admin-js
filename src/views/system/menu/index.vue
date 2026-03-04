@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
     <div class="filter-section">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="关键字" prop="keywords">
@@ -11,6 +10,7 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
+
         <el-form-item class="search-buttons">
           <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
           <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
@@ -25,7 +25,7 @@
             v-hasPerm="['sys:menu:create']"
             type="success"
             icon="plus"
-            @click="handleOpenDialog('0')"
+            @click="openDialog('0')"
           >
             新增
           </el-button>
@@ -35,13 +35,13 @@
       <el-table
         ref="dataTableRef"
         v-loading="loading"
-        :data="menuTableData"
         row-key="id"
-        class="table-section__content"
+        :data="menuTableData"
         :tree-props="{
           children: 'children',
           hasChildren: 'hasChildren',
         }"
+        class="table-section__content"
         @row-click="handleRowClick"
       >
         <el-table-column label="菜单名称" min-width="200">
@@ -79,6 +79,7 @@
             <el-tag v-else type="success">业务</el-tag>
           </template>
         </el-table-column>
+
         <el-table-column label="状态" align="center" width="80">
           <template #default="scope">
             <el-tag v-if="scope.row.visible === 1" type="success">显示</el-tag>
@@ -95,7 +96,7 @@
               link
               size="small"
               icon="plus"
-              @click.stop="handleOpenDialog(scope.row.id)"
+              @click.stop="openDialog(scope.row.id)"
             >
               新增
             </el-button>
@@ -106,7 +107,7 @@
               link
               size="small"
               icon="edit"
-              @click.stop="handleOpenDialog(undefined, scope.row.id)"
+              @click.stop="openDialog(undefined, scope.row.id)"
             >
               编辑
             </el-button>
@@ -212,6 +213,7 @@
               </el-tooltip>
             </div>
           </template>
+
           <el-input v-model="formData.component" placeholder="system/user/index" style="width: 95%">
             <template v-if="formData.type == MenuTypeEnum.MENU" #prepend>src/views/</template>
             <template v-if="formData.type == MenuTypeEnum.MENU" #append>.vue</template>
@@ -330,13 +332,11 @@
           />
         </el-form-item>
 
-        <!-- 权限标识 -->
         <el-form-item v-if="formData.type == MenuTypeEnum.BUTTON" label="权限标识" prop="perm">
           <el-input v-model="formData.perm" placeholder="sys:user:create" />
         </el-form-item>
 
         <el-form-item v-if="formData.type !== MenuTypeEnum.BUTTON" label="图标" prop="icon">
-          <!-- 图标选择器 -->
           <icon-select v-model="formData.icon" />
         </el-form-item>
 
@@ -358,7 +358,6 @@
 <script setup>
 import { useAppStore } from "@/store/modules/app";
 import { DeviceEnum } from "@/enums/settings";
-
 import MenuAPI from "@/api/system/menu";
 import { MenuScopeEnum, MenuTypeEnum } from "@/enums/business";
 import { isTenantEnabled } from "@/utils/tenant";
@@ -370,44 +369,54 @@ defineOptions({
 
 const appStore = useAppStore();
 
+// 表单引用
 const queryFormRef = ref();
 const menuFormRef = ref();
 
+// 查询参数
+const queryParams = reactive({});
+
+// 列表数据
+const menuTableData = ref([]);
+const menuOptions = ref([]);
 const loading = ref(false);
+
+// 弹窗状态
 const dialogState = reactive({
   title: "新增菜单",
   visible: false,
 });
 
-const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "600px" : "90%"));
-// 查询参数
-const queryParams = reactive({});
-// 多租户关闭时，隐藏菜单范围（避免单租户误配置）
-const showMenuScope = computed(() => isTenantEnabled());
-// 菜单表格数据
-const menuTableData = ref([]);
-// 顶级菜单下拉选项
-const menuOptions = ref([]);
-// 初始菜单表单数据
+// 表单数据
 const initialMenuFormData = ref({
   id: undefined,
   parentId: "0",
   visible: 1,
   scope: MenuScopeEnum.TENANT,
   sort: 1,
-  type: MenuTypeEnum.MENU, // 默认菜单
+  type: MenuTypeEnum.MENU,
   alwaysShow: 0,
   keepAlive: 1,
   params: [],
 });
-// 菜单表单数据
 const formData = ref({ ...initialMenuFormData.value });
+const selectedMenuId = ref();
+
+// 多租户关闭时，隐藏菜单范围
+const showMenuScope = computed(() => isTenantEnabled());
+
+// 抽屉宽度
+const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "600px" : "90%"));
+
+// 是否外链
 const isExternalLink = computed(
   () =>
     formData.value.type === MenuTypeEnum.MENU &&
     !!formData.value.routePath &&
     /^https?:\/\//.test(formData.value.routePath)
 );
+
+// 验证规则
 const validateRouteName = (_, value, callback) => {
   if (formData.value.type === MenuTypeEnum.MENU && !isExternalLink.value && !value) {
     callback(new Error("请输入路由名称"));
@@ -422,7 +431,6 @@ const validateComponent = (_, value, callback) => {
   }
   callback();
 };
-// 表单验证规则
 const rules = reactive({
   parentId: [{ required: true, message: "请选择父级菜单", trigger: "blur" }],
   name: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
@@ -433,11 +441,10 @@ const rules = reactive({
   visible: [{ required: true, message: "请选择显示状态", trigger: "change" }],
 });
 
-// 选择表格的行菜单ID
-const selectedMenuId = ref();
-
-// 查询菜单
-function handleQuery() {
+/**
+ * 加载菜单列表数据
+ */
+function fetchData() {
   loading.value = true;
   MenuAPI.getList(queryParams)
     .then((data) => {
@@ -448,24 +455,34 @@ function handleQuery() {
     });
 }
 
-// 重置查询
-function handleResetQuery() {
-  queryFormRef.value.resetFields();
-  handleQuery();
+/**
+ * 查询按钮点击事件
+ */
+function handleQuery() {
+  fetchData();
 }
 
-// 行点击事件
+/**
+ * 重置查询
+ */
+function handleResetQuery() {
+  queryFormRef.value.resetFields();
+  fetchData();
+}
+
+/**
+ * 行点击事件
+ */
 function handleRowClick(row) {
   selectedMenuId.value = row.id;
 }
 
 /**
- * 打开表单弹窗
- *
+ * 打开弹窗
  * @param parentId 父菜单ID
- * @param menuId 菜单ID
+ * @param menuId 菜单ID（编辑时传入）
  */
-function handleOpenDialog(parentId, menuId) {
+function openDialog(parentId, menuId) {
   MenuAPI.getOptions(true)
     .then((data) => {
       menuOptions.value = [{ value: "0", label: "顶级菜单", children: data }];
@@ -485,16 +502,15 @@ function handleOpenDialog(parentId, menuId) {
     });
 }
 
-// 菜单类型切换
+/**
+ * 菜单类型切换事件
+ */
 function handleMenuTypeChange() {
-  // 如果菜单类型改变
   if (formData.value.type !== initialMenuFormData.value.type) {
     if (formData.value.type === MenuTypeEnum.MENU) {
-      // 目录切换到菜单时，清空组件路径
       if (initialMenuFormData.value.type === MenuTypeEnum.CATALOG) {
         formData.value.component = "";
       } else {
-        // 其他情况，保留原有的组件路径
         formData.value.routePath = initialMenuFormData.value.routePath;
         formData.value.component = initialMenuFormData.value.component;
       }
@@ -510,7 +526,6 @@ function handleSubmit() {
     if (isValid) {
       const menuId = formData.value.id;
       if (menuId) {
-        //修改时父级菜单不能为当前菜单
         if (formData.value.parentId == menuId) {
           ElMessage.error("父级菜单不能为当前菜单");
           return;
@@ -518,24 +533,27 @@ function handleSubmit() {
         MenuAPI.update(menuId, formData.value).then(() => {
           ElMessage.success("修改成功");
           closeDialog();
-          handleQuery();
+          fetchData();
         });
       } else {
         MenuAPI.create(formData.value).then(() => {
           ElMessage.success("新增成功");
           closeDialog();
-          handleQuery();
+          fetchData();
         });
       }
     }
   });
 }
 
-// 删除菜单
+/**
+ * 删除菜单
+ * @param menuId 菜单ID
+ */
 function handleDelete(menuId) {
   if (!menuId) {
     ElMessage.warning("请勾选删除项");
-    return false;
+    return;
   }
 
   ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
@@ -548,7 +566,7 @@ function handleDelete(menuId) {
       MenuAPI.deleteById(menuId)
         .then(() => {
           ElMessage.success("删除成功");
-          handleQuery();
+          fetchData();
         })
         .finally(() => {
           loading.value = false;
@@ -560,7 +578,11 @@ function handleDelete(menuId) {
   );
 }
 
-function resetForm() {
+/**
+ * 关闭弹窗
+ */
+function closeDialog() {
+  dialogState.visible = false;
   menuFormRef.value.resetFields();
   menuFormRef.value.clearValidate();
   formData.value = {
@@ -569,21 +591,15 @@ function resetForm() {
     visible: 1,
     scope: MenuScopeEnum.TENANT,
     sort: 1,
-    type: MenuTypeEnum.MENU, // 默认菜单
+    type: MenuTypeEnum.MENU,
     alwaysShow: 0,
     keepAlive: 1,
     params: [],
   };
 }
 
-// 关闭弹窗
-function closeDialog() {
-  dialogState.visible = false;
-  resetForm();
-}
-
 onMounted(() => {
-  handleQuery();
+  fetchData();
 });
 </script>
 
