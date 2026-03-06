@@ -340,6 +340,12 @@ async function handleOpenDialog(roleId) {
     dialogState.title = "修改角色";
     RoleAPI.getFormData(roleId).then((data) => {
       Object.assign(formData, data);
+      // 如果是自定义数据权限，获取部门ID列表
+      if (data.dataScope === 5) {
+        RoleAPI.getRoleDeptIds(roleId).then((deptIds) => {
+          formData.deptIds = deptIds;
+        });
+      }
     });
   } else {
     dialogState.title = "新增角色";
