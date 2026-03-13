@@ -1,7 +1,7 @@
 <template>
-  <div class="dashboard-container">
+  <div class="relative p-6">
     <!-- github 角标 -->
-    <github-corner class="github-corner" />
+    <github-corner class="absolute top-0 right-0 z-1 border-0" />
 
     <el-card shadow="never" class="mt-2">
       <div class="flex flex-wrap">
@@ -15,7 +15,9 @@
             />
           </div>
           <div class="ml-5">
-            <p>{{ greetings }}</p>
+            <p class="text-base font-semibold text-[--el-text-color-primary] leading-tight">
+              {{ greetings }}
+            </p>
             <p class="text-sm text-gray">今日天气晴朗，气温在15℃至25℃之间，东南风。</p>
           </div>
         </div>
@@ -121,34 +123,45 @@
     <el-row :gutter="10" class="mt-5">
       <!-- 在线用户数量 -->
       <el-col :span="8" :xs="24" class="mb-xs-3">
-        <el-card shadow="never" class="h-full flex flex-col">
+        <el-card
+          shadow="never"
+          class="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+        >
           <template #header>
             <div class="flex-x-between">
-              <span class="text-gray">在线用户</span>
-              <el-tag type="danger" size="small">实时</el-tag>
+              <span class="text-xs font-medium text-[--el-text-color-secondary]">在线用户</span>
+              <div class="flex items-center gap-2">
+                <span
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs leading-5 rounded-full border select-none"
+                  :class="wsStatusClass"
+                >
+                  <el-icon class="text-sm">
+                    <Loading
+                      v-if="
+                        !isConnected &&
+                        (connectionState === 'CONNECTING' || connectionState === 'RECONNECTING')
+                      "
+                    />
+                    <CircleCheck v-else-if="isConnected" />
+                    <CircleClose v-else />
+                  </el-icon>
+                  <span class="text-[--el-text-color-secondary]">WebSocket</span>
+                  <span class="font-medium">{{ wsStatusText }}</span>
+                </span>
+              </div>
             </div>
           </template>
 
-          <div class="flex-x-between mt-2 flex-1">
-            <div class="flex-y-center">
-              <span class="text-lg transition-all duration-300 hover:scale-110">
-                {{ onlineUserCount }}
-              </span>
-              <span v-if="isConnected" class="ml-2 text-xs text-[#67c23a]">
-                <el-icon><Connection /></el-icon>
-                已连接
-              </span>
-              <span v-else class="ml-2 text-xs text-[#f56c6c]">
-                <el-icon><Failed /></el-icon>
-                未连接
-              </span>
+          <div class="mt-2 flex-1 flex items-end">
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-xl font-semibold tracking-wide">{{ onlineUserCount }}</span>
+              <span class="text-xs text-[--el-text-color-secondary]">人</span>
             </div>
-            <div class="i-svg:people w-8 h-8 animate-[pulse_2s_infinite]" />
           </div>
 
-          <div class="flex-x-between mt-2 text-sm text-gray">
-            <span>更新时间</span>
-            <span>{{ formattedTime }}</span>
+          <div class="mt-2 flex justify-between items-center">
+            <span class="text-sm text-gray">更新时间</span>
+            <span class="text-sm">{{ formattedTime }}</span>
           </div>
         </el-card>
       </el-col>
@@ -176,37 +189,45 @@
             </el-card>
           </template>
           <template v-if="!visitStatsLoading">
-            <el-card shadow="never" class="h-full flex flex-col">
+            <el-card
+              shadow="never"
+              class="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+            >
               <template #header>
                 <div class="flex-x-between">
-                  <span class="text-gray">访客数(UV)</span>
+                  <span class="text-xs font-medium text-[--el-text-color-secondary]">
+                    访客数 UV
+                  </span>
                   <el-tag type="success" size="small">日</el-tag>
                 </div>
               </template>
 
-              <div class="flex-x-between mt-2 flex-1">
-                <div class="flex-y-center">
-                  <span class="text-lg">{{ displayTransitionUvCount }}</span>
+              <div class="mt-2 flex-1 flex items-end">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-xl font-semibold tracking-wide">
+                    {{ displayTransitionUvCount }}
+                  </span>
                   <span
-                    :class="[
-                      'text-xs',
-                      'ml-2',
-                      computeGrowthRateClass(visitStatsData.uvGrowthRate),
-                    ]"
+                    v-if="uvGrowthText !== null"
+                    :class="['text-xs', computeGrowthRateClass(visitStatsData.uvGrowthRate)]"
                   >
-                    <el-icon>
+                    <el-icon
+                      v-if="
+                        visitStatsData.uvGrowthRate !== undefined &&
+                        visitStatsData.uvGrowthRate !== null
+                      "
+                    >
                       <Top v-if="visitStatsData.uvGrowthRate > 0" />
                       <Bottom v-else-if="visitStatsData.uvGrowthRate < 0" />
                     </el-icon>
-                    {{ formatGrowthRate(visitStatsData.uvGrowthRate) }}
+                    {{ uvGrowthText }}
                   </span>
                 </div>
-                <div class="i-svg:visitor w-8 h-8" />
               </div>
 
-              <div class="flex-x-between mt-2 text-sm text-gray">
-                <span>总访客数</span>
-                <span>{{ displayTransitionTotalUvCount }}</span>
+              <div class="mt-2 flex justify-between items-center">
+                <span class="text-sm text-gray">总访客数</span>
+                <span class="text-sm">{{ displayTransitionTotalUvCount }}</span>
               </div>
             </el-card>
           </template>
@@ -236,37 +257,45 @@
             </el-card>
           </template>
           <template v-if="!visitStatsLoading">
-            <el-card shadow="never" class="h-full flex flex-col">
+            <el-card
+              shadow="never"
+              class="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+            >
               <template #header>
                 <div class="flex-x-between">
-                  <span class="text-gray">浏览量(PV)</span>
+                  <span class="text-xs font-medium text-[--el-text-color-secondary]">
+                    浏览量 PV
+                  </span>
                   <el-tag type="primary" size="small">日</el-tag>
                 </div>
               </template>
 
-              <div class="flex-x-between mt-2 flex-1">
-                <div class="flex-y-center">
-                  <span class="text-lg">{{ displayTransitionPvCount }}</span>
+              <div class="mt-2 flex-1 flex items-end">
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-xl font-semibold tracking-wide">
+                    {{ displayTransitionPvCount }}
+                  </span>
                   <span
-                    :class="[
-                      'text-xs',
-                      'ml-2',
-                      computeGrowthRateClass(visitStatsData.pvGrowthRate),
-                    ]"
+                    v-if="pvGrowthText !== null"
+                    :class="['text-xs', computeGrowthRateClass(visitStatsData.pvGrowthRate)]"
                   >
-                    <el-icon>
+                    <el-icon
+                      v-if="
+                        visitStatsData.pvGrowthRate !== undefined &&
+                        visitStatsData.pvGrowthRate !== null
+                      "
+                    >
                       <Top v-if="visitStatsData.pvGrowthRate > 0" />
                       <Bottom v-else-if="visitStatsData.pvGrowthRate < 0" />
                     </el-icon>
-                    {{ formatGrowthRate(visitStatsData.pvGrowthRate) }}
+                    {{ pvGrowthText }}
                   </span>
                 </div>
-                <div class="i-svg:browser w-8 h-8" />
               </div>
 
-              <div class="flex-x-between mt-2 text-sm text-gray">
-                <span>总浏览量</span>
-                <span>{{ displayTransitionTotalPvCount }}</span>
+              <div class="mt-2 flex justify-between items-center">
+                <span class="text-sm text-gray">总浏览量</span>
+                <span class="text-sm">{{ displayTransitionTotalPvCount }}</span>
               </div>
             </el-card>
           </template>
@@ -290,60 +319,63 @@
           <ECharts :options="visitTrendChartOptions" height="400px" />
         </el-card>
       </el-col>
-      <!-- 最新动态-->
+      <!-- 最近访问 -->
       <el-col :xs="24" :span="8">
         <el-card>
           <template #header>
             <div class="flex-x-between">
-              <span class="header-title">最新动态</span>
-              <el-link
+              <span class="font-semibold">最近访问</span>
+              <el-button
+                v-if="recentMenus.length > 0"
                 type="primary"
-                underline="never"
-                href="https://gitee.com/youlaiorg/vue3-element-admin/releases"
-                target="_blank"
+                link
+                size="small"
+                @click="clearRecentMenus"
               >
-                完整记录
-                <el-icon class="link-icon"><TopRight /></el-icon>
-              </el-link>
+                清空
+              </el-button>
             </div>
           </template>
 
-          <el-scrollbar height="400px">
-            <el-timeline class="p-3">
-              <el-timeline-item
-                v-for="(item, index) in vesionList"
-                :key="index"
-                :timestamp="item.date"
-                placement="top"
-                :color="index === 0 ? '#67C23A' : '#909399'"
-                :hollow="index !== 0"
-                size="large"
+          <div class="min-h-[400px] flex flex-col">
+            <!-- 宫格显示 -->
+            <div v-if="recentMenus.length > 0" class="grid grid-cols-2 gap-3">
+              <div
+                v-for="item in recentMenus"
+                :key="item.path"
+                class="group flex items-center gap-2 px-3 py-2.5 bg-[--el-fill-color-lighter] rounded-lg cursor-pointer transition-all duration-200 hover:bg-[--el-color-primary-light-8]"
+                @click="router.push(item.path)"
               >
-                <div class="version-item" :class="{ 'latest-item': index === 0 }">
-                  <div>
-                    <el-text tag="strong">{{ item.title }}</el-text>
-                    <el-tag v-if="item.tag" :type="index === 0 ? 'success' : 'info'" size="small">
-                      {{ item.tag }}
-                    </el-tag>
-                  </div>
-
-                  <el-text class="version-content">{{ item.content }}</el-text>
-
-                  <div v-if="item.link">
-                    <el-link
-                      :type="index === 0 ? 'primary' : 'info'"
-                      :href="item.link"
-                      target="_blank"
-                      underline="never"
-                    >
-                      详情
-                      <el-icon class="link-icon"><TopRight /></el-icon>
-                    </el-link>
-                  </div>
+                <!-- 图标 -->
+                <div class="shrink-0 w-8 h-8 flex items-center justify-center">
+                  <el-icon
+                    v-if="item.icon?.startsWith('el-icon-')"
+                    class="text-lg text-[--el-color-primary]"
+                  >
+                    <component :is="item.icon.replace('el-icon-', '')" />
+                  </el-icon>
+                  <div
+                    v-else-if="item.icon"
+                    :class="`i-svg:${item.icon} text-lg text-[--el-color-primary]`"
+                  />
+                  <el-icon v-else class="text-lg text-[--el-color-primary]"><Menu /></el-icon>
                 </div>
-              </el-timeline-item>
-            </el-timeline>
-          </el-scrollbar>
+                <!-- 标题 -->
+                <span class="text-sm truncate flex-1 leading-tight">
+                  {{ item.title }}
+                </span>
+              </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div v-else class="flex flex-col items-center justify-center flex-1 py-16">
+              <el-icon :size="48" class="text-[--el-text-color-placeholder] mb-4">
+                <Clock />
+              </el-icon>
+              <p class="text-sm text-[--el-text-color-secondary] mb-2">暂无访问记录</p>
+              <p class="text-xs text-[--el-text-color-placeholder]">访问的页面会自动记录在这里</p>
+            </div>
+          </div>
         </el-card>
       </el-col>
     </el-row>
@@ -358,25 +390,21 @@ defineOptions({
 
 import { dayjs } from "element-plus";
 import { ref, watch, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import StatisticsAPI from "@/api/system/statistics";
 import { useUserStore } from "@/store/modules/user";
 import { formatGrowthRate } from "@/utils";
 import { useTransition, useDateFormat } from "@vueuse/core";
-import { Connection, Failed } from "@element-plus/icons-vue";
-import { useOnlineCount } from "@/composables";
+import { CircleCheck, CircleClose, Loading, Clock, Menu } from "@element-plus/icons-vue";
+import { useOnlineCount, useRecentMenus } from "@/composables";
+
+const router = useRouter();
 
 // 在线用户数量组件相关
-const { onlineUserCount, lastUpdateTime, isConnected } = useOnlineCount();
+const { onlineUserCount, lastUpdateTime, isConnected, connectionState } = useOnlineCount();
 
-// 记录上一次的用户数量用于计算趋势
-const previousCount = ref(0);
-
-// 监听用户数量变化，计算趋势
-watch(onlineUserCount, (newCount, oldCount) => {
-  if (oldCount > 0) {
-    previousCount.value = oldCount;
-  }
-});
+// 最近访问菜单
+const { recentMenus, clearRecentMenus } = useRecentMenus();
 
 // 格式化时间戳
 const formattedTime = computed(() => {
@@ -384,36 +412,24 @@ const formattedTime = computed(() => {
   return useDateFormat(lastUpdateTime, "HH:mm:ss").value;
 });
 
-const userStore = useUserStore();
+const wsStatusText = computed(() => {
+  if (!isConnected.value) {
+    return connectionState.value === "CONNECTING" || connectionState.value === "RECONNECTING"
+      ? "连接中"
+      : "未连接";
+  }
+  return "已连接";
+});
 
-// 当前通知公告列表
-const vesionList = ref([
-  {
-    id: "1",
-    title: "v2.8.0-SNAPSHOT",
-    date: "2025-10-xx 00:00:00",
-    content: "1. 整合 vue3-element-admin-ts 和 vue3-element-admin-js；2. 优化文档结构。",
-    link: "https://gitee.com/youlaiorg/vue3-element-admin/releases",
-    tag: "开发中",
-  },
-  {
-    id: "2",
-    title: "v2.7.0",
-    date: "2025-05-18 00:00:00",
-    content:
-      "1. 新增 AI 助手功能，支持多种大语言模型；2. 菜单支持开启和关闭页面缓存；3. 升级 Element Plus 到 2.7.4。",
-    link: "https://gitee.com/youlaiorg/vue3-element-admin/releases/v2.7.0",
-    tag: "里程碑",
-  },
-  {
-    id: "3",
-    title: "v2.6.2",
-    date: "2024-08-01 00:00:00",
-    content: "1. 优化 UnoCSS 配置；2. 修复字典组件回显问题；3. 升级依赖版本。",
-    link: "https://gitee.com/youlaiorg/vue3-element-admin/releases/v2.6.2",
-    tag: "优化",
-  },
-]);
+const wsStatusClass = computed(() => {
+  if (isConnected.value)
+    return "text-[--el-color-success] bg-[--el-color-success-light-9] border-[--el-color-success-light-7]";
+  return connectionState.value === "CONNECTING" || connectionState.value === "RECONNECTING"
+    ? "text-[--el-color-warning] bg-[--el-color-warning-light-9] border-[--el-color-warning-light-7]"
+    : "text-[--el-color-danger] bg-[--el-color-danger-light-9] border-[--el-color-danger-light-7]";
+});
+
+const userStore = useUserStore();
 
 // 当前时间（用于计算问候语）
 const currentDate = new Date();
@@ -445,6 +461,26 @@ const visitStatsData = ref({
   todayPvCount: 0,
   pvGrowthRate: 0,
   totalPvCount: 0,
+});
+
+const uvGrowthText = computed(() => {
+  if (
+    visitStatsData.value.uvGrowthRate === undefined ||
+    visitStatsData.value.uvGrowthRate === null
+  ) {
+    return "--";
+  }
+  return formatGrowthRate(visitStatsData.value.uvGrowthRate);
+});
+
+const pvGrowthText = computed(() => {
+  if (
+    visitStatsData.value.pvGrowthRate === undefined ||
+    visitStatsData.value.pvGrowthRate === null
+  ) {
+    return "--";
+  }
+  return formatGrowthRate(visitStatsData.value.pvGrowthRate);
 });
 
 const toNumber = (value) => Number(value ?? 0);
@@ -482,7 +518,7 @@ const transitionTotalPvCount = useTransition(
   }
 );
 
-// 过渡结果可能是 Ref<number>，为模板中使用做类型和格式处理（避免 TS 报错）
+// 过渡结果可能是 Ref<number>，为模板中使用做类型和格式处理
 const displayTransitionUvCount = computed(() =>
   Math.round(Number(transitionUvCount?.value ?? transitionUvCount))
 );
@@ -499,7 +535,7 @@ const displayTransitionTotalPvCount = computed(() =>
 // 访问趋势日期范围（单位：天）
 const visitTrendDateRange = ref(7);
 // 访问趋势图表配置
-const visitTrendChartOptions = ref({});
+const visitTrendChartOptions = ref();
 
 /**
  * 获取访客统计数据
@@ -626,45 +662,12 @@ watch(
   { immediate: true }
 );
 
-// 组件挂载后加载访客统计数据和通知公告数据
+// 组件挂载后加载访客统计数据
 onMounted(() => {
   fetchVisitStatsData();
 });
 </script>
 
 <style lang="scss" scoped>
-.dashboard-container {
-  position: relative;
-  padding: 24px;
-
-  .github-corner {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 1;
-    border: 0;
-  }
-
-  .version-item {
-    padding: 16px;
-    margin-bottom: 12px;
-    background: var(--el-fill-color-lighter);
-    border-radius: 8px;
-    transition: all 0.2s;
-
-    &.latest-item {
-      background: var(--el-color-primary-light-9);
-      border: 1px solid var(--el-color-primary-light-5);
-    }
-    &:hover {
-      transform: translateX(5px);
-    }
-    .version-content {
-      margin-bottom: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--el-text-color-secondary);
-    }
-  }
-}
+// 暂无自定义样式
 </style>

@@ -165,25 +165,25 @@
 
     <!-- 通知公告表单弹窗 -->
     <el-dialog
-      v-model="dialog.visible"
+      v-model="dialogState.visible"
       :show-close="false"
-      :fullscreen="dialog.fullscreen"
+      :fullscreen="dialogState.fullscreen"
       top="6vh"
       width="70%"
       custom-class="notice-dialog"
-      @close="handleCloseDialog"
+      @close="closeDialog"
     >
       <template #header>
         <div class="flex-x-between">
-          <span>{{ dialog.title }}</span>
+          <span>{{ dialogState.title }}</span>
           <div class="dialog-toolbar">
             <el-button circle @click="toggleDialogFullscreen">
               <template #icon>
-                <FullScreen v-if="!dialog.fullscreen" />
+                <FullScreen v-if="!dialogState.fullscreen" />
                 <CopyDocument v-else />
               </template>
             </el-button>
-            <el-button circle @click="handleCloseDialog">
+            <el-button circle @click="closeDialog">
               <template #icon>
                 <Close />
               </template>
@@ -225,7 +225,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmit()">确定</el-button>
-          <el-button @click="handleCloseDialog()">取消</el-button>
+          <el-button @click="closeDialog()">取消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -299,7 +299,7 @@ const userOptions = ref([]);
 const pageData = ref([]);
 
 // 弹窗
-const dialog = reactive({
+const dialogState = reactive({
   title: "",
   visible: false,
   fullscreen: false,
@@ -371,14 +371,14 @@ function handleSelectionChange(selection) {
  * 打开通知公告弹窗
  */
 function handleOpenDialog(id) {
-  dialog.fullscreen = false;
+  dialogState.fullscreen = false;
   UserAPI.getOptions().then((data) => {
     userOptions.value = data;
   });
 
-  dialog.visible = true;
+  dialogState.visible = true;
   if (id) {
-    dialog.title = "修改公告";
+    dialogState.title = "修改公告";
     NoticeAPI.getFormData(id).then((data) => {
       Object.assign(formData, {
         ...data,
@@ -387,7 +387,7 @@ function handleOpenDialog(id) {
     });
   } else {
     Object.assign(formData, { level: "L", targetType: 1, targetUsers: [] });
-    dialog.title = "新增公告";
+    dialogState.title = "新增公告";
   }
 }
 
@@ -422,7 +422,7 @@ function handleSubmit() {
         NoticeAPI.update(id, payload)
           .then(() => {
             ElMessage.success("修改成功");
-            handleCloseDialog();
+            closeDialog();
             handleResetQuery();
           })
           .finally(() => (loading.value = false));
@@ -430,7 +430,7 @@ function handleSubmit() {
         NoticeAPI.create(payload)
           .then(() => {
             ElMessage.success("新增成功");
-            handleCloseDialog();
+            closeDialog();
             handleResetQuery();
           })
           .finally(() => (loading.value = false));
@@ -467,15 +467,15 @@ function normalizeTargetUsers(value) {
 }
 
 // 关闭通知公告弹窗
-function handleCloseDialog() {
-  dialog.visible = false;
-  dialog.fullscreen = false;
+function closeDialog() {
+  dialogState.visible = false;
+  dialogState.fullscreen = false;
   resetForm();
 }
 
 // 弹窗全屏切换
 function toggleDialogFullscreen() {
-  dialog.fullscreen = !dialog.fullscreen;
+  dialogState.fullscreen = !dialogState.fullscreen;
 }
 
 // 删除通知公告

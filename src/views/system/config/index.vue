@@ -1,7 +1,5 @@
-<!-- 系统配置 -->
 <template>
   <div class="app-container">
-    <!-- 搜索区域 -->
     <div class="filter-section">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="关键字" prop="keywords">
@@ -12,6 +10,7 @@
             @keyup.enter="handleQuery"
           />
         </el-form-item>
+
         <el-form-item class="search-buttons">
           <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
           <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
@@ -26,7 +25,7 @@
             v-hasPerm="['sys:config:create']"
             type="success"
             icon="plus"
-            @click="handleOpenDialog()"
+            @click="openDialog()"
           >
             新增
           </el-button>
@@ -34,7 +33,7 @@
             v-hasPerm="['sys:config:refresh']"
             color="#626aef"
             icon="RefreshLeft"
-            @click="handleRefreshCache"
+            @click="refreshCache"
           >
             刷新缓存
           </el-button>
@@ -62,7 +61,7 @@
               size="small"
               link
               icon="edit"
-              @click="handleOpenDialog(scope.row.id)"
+              @click="openDialog(scope.row.id)"
             >
               编辑
             </el-button>
@@ -89,12 +88,11 @@
       />
     </el-card>
 
-    <!-- 系统配置表单弹窗 -->
     <el-dialog
-      v-model="dialog.visible"
-      :title="dialog.title"
+      v-model="dialogState.visible"
+      :title="dialogState.title"
       width="500px"
-      @close="handleCloseDialog"
+      @close="closeDialog"
     >
       <el-form
         ref="dataFormRef"
@@ -126,7 +124,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmit">确定</el-button>
-          <el-button @click="handleCloseDialog">取消</el-button>
+          <el-button @click="closeDialog">取消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -143,27 +141,30 @@ import ConfigAPI from "@/api/system/config";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useDebounceFn } from "@vueuse/core";
 
+// 表单引用
 const queryFormRef = ref();
 const dataFormRef = ref();
 
-const loading = ref(false);
-const selectIds = ref([]);
-const total = ref(0);
-
+// 查询参数
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
   keywords: "",
 });
 
-// 系统配置表格数据
+// 列表数据
 const pageData = ref([]);
+const total = ref(0);
+const loading = ref(false);
+const selectIds = ref([]);
 
-const dialog = reactive({
+// 弹窗状态
+const dialogState = reactive({
   title: "",
   visible: false,
 });
 
+// 表单数据
 const formData = reactive({
   id: undefined,
   configName: "",
@@ -172,13 +173,16 @@ const formData = reactive({
   remark: "",
 });
 
+// 验证规则
 const rules = reactive({
   configName: [{ required: true, message: "请输入系统配置名称", trigger: "blur" }],
   configKey: [{ required: true, message: "请输入系统配置编码", trigger: "blur" }],
   configValue: [{ required: true, message: "请输入系统配置值", trigger: "blur" }],
 });
 
-// 获取数据
+/**
+ * 加载配置列表数据
+ */
 function fetchData() {
   loading.value = true;
   ConfigAPI.getPage(queryParams)
@@ -191,46 +195,59 @@ function fetchData() {
     });
 }
 
-// 查询（重置页码后获取数据）
+/**
+ * 查询按钮点击事件
+ */
 function handleQuery() {
   queryParams.pageNum = 1;
   fetchData();
 }
 
-// 重置查询
+/**
+ * 重置查询
+ */
 function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryParams.pageNum = 1;
   fetchData();
 }
 
-// 行复选框选中项变化
+/**
+ * 表格选择变化事件
+ */
 function handleSelectionChange(selection) {
-  selectIds.value = selection.map((item) => item.id);
+  selectIds.value = selection.map((item) => item.id).filter(Boolean);
 }
 
-// 打开系统配置弹窗
-function handleOpenDialog(id) {
-  dialog.visible = true;
+/**
+ * 打开弹窗
+ * @param id 配置ID（编辑时传入）
+ */
+function openDialog(id) {
+  dialogState.visible = true;
   if (id) {
-    dialog.title = "修改系统配置";
+    dialogState.title = "修改系统配置";
     ConfigAPI.getFormData(id).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    dialog.title = "新增系统配置";
+    dialogState.title = "新增系统配置";
     formData.id = undefined;
   }
 }
 
-// 刷新缓存(防抖)
-const handleRefreshCache = useDebounceFn(() => {
+/**
+ * 刷新缓存
+ */
+const refreshCache = useDebounceFn(() => {
   ConfigAPI.refreshCache().then(() => {
     ElMessage.success("刷新成功");
   });
 }, 1000);
 
-// 系统配置表单提交
+/**
+ * 提交表单
+ */
 function handleSubmit() {
   dataFormRef.value.validate((valid) => {
     if (valid) {
@@ -240,7 +257,7 @@ function handleSubmit() {
         ConfigAPI.update(id, formData)
           .then(() => {
             ElMessage.success("修改成功");
-            handleCloseDialog();
+            closeDialog();
             handleResetQuery();
           })
           .finally(() => (loading.value = false));
@@ -248,7 +265,7 @@ function handleSubmit() {
         ConfigAPI.create(formData)
           .then(() => {
             ElMessage.success("新增成功");
-            handleCloseDialog();
+            closeDialog();
             handleResetQuery();
           })
           .finally(() => (loading.value = false));
@@ -257,20 +274,20 @@ function handleSubmit() {
   });
 }
 
-// 重置表单
-function resetForm() {
+/**
+ * 关闭弹窗
+ */
+function closeDialog() {
+  dialogState.visible = false;
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
   formData.id = undefined;
 }
 
-// 关闭系统配置弹窗
-function handleCloseDialog() {
-  dialog.visible = false;
-  resetForm();
-}
-
-// 删除系统配置
+/**
+ * 删除配置
+ * @param id 配置ID
+ */
 function handleDelete(id) {
   ElMessageBox.confirm("确认删除该项配置?", "警告", {
     confirmButtonText: "确定",

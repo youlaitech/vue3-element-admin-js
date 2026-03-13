@@ -6,17 +6,15 @@ export default defineMock([
     method: ["GET"],
     body: {
       code: "00000",
-      data: [
-        {
-          id: 1,
-          name: "性别",
-          dictCode: "gender",
-          status: 1,
-        },
-      ],
-      page: {
-        pageNum: 1,
-        pageSize: 10,
+      data: {
+        list: [
+          {
+            id: 1,
+            name: "性别",
+            dictCode: "gender",
+            status: 1,
+          },
+        ],
         total: 1,
       },
       msg: "一切ok",

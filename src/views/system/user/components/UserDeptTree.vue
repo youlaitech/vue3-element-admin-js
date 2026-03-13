@@ -29,6 +29,7 @@ const props = defineProps({
   },
 });
 
+// 部门树数据
 const deptList = ref();
 const deptTreeRef = ref();
 const deptName = ref();
@@ -39,7 +40,7 @@ const deptId = useVModel(props, "modelValue", emits);
 
 watchEffect(
   () => {
-    deptTreeRef.value?.filter(deptName.value);
+    deptTreeRef.value.filter(deptName.value);
   },
   {
     flush: "post",
@@ -56,7 +57,9 @@ function handleFilter(value, data) {
   return data.label.indexOf(value) !== -1;
 }
 
-/** 部门树节点 Click */
+/**
+ * 部门树节点点击事件
+ */
 function handleNodeClick(data) {
   deptId.value = data.value;
   emits("node-click");
