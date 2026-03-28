@@ -2,7 +2,8 @@ import NProgress from "@/plugins/nprogress";
 import router from "@/router";
 import { usePermissionStore, useUserStore } from "@/store";
 import { useTenantStoreHook } from "@/store/modules/tenant";
-import { appConfig } from "@/settings";
+import { isTenantEnabled } from "@/utils/tenant";
+import { addRecentMenu } from "@/composables/useRecentMenus";
 
 /**
  * 路由权限守卫
@@ -12,7 +13,7 @@ import { appConfig } from "@/settings";
 export function setupPermissionGuard() {
   const whiteList = ["/login"];
 
-  router.beforeEach(async (to, from, next) => {
+  router.beforeEach(async (to, _from) => {
     NProgress.start();
 
     try {
@@ -21,18 +22,15 @@ export function setupPermissionGuard() {
       // 未登录处理
       if (!isLoggedIn) {
         if (whiteList.includes(to.path)) {
-          next();
-        } else {
-          next(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
-          NProgress.done();
+          return;
         }
-        return;
+        NProgress.done();
+        return `/login?redirect=${encodeURIComponent(to.fullPath)}`;
       }
 
       // 已登录访问登录页，重定向到首页
       if (to.path === "/login") {
-        next({ path: "/" });
-        return;
+        return { path: "/" };
       }
 
       const permissionStore = usePermissionStore();
@@ -52,14 +50,12 @@ export function setupPermissionGuard() {
           router.addRoute(route);
         });
 
-        next({ ...to, replace: true });
-        return;
+        return { ...to, replace: true };
       }
 
       // 路由 404 检查
       if (to.matched.length === 0) {
-        next("/404");
-        return;
+        return "/404";
       }
 
       // 动态标题
@@ -67,18 +63,22 @@ export function setupPermissionGuard() {
       if (title) {
         to.meta.title = title;
       }
-
-      next();
     } catch (error) {
       console.error("Route guard error:", error);
       await useUserStore().resetAllState();
-      next("/login");
       NProgress.done();
+      return "/login";
     }
   });
 
-  router.afterEach(() => {
+  router.afterEach((to) => {
     NProgress.done();
+
+    // 记录最近访问
+    if (to.meta?.title && to.path) {
+      const icon = typeof to.meta.icon === "string" ? to.meta.icon : undefined;
+      addRecentMenu(to.path, to.meta.title, icon);
+    }
   });
 }
 
@@ -88,7 +88,8 @@ export function setupPermissionGuard() {
 
 /** 初始化多租户上下文，未启用或失败时静默跳过 */
 async function initTenantContext() {
-  if (!appConfig.tenantEnabled) return;
+  // 多租户关闭时不初始化租户上下文
+  if (!isTenantEnabled()) return;
 
   try {
     await useTenantStoreHook().loadTenant();

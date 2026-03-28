@@ -192,20 +192,16 @@ export default defineConfig(({ mode }) => {
     // 构建配置
     build: {
       chunkSizeWarningLimit: 2000, // 消除打包大小超过500kb警告
-      minify: isProduction ? "terser" : false, // 只在生产环境启用压缩
+      reportCompressedSize: false,
+      minify: isProduction ? "terser" : false,
       terserOptions: isProduction
         ? {
             compress: {
-              keep_infinity: true, // 防止 Infinity 被压缩成 1/0，这可能会导致 Chrome 上的性能问题
-              drop_console: true, // 生产环境去除 console.log, console.warn, console.error 等
-              drop_debugger: true, // 生产环境去除 debugger
-              pure_funcs: ["console.log", "console.info"], // 移除指定的函数调用
-            },
-            format: {
-              comments: false, // 删除注释
+              drop_console: true,
+              drop_debugger: true,
             },
           }
-        : {},
+        : undefined,
       rollupOptions: {
         output: {
           // manualChunks: {

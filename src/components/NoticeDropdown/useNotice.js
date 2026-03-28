@@ -3,13 +3,13 @@
  */
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import NoticeAPI from "@/api/system/notice";
-import { useStomp } from "@/composables";
+import { useSse } from "@/composables";
 import router from "@/router";
 
 const PAGE_SIZE = 5;
 
 export function useNotice() {
-  const { subscribe, unsubscribe, isConnected } = useStomp();
+  const { on, isConnected } = useSse();
 
   // 状态
   const list = ref([]);
@@ -17,7 +17,7 @@ export function useNotice() {
   const detail = ref(null);
   const dialogVisible = ref(false);
 
-  let subscribed = false;
+  let unsubscribe = null;
 
   // ============================================
   // 数据获取
@@ -55,15 +55,14 @@ export function useNotice() {
   }
 
   // ============================================
-  // WebSocket 订阅
+  // SSE 订阅
   // ============================================
 
   function setupSubscription() {
-    if (subscribed || !isConnected.value) return;
+    if (unsubscribe) return;
 
-    subscribe("/user/queue/message", (message) => {
+    unsubscribe = on("notice", (data) => {
       try {
-        const data = JSON.parse(message.body || "{}");
         if (!data.id) return;
 
         // 避免重复
@@ -92,8 +91,6 @@ export function useNotice() {
         console.error("解析通知消息失败", e);
       }
     });
-
-    subscribed = true;
   }
 
   // ============================================
@@ -106,8 +103,10 @@ export function useNotice() {
   });
 
   onBeforeUnmount(() => {
-    unsubscribe("/user/queue/message");
-    subscribed = false;
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
   });
 
   return {

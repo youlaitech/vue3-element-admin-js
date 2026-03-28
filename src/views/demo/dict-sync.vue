@@ -3,15 +3,15 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <span>字典WebSocket实时更新演示</span>
-          <el-tag :type="wsConnected ? 'success' : 'danger'" size="small" class="ml-2">
-            WebSocket {{ wsStatusText }}
+          <span>字典SSE实时更新演示</span>
+          <el-tag :type="sseConnected ? 'success' : 'danger'" size="small" class="ml-2">
+            SSE {{ sseStatusText }}
           </el-tag>
         </div>
       </template>
 
       <el-alert type="info" :closable="false" class="mb-4">
-        本示例展示WebSocket实时更新字典缓存的效果。您可以编辑"男"性别字典项，保存后后端将通过WebSocket通知所有客户端刷新缓存。
+        本示例展示SSE实时更新字典缓存的效果。您可以编辑"男"性别字典项，保存后后端将通过SSE通知所有客户端刷新缓存。
       </el-alert>
 
       <el-row :gutter="16">
@@ -160,16 +160,16 @@ const dictForm = ref(null);
 // 选中的性别
 const selectedGender = ref("");
 
-// 初始化WebSocket
-const dictWebSocket = useDictSync();
+// 初始化SSE
+const dictSse = useDictSync();
 
 // 获取连接状态
-const wsConnected = computed(() => dictWebSocket.isConnected);
+const sseConnected = computed(() => dictSse.isConnected.value);
 
-// WebSocket连接状态显示文本
-const wsStatusText = computed(() => (wsConnected.value ? "已连接" : "未连接"));
+// SSE连接状态显示文本
+const sseStatusText = computed(() => (sseConnected.value ? "已连接" : "未连接"));
 
-// 保存WebSocket清理函数
+// 保存SSE清理函数
 let unregisterCallback = null;
 
 // 当前选中字典的缓存状态
@@ -178,13 +178,13 @@ const dictCacheStatus = computed(() => {
   return dictStore.getDictItems(DICT_CODE).length > 0;
 });
 
-// 设置WebSocket
-const setupWebSocket = () => {
-  // 初始化WebSocket连接
-  dictWebSocket.initialize();
+// 设置SSE
+const setupSse = () => {
+  // 初始化SSE连接
+  dictSse.initialize();
 
   // 注册字典消息回调
-  unregisterCallback = dictWebSocket.onDictChange((message) => {
+  unregisterCallback = dictSse.onDictChange((message) => {
     // 只有当消息是关于性别字典的更新时才处理
     if (message.dictCode === DICT_CODE) {
       // 更新最后更新时间
@@ -223,7 +223,7 @@ const saveDict = async () => {
     // 更新时间
     lastUpdateTime.value = useDateFormat(new Date(), "YYYY-MM-DD HH:mm:ss").value;
 
-    ElMessage.success("保存成功，后端将通过WebSocket通知所有客户端");
+    ElMessage.success("保存成功，后端将通过SSE通知所有客户端");
   } catch (error) {
     console.error("保存字典项失败", error);
     ElMessage.error("保存失败");
@@ -239,11 +239,11 @@ onMounted(async () => {
   await dictStore.loadDictItems(DICT_CODE);
   // 初始化选中性别为男
   selectedGender.value = "1";
-  // 设置WebSocket
-  setupWebSocket();
+  // 设置SSE
+  setupSse();
 });
 
-// 组件卸载时清理WebSocket
+// 组件卸载时清理SSE
 onUnmounted(() => {
   unregisterCallback?.();
 });

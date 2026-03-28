@@ -1,9 +1,9 @@
 <template>
   <el-config-provider :locale="locale" :size="size">
-    <!-- 开启水印 -->
+    <!-- 开启水印-->
     <el-watermark
       :font="{ color: fontColor }"
-      :content="watermarkEnabled ? defaults.watermarkContent : ''"
+      :content="showWatermark ? watermarkContent : ''"
       :z-index="9999"
       class="wh-full"
     >
@@ -14,15 +14,16 @@
 
 <script setup>
 import { useAppStore, useSettingsStore } from "@/store";
-import { defaults } from "@/settings";
-import { ThemeMode } from "@/enums/settings";
+import { appConfig } from "@/settings";
+import { ThemeMode, ComponentSize } from "@/enums";
 
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
 
 const locale = computed(() => appStore.locale);
 const size = computed(() => appStore.size);
-const watermarkEnabled = computed(() => settingsStore.showWatermark);
+const showWatermark = computed(() => settingsStore.showWatermark);
+const watermarkContent = appConfig.name;
 
 // 明亮/暗黑主题水印字体颜色适配
 const fontColor = computed(() => {

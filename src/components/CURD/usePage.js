@@ -70,7 +70,7 @@ function usePage() {
   function handleSearchClick() {
     searchRef.value?.toggleVisible();
   }
-  // 涮选数据
+  // 筛选数据
   function handleFilterChange(filterParams) {
     const queryParams = searchRef.value?.getQueryParams();
     contentRef.value?.fetchPageData({ ...queryParams, ...filterParams }, true);

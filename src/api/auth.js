@@ -24,6 +24,7 @@ const AuthAPI = {
     });
   },
 
+  /** 切换租户(平台用户) - 返回新的 token */
   switchTenant(tenantId) {
     return request({
       url: `${AUTH_BASE_URL}/switch-tenant`,

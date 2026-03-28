@@ -1,6 +1,12 @@
-// WebSocket 服务
-export { setupWebSocket, cleanupWebSocket } from "./websocket";
-export { useStomp, useDictSync, useOnlineCount } from "./websocket";
+// SSE 服务
+export {
+  setupSse,
+  cleanupSseServices,
+  useSse,
+  useDictSync,
+  useOnlineCount,
+  SseConnectionState,
+} from "./sse";
 
 // 表格相关
 export { useTableSelection } from "./table/useTableSelection";

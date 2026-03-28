@@ -50,6 +50,7 @@ export const STORAGE_KEYS = {
   SHOW_TAGS_VIEW: `${APP_PREFIX}:ui:show_tags_view`,
   SHOW_APP_LOGO: `${APP_PREFIX}:ui:show_app_logo`,
   SHOW_WATERMARK: `${APP_PREFIX}:ui:show_watermark`,
+  PAGE_SWITCHING_ANIMATION: `${APP_PREFIX}:ui:page_switching_animation`,
   LAYOUT: `${APP_PREFIX}:ui:layout`,
   SIDEBAR_COLOR_SCHEME: `${APP_PREFIX}:ui:sidebar_color_scheme`,
   THEME: `${APP_PREFIX}:ui:theme`,

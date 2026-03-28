@@ -2,7 +2,7 @@ import { store } from "@/store";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import { useDictStoreHook } from "@/store/modules/dict";
 import { useTagsViewStore } from "@/store";
-import { cleanupWebSocket } from "@/composables";
+import { cleanupSseServices } from "@/composables";
 
 import AuthAPI from "@/api/auth";
 import UserAPI from "@/api/system/user";
@@ -75,8 +75,8 @@ export const useUserStore = defineStore("user", () => {
     useDictStoreHook().clearDictCache();
     useTagsViewStore().delAllViews();
 
-    // 3. 清理 WebSocket 连接
-    cleanupWebSocket();
+    // 3. 清理 SSE 连接
+    cleanupSseServices();
   }
 
   /**

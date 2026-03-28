@@ -148,7 +148,7 @@ export default defineMock([
       return {
         code: "00000",
         data: null,
-        msg: "删除用户" + params.id + "成功",
+        msg: "删除用户" + params.userId + "成功",
       };
     },
   },
