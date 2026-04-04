@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <div class="filter-section">
+  <div class="page-container">
+    <el-card class="page-search" shadow="never">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
         <el-form-item prop="keywords" label="关键字">
           <el-input
@@ -24,21 +24,15 @@
           />
         </el-form-item>
 
-        <el-form-item class="search-buttons">
+        <el-form-item>
           <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
           <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
         </el-form-item>
       </el-form>
-    </div>
+    </el-card>
 
-    <el-card shadow="hover" class="data-table">
-      <el-table
-        v-loading="loading"
-        :data="pageData"
-        highlight-current-row
-        border
-        class="data-table__content"
-      >
+    <el-card class="page-content" shadow="never">
+      <el-table v-loading="loading" :data="pageData" highlight-current-row border>
         <el-table-column label="模块" prop="module" width="100" align="center" />
         <el-table-column label="操作类型" prop="actionType" width="100" align="center" />
         <el-table-column label="操作标题" prop="title" min-width="180" show-overflow-tooltip />

@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
         // 定义全局 SCSS 变量
         scss: {
           api: "modern-compiler",
-          additionalData: `@use "@/styles/variables.scss" as *;`,
+          additionalData: `@use "@/styles/base/variables.scss" as *;`,
         },
       },
     },

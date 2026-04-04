@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container">
+  <div class="page-container">
     <!-- 搜索区域 -->
-    <div class="filter-section">
+    <el-card class="page-search" shadow="never">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="通知标题" prop="title">
           <el-input
@@ -12,7 +12,7 @@
           />
         </el-form-item>
 
-        <el-form-item class="search-buttons">
+        <el-form-item>
           <el-button type="primary" @click="handleQuery">
             <template #icon>
               <Search />
@@ -27,16 +27,10 @@
           </el-button>
         </el-form-item>
       </el-form>
-    </div>
+    </el-card>
 
-    <el-card shadow="hover" class="table-section">
-      <el-table
-        ref="dataTableRef"
-        v-loading="loading"
-        :data="pageData"
-        highlight-current-row
-        class="table-section__content"
-      >
+    <el-card class="page-content" shadow="never">
+      <el-table ref="dataTableRef" v-loading="loading" :data="pageData" highlight-current-row>
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column label="通知标题" prop="title" min-width="200" />
         <el-table-column align="center" label="通知类型" width="150">

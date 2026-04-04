@@ -1,6 +1,6 @@
 <!-- 用户管理 -->
 <template>
-  <div class="app-container">
+  <div class="page-container">
     <el-row :gutter="20">
       <!-- 部门树 -->
       <el-col :lg="4" :xs="24" class="mb-[12px]">
@@ -10,7 +10,7 @@
       <!-- 用户列表 -->
       <el-col :lg="20" :xs="24">
         <!-- 搜索区域 -->
-        <div class="filter-section">
+        <el-card class="page-search" shadow="never">
           <el-form ref="queryFormRef" :model="queryParams" :inline="true" label-width="auto">
             <el-form-item label="关键字" prop="keywords">
               <el-input
@@ -45,16 +45,16 @@
               />
             </el-form-item>
 
-            <el-form-item class="search-buttons">
+            <el-form-item>
               <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
               <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
             </el-form-item>
           </el-form>
-        </div>
+        </el-card>
 
-        <el-card shadow="hover" class="table-section">
-          <div class="table-section__toolbar">
-            <div class="table-section__toolbar--actions">
+        <el-card class="page-content" shadow="never">
+          <div class="page-toolbar">
+            <div class="page-toolbar__left">
               <el-button
                 v-hasPerm="['sys:user:create']"
                 type="success"
@@ -73,7 +73,7 @@
                 删除
               </el-button>
             </div>
-            <div class="table-section__toolbar--tools">
+            <div class="page-toolbar__right">
               <el-button
                 v-hasPerm="'sys:user:import'"
                 icon="upload"
@@ -94,7 +94,6 @@
             border
             stripe
             highlight-current-row
-            class="table-section__content"
             row-key="id"
             @selection-change="handleSelectionChange"
           >
