@@ -237,7 +237,7 @@ function handleSelectionChange(selection) {
  */
 function openDialog(row) {
   dialogState.visible = true;
-  dialogState.title = row ? "编辑字典值" : "新增字典值";
+  dialogState.title = row ? "编辑字典值" : "新增字典项";
 
   if (row?.id) {
     DictAPI.getDictItemFormData(dictCode.value, row.id).then((data) => {
