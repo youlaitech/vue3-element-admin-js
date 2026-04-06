@@ -213,5 +213,27 @@ html.sidebar-color-blue {
       color: var(--el-color-primary) !important;
     }
   }
+
+  html.dark & {
+    &.has-active-child > .el-sub-menu__title {
+      color: var(--el-color-primary-light-3) !important;
+      background-color: rgba(64, 128, 255, 0.15) !important;
+
+      .menu-icon {
+        color: var(--el-color-primary-light-3) !important;
+      }
+    }
+  }
+
+  html.sidebar-color-blue & {
+    &.has-active-child > .el-sub-menu__title {
+      color: var(--el-color-primary-light-3) !important;
+      background-color: rgba(64, 128, 255, 0.2) !important;
+
+      .menu-icon {
+        color: var(--el-color-primary-light-3) !important;
+      }
+    }
+  }
 }
 </style>

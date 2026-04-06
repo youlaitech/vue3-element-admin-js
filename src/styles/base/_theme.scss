@@ -10,13 +10,13 @@
 :root {
   // 菜单
   --menu-background: #fff;
-  --menu-text: #212121;
+  --menu-text: #606266;
   --menu-active-text: var(--el-menu-active-color);
   --menu-hover: #e6f4ff;
 
   // 侧边栏 Logo
   --sidebar-logo-background: #f5f5f5;
-  --sidebar-logo-text-color: #333;
+  --sidebar-logo-text-color: #303133;
 }
 
 // ============================================
@@ -48,24 +48,6 @@ html.dark {
   .el-table {
     --el-table-current-row-bg-color: var(--el-fill-color-light);
   }
-
-  // WangEditor Dark
-  --w-e-textarea-bg-color: var(--el-bg-color);
-  --w-e-textarea-color: var(--el-text-color-primary);
-  --w-e-textarea-border-color: var(--el-border-color);
-  --w-e-textarea-slight-border-color: var(--el-border-color-lighter);
-  --w-e-textarea-slight-color: var(--el-text-color-secondary);
-  --w-e-textarea-slight-bg-color: var(--el-bg-color-overlay);
-  --w-e-textarea-selected-border-color: var(--el-color-info-light-5);
-  --w-e-textarea-handler-bg-color: var(--el-color-primary);
-  --w-e-toolbar-color: var(--el-text-color-regular);
-  --w-e-toolbar-bg-color: var(--el-bg-color);
-  --w-e-toolbar-active-color: var(--el-text-color-primary);
-  --w-e-toolbar-active-bg-color: var(--el-fill-color-light);
-  --w-e-toolbar-disabled-color: var(--el-text-color-secondary);
-  --w-e-toolbar-border-color: var(--el-border-color-base);
-  --w-e-modal-button-bg-color: var(--el-bg-color-light-3);
-  --w-e-modal-button-border-color: var(--el-border-color-light);
 }
 
 // ============================================
