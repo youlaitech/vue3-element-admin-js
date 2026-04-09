@@ -108,7 +108,6 @@ export default defineConfig(({ mode }) => {
         "sortablejs",
         "qs",
         "path-browserify",
-        "@stomp/stompjs",
         "@element-plus/icons-vue",
         "element-plus/es",
         "element-plus/es/locale/lang/en",
