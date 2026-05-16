@@ -82,14 +82,22 @@ export function hasPerm(value, type = "button") {
 /**
  * 重定向到登录页面
  * @param {string} message 提示消息
+ * @param {boolean} notify 是否显示通知
  */
-export async function redirectToLogin(message = "请重新登录") {
-  ElNotification({
-    title: "提示",
-    message,
-    type: "warning",
-    duration: 3000,
-  });
+let redirectingToLogin = false;
+
+export async function redirectToLogin(message = "请重新登录", notify = true) {
+  if (redirectingToLogin) return;
+  redirectingToLogin = true;
+
+  if (notify) {
+    ElNotification({
+      title: "提示",
+      message,
+      type: "warning",
+      duration: 3000,
+    });
+  }
 
   await useUserStoreHook().resetAllState();
 
@@ -101,5 +109,7 @@ export async function redirectToLogin(message = "请重新登录") {
     console.error("Redirect to login error:", error);
     // 强制跳转，即使路由重定向失败
     window.location.href = "/login";
+  } finally {
+    redirectingToLogin = false;
   }
 }

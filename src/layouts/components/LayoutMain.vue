@@ -2,7 +2,7 @@
   <section class="app-main" :style="{ height: appMainHeight }">
     <router-view>
       <template #default="{ Component, route }">
-        <transition enter-active-class="animate__animated animate__fadeIn" mode="out-in">
+        <transition :name="transitionName" mode="out-in">
           <keep-alive :include="cachedViews">
             <component :is="currentComponent(Component, route)" :key="route.fullPath" />
           </keep-alive>
@@ -23,6 +23,8 @@ import variables from "@/styles/variables.module.scss";
 import Error404 from "@/views/error/404.vue";
 
 const { cachedViews } = toRefs(useTagsViewStore());
+
+const settingsStore = useSettingsStore();
 
 // 当前组件
 const wrapperMap = new Map();
@@ -47,16 +49,28 @@ const currentComponent = (component, route) => {
     wrapperMap.set(componentName, wrapper);
   }
 
-  return wrapper;
+  // 添加组件数量限制
+  if (wrapperMap.size > 100) {
+    const firstKey = wrapperMap.keys().next().value;
+    if (firstKey) {
+      wrapperMap.delete(firstKey);
+    }
+  }
+
+  return h(wrapper);
 };
 
-// 动态计算主内容区高度
 const appMainHeight = computed(() => {
-  if (useSettingsStore().showTagsView) {
+  if (settingsStore.showTagsView) {
     return `calc(100vh - ${variables["navbar-height"]} - ${variables["tags-view-height"]})`;
   } else {
     return `calc(100vh - ${variables["navbar-height"]})`;
   }
+});
+
+// 页面切换动画名称
+const transitionName = computed(() => {
+  return settingsStore.pageSwitchingAnimation ?? "";
 });
 </script>
 
@@ -64,6 +78,44 @@ const appMainHeight = computed(() => {
 .app-main {
   position: relative;
   overflow-y: auto;
-  background-color: var(--el-bg-color-page);
+  background-color: var(--page-bg);
+
+  /* fade */
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.3s ease-in-out;
+  }
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+
+  /* fade-slide */
+  .fade-slide-leave-active,
+  .fade-slide-enter-active {
+    transition: all 0.3s;
+  }
+  .fade-slide-enter-from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  .fade-slide-leave-to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  /* fade-scale */
+  .fade-scale-leave-active,
+  .fade-scale-enter-active {
+    transition: all 0.28s;
+  }
+  .fade-scale-enter-from {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+  .fade-scale-leave-to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
 }
 </style>

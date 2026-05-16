@@ -1,32 +1,36 @@
 <template>
   <el-drawer
     v-model="drawerVisible"
-    size="350"
-    :title="$t('settings.project')"
+    size="380"
+    :title="t('settings.project')"
     :before-close="handleCloseDrawer"
     class="settings-drawer"
   >
     <div class="settings-content">
       <section class="config-section">
-        <el-divider>{{ $t("settings.theme") }}</el-divider>
+        <el-divider>{{ t("settings.theme") }}</el-divider>
 
         <div class="flex-center">
-          <el-switch
-            v-model="isDark"
-            active-icon="Moon"
-            inactive-icon="Sunny"
-            class="theme-switch"
-            @change="handleThemeChange"
-          />
+          <el-radio-group v-model="themeMode" class="theme-mode-group">
+            <el-radio-button :value="ThemeMode.LIGHT">
+              {{ t("login.light") }}
+            </el-radio-button>
+            <el-radio-button :value="ThemeMode.DARK">
+              {{ t("login.dark") }}
+            </el-radio-button>
+            <el-radio-button :value="ThemeMode.AUTO">
+              {{ t("login.auto") }}
+            </el-radio-button>
+          </el-radio-group>
         </div>
       </section>
 
       <!-- 界面设置 -->
       <section class="config-section">
-        <el-divider>{{ $t("settings.interface") }}</el-divider>
+        <el-divider>{{ t("settings.interface") }}</el-divider>
 
         <div class="config-item flex-x-between">
-          <span class="text-xs">{{ $t("settings.themeColor") }}</span>
+          <span class="text-xs">{{ t("settings.themeColor") }}</span>
           <el-color-picker
             v-model="selectedThemeColor"
             :predefine="colorPresets"
@@ -35,28 +39,53 @@
         </div>
 
         <div class="config-item flex-x-between">
-          <span class="text-xs">{{ $t("settings.showTagsView") }}</span>
+          <span class="text-xs">{{ t("settings.showTagsView") }}</span>
           <el-switch v-model="settingsStore.showTagsView" />
         </div>
 
         <div class="config-item flex-x-between">
-          <span class="text-xs">{{ $t("settings.showAppLogo") }}</span>
+          <span class="text-xs">{{ t("settings.showAppLogo") }}</span>
           <el-switch v-model="settingsStore.showAppLogo" />
         </div>
 
         <div class="config-item flex-x-between">
-          <span class="text-xs">{{ $t("settings.showWatermark") }}</span>
+          <span class="text-xs">{{ t("settings.showWatermark") }}</span>
           <el-switch v-model="settingsStore.showWatermark" />
         </div>
 
-        <div v-if="!isDark" class="config-item flex-x-between">
-          <span class="text-xs">{{ $t("settings.sidebarColorScheme") }}</span>
+        <div class="config-item flex-x-between">
+          <span class="text-xs">{{ t("settings.pageSwitchingAnimation") }}</span>
+          <el-select v-model="settingsStore.pageSwitchingAnimation" style="width: 150px">
+            <el-option
+              v-for="(item, key) in pageSwitchingAnimationOptions"
+              :key
+              :label="t(`settings.${item.value}`)"
+              :value="item.value"
+            />
+          </el-select>
+        </div>
+
+        <div class="config-item flex-x-between">
+          <span class="text-xs">灰色模式</span>
+          <el-switch v-model="settingsStore.grayMode" />
+        </div>
+
+        <div class="config-item flex-x-between">
+          <span class="text-xs">色弱模式</span>
+          <el-switch v-model="settingsStore.colorWeak" />
+        </div>
+
+        <div
+          v-if="settingsStore.resolvedTheme !== ThemeMode.DARK"
+          class="config-item flex-x-between"
+        >
+          <span class="text-xs">{{ t("settings.sidebarColorScheme") }}</span>
           <el-radio-group v-model="sidebarColor" @change="changeSidebarColor">
             <el-radio :value="SidebarColor.CLASSIC_BLUE">
-              {{ $t("settings.classicBlue") }}
+              {{ t("settings.classicBlue") }}
             </el-radio>
             <el-radio :value="SidebarColor.MINIMAL_WHITE">
-              {{ $t("settings.minimalWhite") }}
+              {{ t("settings.minimalWhite") }}
             </el-radio>
           </el-radio-group>
         </div>
@@ -64,7 +93,7 @@
 
       <!-- 布局设置 -->
       <section class="config-section">
-        <el-divider>{{ $t("settings.navigation") }}</el-divider>
+        <el-divider>{{ t("settings.navigation") }}</el-divider>
 
         <!-- 整合的布局选择 -->
         <div class="layout-select">
@@ -110,7 +139,10 @@
     <!-- 操作按钮区域 - 固定到底部 -->
     <template #footer>
       <div class="action-buttons">
-        <el-tooltip :content="$t('settings.copyConfigDescription')" placement="top">
+        <el-tooltip
+          content="复制配置将生成当前设置的代码，覆盖到 `src/settings.ts` 下的 `defaultSettings` 变量"
+          placement="top"
+        >
           <el-button
             type="primary"
             size="default"
@@ -118,10 +150,10 @@
             :loading="copyLoading"
             @click="handleCopySettings"
           >
-            {{ copyLoading ? "复制中..." : $t("settings.copyConfig") }}
+            {{ copyLoading ? "复制中..." : t("settings.copyConfig") }}
           </el-button>
         </el-tooltip>
-        <el-tooltip :content="$t('settings.resetConfigDescription')" placement="top">
+        <el-tooltip content="重置将恢复所有设置为默认值" placement="top">
           <el-button
             type="warning"
             size="default"
@@ -129,7 +161,7 @@
             :loading="resetLoading"
             @click="handleResetSettings"
           >
-            {{ resetLoading ? "重置中..." : $t("settings.resetConfig") }}
+            {{ resetLoading ? "重置中..." : t("settings.resetConfig") }}
           </el-button>
         </el-tooltip>
       </div>
@@ -138,19 +170,15 @@
 </template>
 
 <script setup>
-import { DocumentCopy, RefreshLeft, Check, Moon, Sunny } from "@element-plus/icons-vue";
-import { useI18n } from "vue-i18n";
-import { markRaw, ref, computed } from "vue";
-import { useRoute } from "vue-router";
-import { useSettingsStore, usePermissionStore, useAppStore } from "@/stores";
-import { LayoutMode, SidebarColor, ThemeMode } from "@/enums/settings";
+import { DocumentCopy, RefreshLeft, Check } from "@element-plus/icons-vue";
 
 const { t } = useI18n();
+import { LayoutMode, PageSwitchingAnimationOptions, SidebarColor, ThemeMode } from "@/enums";
+import { useSettingsStore } from "@/stores";
+import { themeColorPresets } from "@/settings";
 
-const settingsStore = useSettingsStore();
-const permissionStore = usePermissionStore();
-const appStore = useAppStore();
-const route = useRoute();
+// 页面切换动画选项
+const pageSwitchingAnimationOptions = PageSwitchingAnimationOptions;
 
 // 按钮图标
 const copyIcon = markRaw(DocumentCopy);
@@ -160,37 +188,24 @@ const resetIcon = markRaw(RefreshLeft);
 const copyLoading = ref(false);
 const resetLoading = ref(false);
 
-// 颜色预设
-const colorPresets = [
-  "#4080FF",
-  "#626AEF",
-  "#ff4500",
-  "#ff8c00",
-  "#00ced1",
-  "#1e90ff",
-  "#c71585",
-  "rgb(255, 120, 0)",
-  "hsva(120, 40, 94)",
-];
-
 // 布局选项配置
+
 const layoutOptions = [
   { value: LayoutMode.LEFT, label: t("settings.leftLayout"), className: "left" },
   { value: LayoutMode.TOP, label: t("settings.topLayout"), className: "top" },
   { value: LayoutMode.MIX, label: t("settings.mixLayout"), className: "mix" },
 ];
 
-const isDark = computed({
-  get: () => settingsStore.theme === ThemeMode.DARK,
-  set: (val) => {
-    settingsStore.theme = val ? ThemeMode.DARK : ThemeMode.LIGHT;
-  },
-});
+// 使用统一的颜色预设配置（复制为可变数组以兼容组件 prop）
+const colorPresets = [...themeColorPresets];
 
-const sidebarColor = computed({
-  get: () => settingsStore.sidebarColorScheme,
-  set: (val) => {
-    settingsStore.sidebarColorScheme = val;
+const settingsStore = useSettingsStore();
+
+const sidebarColor = ref(settingsStore.sidebarColorScheme);
+const themeMode = computed({
+  get: () => settingsStore.theme,
+  set: (value) => {
+    settingsStore.theme = value;
   },
 });
 
@@ -207,15 +222,6 @@ const drawerVisible = computed({
 });
 
 /**
- * 处理主题切换
- *
- * @param isDark 是否启用暗黑模式
- */
-const handleThemeChange = (isDark) => {
-  settingsStore.theme = isDark ? ThemeMode.DARK : ThemeMode.LIGHT;
-};
-
-/**
  * 更改侧边栏颜色
  *
  * @param val 颜色方案名称
@@ -230,47 +236,10 @@ const changeSidebarColor = (val) => {
  * @param layout - 布局模式
  */
 const handleLayoutChange = (layout) => {
+  if (settingsStore.layout === layout) return;
+
   settingsStore.layout = layout;
-  if (layout === LayoutMode.MIX && route.name) {
-    const topLevelRoute = findTopLevelRoute(permissionStore.routes, route.name);
-    if (topLevelRoute && appStore.activeTopMenuPath !== topLevelRoute.path) {
-      appStore.activeTopMenu(topLevelRoute.path);
-    }
-  }
 };
-
-/**
- * 查找路由的顶层父路由
- *
- * @param tree 树形数据
- * @param findName 查找的名称
- */
-function findTopLevelRoute(tree, findName) {
-  const parentMap = {};
-
-  function buildParentMap(node, parent) {
-    parentMap[node.name] = parent;
-
-    if (node.children) {
-      for (let i = 0; i < node.children.length; i++) {
-        buildParentMap(node.children[i], node);
-      }
-    }
-  }
-
-  for (let i = 0; i < tree.length; i++) {
-    buildParentMap(tree[i], null);
-  }
-
-  let currentNode = parentMap[findName];
-  while (currentNode) {
-    if (!parentMap[currentNode.name]) {
-      return currentNode;
-    }
-    currentNode = parentMap[currentNode.name];
-  }
-  return null;
-}
 
 /**
  * 复制当前配置
@@ -304,17 +273,8 @@ const handleResetSettings = async () => {
   resetLoading.value = true;
 
   try {
-    // 假设 store 中有 resetSettings 方法，如果没有，这里可能需要手动重置
-    // JS 版本的 settingsStore 可能没有 resetSettings 方法
-    // 这里我们先模拟重置逻辑或警告
-    if (settingsStore.resetSettings) {
-      settingsStore.resetSettings();
-    } else {
-      ElMessage.warning("Store 中未实现 resetSettings 方法");
-    }
+    settingsStore.resetSettings();
 
-    // 同步更新本地状态
-    isDark.value = settingsStore.theme === ThemeMode.DARK;
     sidebarColor.value = settingsStore.sidebarColorScheme;
 
     ElMessage.success(t("settings.resetSuccess"));
@@ -333,30 +293,30 @@ const generateSettingsCode = () => {
     title: "pkg.name",
     version: "pkg.version",
     showSettings: true,
-    tagsView: settingsStore.showTagsView,
-    sidebarLogo: settingsStore.showAppLogo,
+    showTagsView: settingsStore.showTagsView,
+    showAppLogo: settingsStore.showAppLogo,
     layout: `LayoutMode.${settingsStore.layout.toUpperCase()}`,
     theme: `ThemeMode.${settingsStore.theme.toUpperCase()}`,
     size: "ComponentSize.DEFAULT",
     language: "LanguageEnum.ZH_CN",
     themeColor: `"${settingsStore.themeColor}"`,
-    watermarkEnabled: settingsStore.showWatermark,
+    showWatermark: settingsStore.showWatermark,
     watermarkContent: "pkg.name",
     sidebarColorScheme: `SidebarColor.${settingsStore.sidebarColorScheme.toUpperCase().replace("-", "_")}`,
   };
 
-  return `const defaultSettings = {
+  return `const defaultSettings: AppSettings = {
   title: ${settings.title},
   version: ${settings.version},
   showSettings: ${settings.showSettings},
-  tagsView: ${settings.tagsView},
-  sidebarLogo: ${settings.sidebarLogo},
+  showTagsView: ${settings.showTagsView},
+  showAppLogo: ${settings.showAppLogo},
   layout: ${settings.layout},
   theme: ${settings.theme},
   size: ${settings.size},
   language: ${settings.language},
   themeColor: ${settings.themeColor},
-  watermarkEnabled: ${settings.watermarkEnabled},
+  showWatermark: ${settings.showWatermark},
   watermarkContent: ${settings.watermarkContent},
   sidebarColorScheme: ${settings.sidebarColorScheme},
 };`;
@@ -375,6 +335,8 @@ const handleCloseDrawer = () => {
 .settings-drawer {
   :deep(.el-drawer__body) {
     position: relative;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     padding: 0;
     overflow: hidden;
@@ -383,7 +345,8 @@ const handleCloseDrawer = () => {
 
 /* 设置内容区域 */
 .settings-content {
-  max-height: calc(100vh - 120px);
+  /* let drawer body control height with flex and make this area scrollable */
+  flex: 1 1 auto;
   padding: 20px;
   overflow-y: auto;
 }
@@ -454,14 +417,18 @@ const handleCloseDrawer = () => {
   height: 80px;
   overflow: hidden;
   cursor: pointer;
-  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid var(--el-border-color-light);
+  background: linear-gradient(145deg, var(--el-bg-color) 0%, var(--el-bg-color-page) 100%);
+  border: 2px solid var(--el-border-color);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    background: linear-gradient(145deg, #ffffff 0%, var(--el-color-primary-light-9) 100%);
+    background: linear-gradient(
+      145deg,
+      var(--el-bg-color) 0%,
+      var(--el-color-primary-light-9) 100%
+    );
     border-color: var(--el-color-primary-light-3);
     transform: translateY(-4px) scale(1.05);
   }
@@ -505,7 +472,7 @@ const handleCloseDrawer = () => {
 
   .layout-main {
     position: absolute;
-    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    background: linear-gradient(135deg, var(--el-fill-color-light) 0%, var(--el-fill-color) 100%);
     border: 1px solid var(--el-border-color-lighter);
     border-radius: 2px;
   }
@@ -597,40 +564,10 @@ const handleCloseDrawer = () => {
   }
 }
 
-/* 深色模式适配 */
-.dark {
-  .action-footer {
-    background: var(--el-bg-color);
-    border-top-color: var(--el-border-color);
-  }
-
-  .action-card {
-    background: var(--el-fill-color-extra-light);
-  }
-
-  .layout-item {
-    background: linear-gradient(145deg, var(--el-bg-color) 0%, var(--el-bg-color-page) 100%);
-    border-color: var(--el-border-color);
-
-    &:hover {
-      background: linear-gradient(
-        145deg,
-        var(--el-bg-color-page) 0%,
-        var(--el-color-primary-light-9) 100%
-      );
-    }
-
-    &.is-active {
-      background: linear-gradient(
-        145deg,
-        var(--el-color-primary-light-9) 0%,
-        var(--el-color-primary-light-8) 100%
-      );
-    }
-
-    .layout-main {
-      background: linear-gradient(135deg, var(--el-fill-color) 0%, var(--el-fill-color-light) 100%);
-    }
+:deep(.copy-config-dialog) {
+  .el-message-box__content {
+    max-height: 400px;
+    overflow-y: auto;
   }
 }
 </style>

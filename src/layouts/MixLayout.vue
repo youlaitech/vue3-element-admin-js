@@ -1,7 +1,7 @@
 <template>
   <BaseLayout>
     <!-- 顶部菜单栏 -->
-    <div class="layout__header">
+    <div v-show="!appStore.contentFullscreen" class="layout__header">
       <div class="layout__header-content">
         <div v-if="showLogo" class="layout__header-logo">
           <LayoutLogo :collapse="isLogoCollapsed" />
@@ -37,7 +37,11 @@
     <!-- 主内容区容器 -->
     <div class="layout__container">
       <!-- 左侧菜单栏 -->
-      <div class="layout__sidebar--left" :class="{ 'layout__sidebar--collapsed': !isSidebarOpen }">
+      <div
+        v-show="!appStore.contentFullscreen"
+        class="layout__sidebar--left"
+        :class="{ 'layout__sidebar--collapsed': !isSidebarOpen }"
+      >
         <el-scrollbar>
           <el-menu
             :default-active="activeSideMenuPath"
@@ -52,7 +56,7 @@
               v-for="item in sideMenuRoutes"
               :key="item.path"
               :item="item"
-              :base-path="activeTopMenuPath"
+              :base-path="resolvePath(item.path)"
             />
           </el-menu>
         </el-scrollbar>
@@ -71,19 +75,18 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from "vue-router";
 import { useWindowSize } from "@vueuse/core";
 import { useLayout } from "./useLayout";
 import { useAppStore, usePermissionStore, useSettingsStore } from "@/stores";
 import { isExternal } from "@/utils/index";
 import { translateRouteTitle } from "@/lang/utils";
-import { SidebarColor } from "@/enums/settings";
+import { SidebarColor, ThemeMode } from "@/enums/settings";
 import { ElIcon } from "element-plus";
 import BaseLayout from "./BaseLayout.vue";
 import LayoutLogo from "./components/LayoutLogo.vue";
+import LayoutToolbar from "./components/LayoutToolbar.vue";
 import LayoutTagsView from "./components/LayoutTagsView.vue";
 import LayoutMain from "./components/LayoutMain.vue";
-import LayoutToolbar from "./components/LayoutToolbar.vue";
 import LayoutSidebarItem from "./components/LayoutSidebarItem.vue";
 import Hamburger from "@/components/Hamburger/index.vue";
 import variables from "@/styles/variables.module.scss";
@@ -124,49 +127,71 @@ const { showTagsView, showLogo, isSidebarOpen, toggleSidebar, sideMenuRoutes, ac
 
 const isLogoCollapsed = computed(() => width.value < 768);
 
+// 是否使用深色菜单配色（暗色主题或经典蓝侧边栏）
 const useMenuColors = computed(
   () =>
-    settingsStore.theme === "dark" || settingsStore.sidebarColorScheme === SidebarColor.CLASSIC_BLUE
+    settingsStore.resolvedTheme === ThemeMode.DARK ||
+    settingsStore.sidebarColorScheme === SidebarColor.CLASSIC_BLUE
 );
 
+// 顶部菜单项（处理单子菜单显示优化）
 const topMenuItems = computed(() => {
   const routes = permissionStore.routes.filter((item) => !item.meta?.hidden);
 
-  return routes.map((r) => {
-    if (r.meta?.alwaysShow || !r.children?.length) return r;
-    const visibleChildren = r.children.filter((child) => !child.meta?.hidden);
+  return routes.map((route) => {
+    // alwaysShow 或无子菜单，直接返回
+    if (route.meta?.alwaysShow || !route.children?.length) return route;
+
+    // 过滤可见子菜单
+    const visibleChildren = route.children.filter((child) => !child.meta?.hidden);
+
+    // 仅一个可见子菜单时，显示子菜单信息
     if (visibleChildren.length === 1) {
       const child = visibleChildren[0];
       return {
-        ...r,
+        ...route,
         meta: {
-          ...r.meta,
-          title: child.meta?.title || r.meta?.title,
-          icon: child.meta?.icon || r.meta?.icon,
+          ...route.meta,
+          title: child.meta?.title || route.meta?.title,
+          icon: child.meta?.icon || route.meta?.icon,
         },
       };
     }
-    return r;
+    return route;
   });
 });
 
+// 左侧菜单激活路径
 const activeSideMenuPath = computed(() => {
   const { meta, path } = route;
   return typeof meta?.activeMenu === "string" ? meta.activeMenu : path;
 });
 
+// 解析左侧菜单路径
 function resolvePath(routePath) {
   if (isExternal(routePath)) return routePath;
   if (routePath.startsWith("/")) return activeTopMenuPath.value + routePath;
   return `${activeTopMenuPath.value}/${routePath}`;
 }
 
+// 从路径提取顶级菜单路径
 function extractTopMenuPath(path) {
   return path.split("/").filter(Boolean).length > 1 ? path.match(/^\/[^/]+/)?.[0] || "/" : "/";
 }
 
+// 顶部菜单点击
+function handleTopMenuSelect(menuPath) {
+  if (menuPath === activeTopMenuPath.value) return;
+
+  appStore.activeTopMenu(menuPath);
+  permissionStore.setMixLayoutSideMenus(menuPath);
+  navigateToFirstMenu(permissionStore.mixLayoutSideMenus);
+}
+
+// 导航到第一个可访问菜单
 function navigateToFirstMenu(menus) {
-  if (!menus?.length) return;
+  if (!menus.length) return;
+
   const [first] = menus;
   if (first.children?.length) {
     navigateToFirstMenu(first.children);
@@ -178,14 +203,7 @@ function navigateToFirstMenu(menus) {
   }
 }
 
-function handleTopMenuSelect(menuPath) {
-  if (menuPath === activeTopMenuPath.value) return;
-
-  appStore.activeTopMenu(menuPath);
-  permissionStore.setMixLayoutSideMenus(menuPath);
-  navigateToFirstMenu(permissionStore.mixLayoutSideMenus);
-}
-
+// 监听路由变化，同步顶部菜单状态
 watch(
   () => route.path,
   (newPath) => {
@@ -196,6 +214,8 @@ watch(
       appStore.activeTopMenu(topMenuPath);
     }
 
+    // 切换布局（如左侧 -> 混合）时，activeTopMenuPath 可能已是正确值，
+    // 但 mixLayoutSideMenus 仍为空，需要补一次初始化。
     if (isTopMenuChanged || permissionStore.mixLayoutSideMenus.length === 0) {
       permissionStore.setMixLayoutSideMenus(topMenuPath);
     }
@@ -213,7 +233,8 @@ watch(
     width: 100%;
     height: $navbar-height;
     background-color: var(--menu-background);
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    border-bottom: 1px solid var(--card-border);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 6%);
 
     &-content {
       display: flex;
@@ -276,39 +297,38 @@ watch(
     height: calc(100vh - $navbar-height);
     padding-top: 0;
 
-    .layout__sidebar {
-      &--left {
-        position: relative;
-        width: $sidebar-width;
+    .layout__sidebar--left {
+      position: relative;
+      width: $sidebar-width;
+      height: 100%;
+      background-color: var(--menu-background);
+      border-right: 1px solid var(--card-border);
+      transition: width 0.28s;
+
+      &.layout__sidebar--collapsed {
+        width: $sidebar-width-collapsed !important;
+      }
+
+      :deep(.el-scrollbar) {
+        height: calc(100vh - $navbar-height - 50px);
+      }
+
+      :deep(.el-menu) {
         height: 100%;
+        border: none;
+      }
+
+      .layout__sidebar-toggle {
+        position: absolute;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 50px;
+        line-height: 50px;
         background-color: var(--menu-background);
-        transition: width 0.28s;
-
-        &.layout__sidebar--collapsed {
-          width: $sidebar-width-collapsed !important;
-        }
-
-        :deep(.el-scrollbar) {
-          height: calc(100vh - $navbar-height - 50px);
-        }
-
-        :deep(.el-menu) {
-          height: 100%;
-          border: none;
-        }
-
-        .layout__sidebar-toggle {
-          position: absolute;
-          bottom: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          height: 50px;
-          line-height: 50px;
-          background-color: var(--menu-background);
-          box-shadow: 0 0 6px -2px var(--el-color-primary);
-        }
+        box-shadow: 0 0 6px -2px var(--el-color-primary);
       }
     }
 

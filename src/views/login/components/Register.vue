@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <h3 text-center m-0 mb-20px>{{ t("login.reg") }}</h3>
     <el-form ref="formRef" :model="model" :rules="rules" size="large">
@@ -64,11 +64,11 @@
             <el-icon v-if="codeLoading" class="is-loading" size="20"><Loading /></el-icon>
             <img
               v-else-if="captchaBase64"
-              h-full
+              border-rd-4px
               w-full
+              h-full
               block
               object-cover
-              border-rd-4px
               shadow="[0_0_0_1px_var(--el-border-color)_inset]"
               :src="captchaBase64"
               alt="code"
@@ -100,7 +100,6 @@
 </template>
 <script setup>
 import { Lock } from "@element-plus/icons-vue";
-import { useI18n } from "vue-i18n";
 import AuthAPI from "@/api/auth";
 
 const { t } = useI18n();

@@ -1,5 +1,12 @@
-import { SidebarColor, ThemeMode } from "@/enums";
-import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from "@/utils/theme";
+import { SidebarColor, ThemeMode } from "@/enums/settings";
+import {
+  applyTheme,
+  generateThemeColors,
+  resolveThemeMode,
+  toggleDarkMode,
+  toggleSidebarColor,
+  watchSystemTheme,
+} from "@/utils/theme";
 import { STORAGE_KEYS } from "@/constants";
 import { defaults } from "@/settings";
 
@@ -9,6 +16,10 @@ export const useSettingsStore = defineStore("setting", () => {
   const showTagsView = useStorage(STORAGE_KEYS.SHOW_TAGS_VIEW, defaults.showTagsView);
   const showAppLogo = useStorage(STORAGE_KEYS.SHOW_APP_LOGO, defaults.showAppLogo);
   const showWatermark = useStorage(STORAGE_KEYS.SHOW_WATERMARK, defaults.showWatermark);
+  const pageSwitchingAnimation = useStorage(
+    STORAGE_KEYS.PAGE_SWITCHING_ANIMATION,
+    defaults.pageSwitchingAnimation
+  );
 
   // 布局
   const layout = useStorage(STORAGE_KEYS.LAYOUT, defaults.layout);
@@ -21,17 +32,40 @@ export const useSettingsStore = defineStore("setting", () => {
   const theme = useStorage(STORAGE_KEYS.THEME, defaults.theme);
   const themeColor = useStorage(STORAGE_KEYS.THEME_COLOR, defaults.themeColor);
 
+  // 旧默认值 → 新默认值 自动迁移（用户自定义的颜色不会被覆盖）
+  const LEGACY_DEFAULTS = ["#4080FF", "#4080ff", "#2563EB", "#2563eb"];
+  if (LEGACY_DEFAULTS.includes(themeColor.value)) {
+    themeColor.value = defaults.themeColor;
+  }
+  const resolvedTheme = ref(resolveThemeMode(theme.value));
+
   // 特殊模式
   const grayMode = useStorage(STORAGE_KEYS.GRAY_MODE, false);
   const colorWeak = useStorage(STORAGE_KEYS.COLOR_WEAK, false);
 
   // 主题变化监听
+  let stopWatchingSystemTheme;
+
   watch(
-    [theme, themeColor],
-    ([t, c]) => {
-      if (document.documentElement?.dataset?.themeTransition) {
-        return;
+    theme,
+    (value) => {
+      stopWatchingSystemTheme?.();
+      resolvedTheme.value = resolveThemeMode(value);
+
+      if (value === ThemeMode.AUTO) {
+        stopWatchingSystemTheme = watchSystemTheme((systemTheme) => {
+          resolvedTheme.value = systemTheme;
+        });
+      } else {
+        stopWatchingSystemTheme = undefined;
       }
+    },
+    { immediate: true }
+  );
+
+  watch(
+    [resolvedTheme, themeColor],
+    ([t, c]) => {
       toggleDarkMode(t === ThemeMode.DARK);
       applyTheme(generateThemeColors(c, t));
     },
@@ -64,6 +98,7 @@ export const useSettingsStore = defineStore("setting", () => {
     showTagsView.value = defaults.showTagsView;
     showAppLogo.value = defaults.showAppLogo;
     showWatermark.value = defaults.showWatermark;
+    pageSwitchingAnimation.value = defaults.pageSwitchingAnimation;
     grayMode.value = false;
     colorWeak.value = false;
     sidebarColorScheme.value = defaults.sidebarColorScheme;
@@ -77,12 +112,14 @@ export const useSettingsStore = defineStore("setting", () => {
     showTagsView,
     showAppLogo,
     showWatermark,
+    pageSwitchingAnimation,
     grayMode,
     colorWeak,
     sidebarColorScheme,
     layout,
     themeColor,
     theme,
+    resolvedTheme,
     resetSettings,
   };
 });

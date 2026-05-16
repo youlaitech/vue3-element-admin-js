@@ -3,15 +3,20 @@
     <!--【叶子节点】显示叶子节点或唯一子节点且父节点未配置始终显示 -->
     <template
       v-if="
+        // 未配置始终显示，使用唯一子节点替换父节点显示为叶子节点
         (hasOneShowingChild(item.children, item) &&
           !item.meta?.alwaysShow &&
           (!onlyOneChild.children || onlyOneChild.noShowingChildren)) ||
+        // 即使配置了始终显示，但无子节点，也显示为叶子节点
         (item.meta?.alwaysShow && !item.children)
       "
     >
       <AppLink
         v-if="onlyOneChild.meta"
-        :to="{ path: resolvePath(onlyOneChild.path), query: onlyOneChild.meta?.params }"
+        :to="{
+          path: resolvePath(onlyOneChild.path),
+          query: onlyOneChild.meta.params,
+        }"
       >
         <el-menu-item
           :index="resolvePath(onlyOneChild.path)"
@@ -50,103 +55,158 @@
 </template>
 
 <script setup>
-import { computed, defineComponent, h, ref, resolveComponent } from "vue";
-import { ElIcon } from "element-plus";
-import { translateRouteTitle } from "@/lang/utils";
-import AppLink from "@/components/AppLink/index.vue";
 import path from "path-browserify";
-import { isExternal } from "@/utils/index";
+import { isExternal } from "@/utils";
+import { translateRouteTitle } from "@/lang/utils";
+import { ElIcon } from "element-plus";
 
 defineOptions({
   name: "LayoutSidebarItem",
   inheritAttrs: false,
 });
 
+// 菜单图标组件
+const MenuIcon = defineComponent({
+  props: { icon: String },
+  setup(props) {
+    const isElIcon = computed(() => props.icon?.startsWith("el-icon"));
+    const iconName = computed(() => props.icon?.replace("el-icon-", ""));
+
+    return () => {
+      if (!props.icon) {
+        return h("div", { class: "i-svg:menu" });
+      }
+
+      // Element Plus 图标
+      if (isElIcon.value) {
+        return h(ElIcon, null, () => h(resolveComponent(iconName.value)));
+      }
+
+      // SVG 图标
+      return h("div", { class: `i-svg:${props.icon}` });
+    };
+  },
+});
+
 const props = defineProps({
+  /**
+   * 当前路由对象
+   */
   item: {
     type: Object,
     required: true,
   },
+
+  /**
+   * 父级完整路径
+   */
   basePath: {
     type: String,
     required: true,
   },
+
+  /**
+   * 是否为嵌套路由
+   */
   isNest: {
     type: Boolean,
     default: false,
   },
 });
 
+// 可见的唯一子节点
 const onlyOneChild = ref();
 
-const MenuIcon = defineComponent({
-  props: { icon: String },
-  setup(iconProps) {
-    const isElIcon = computed(() => iconProps.icon?.startsWith("el-icon"));
-    const iconName = computed(() => iconProps.icon?.replace("el-icon-", ""));
-
-    return () => {
-      if (!iconProps.icon) {
-        return h("div", { class: "i-svg:menu" });
-      }
-
-      if (isElIcon.value) {
-        return h(ElIcon, null, () => h(resolveComponent(iconName.value)));
-      }
-
-      return h("div", { class: `i-svg:${iconProps.icon}` });
-    };
-  },
-});
-
+/**
+ * 检查是否仅有一个可见子节点
+ *
+ * @param children 子路由数组
+ * @param parent 父级路由
+ * @returns 是否仅有一个可见子节点
+ */
 function hasOneShowingChild(children = [], parent) {
-  const showingChildren = (children || []).filter((route) => {
-    if (!route?.meta?.hidden) {
+  // 过滤出可见子节点
+  const showingChildren = children.filter((route) => {
+    if (!route.meta?.hidden) {
       onlyOneChild.value = route;
       return true;
     }
     return false;
   });
 
+  // 仅有一个节点
   if (showingChildren.length === 1) {
     return true;
   }
 
+  // 无子节点
   if (showingChildren.length === 0) {
+    // 父节点设置为唯一显示节点，并标记为无子节点
     onlyOneChild.value = { ...parent, path: "", noShowingChildren: true };
     return true;
   }
-
   return false;
 }
 
+/**
+ * 获取完整路径，适配外部链接
+ *
+ * @param routePath 路由路径
+ * @returns 绝对路径
+ */
 function resolvePath(routePath) {
   if (isExternal(routePath)) return routePath;
   if (isExternal(props.basePath)) return props.basePath;
+
+  // 拼接父路径和当前路径
   return path.resolve(props.basePath, routePath);
 }
 </script>
 
 <style lang="scss">
-[class^="i-svg:"] {
-  width: 18px;
-  height: 18px;
-  font-size: 18px;
-  color: currentcolor !important;
+/* stylelint-disable no-descending-specificity */
+/* 菜单图标统一样式 */
+.el-menu-item,
+.el-sub-menu__title {
+  .el-icon {
+    width: 1em !important;
+    margin-right: 0 !important;
+    font-size: 18px;
+    color: currentcolor;
+  }
+
+  [class^="i-svg:"] {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    color: currentcolor !important;
+  }
 }
 
-.el-menu {
+/* 折叠状态下的图标样式 - 确保 SVG 图标不被压缩 */
+.el-menu--collapse {
   .el-menu-item,
-  .el-sub-menu__title {
-    .el-icon {
-      width: 1em !important;
-      margin-right: 0 !important;
-      font-size: 18px;
-      color: currentcolor;
+  .el-sub-menu > .el-sub-menu__title {
+    [class^="i-svg:"] {
+      width: 18px !important;
+      min-width: 18px !important;
+      height: 18px !important;
+      font-size: 18px !important;
+    }
+  }
+
+  /* tooltip 弹出层中的图标 */
+  .el-tooltip__trigger {
+    [class^="i-svg:"] {
+      width: 18px !important;
+      min-width: 18px !important;
+      height: 18px !important;
+      font-size: 18px !important;
     }
   }
 }
 
+/* hideSidebar 状态下的图标 */
 .hideSidebar {
   [class^="i-svg:"] {
     width: 18px !important;
@@ -171,6 +231,10 @@ function resolvePath(routePath) {
     overflow: hidden;
 
     & > .el-sub-menu__title {
+      .sub-el-icon {
+        margin-left: 19px;
+      }
+
       .el-sub-menu__icon-arrow {
         display: none;
       }
@@ -204,7 +268,9 @@ html.sidebar-color-blue {
   }
 }
 
+// 父菜单激活状态样式 - 当子菜单激活时，父菜单显示激活状态
 .el-sub-menu {
+  // 当父菜单包含激活子菜单时的样式
   &.has-active-child > .el-sub-menu__title {
     color: var(--el-color-primary) !important;
     background-color: var(--el-color-primary-light-9) !important;
@@ -214,6 +280,7 @@ html.sidebar-color-blue {
     }
   }
 
+  // 深色主题下的父菜单激活状态"
   html.dark & {
     &.has-active-child > .el-sub-menu__title {
       color: var(--el-color-primary-light-3) !important;
@@ -225,6 +292,7 @@ html.sidebar-color-blue {
     }
   }
 
+  // 深蓝色侧边栏配色下的父菜单激活状态"
   html.sidebar-color-blue & {
     &.has-active-child > .el-sub-menu__title {
       color: var(--el-color-primary-light-3) !important;
@@ -236,4 +304,5 @@ html.sidebar-color-blue {
     }
   }
 }
+/* stylelint-enable no-descending-specificity */
 </style>

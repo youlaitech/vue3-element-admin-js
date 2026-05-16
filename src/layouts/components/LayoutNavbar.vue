@@ -3,10 +3,10 @@
     <div class="flex-y-center">
       <!-- 菜单折叠按钮 -->
       <Hamburger :is-active="isSidebarOpened" @toggle-click="toggleSideBar" />
-      <!-- 面包屑导航 -->
+      <!-- 面包屑导行栏-->
       <Breadcrumb />
     </div>
-    <!-- 导航栏操作区域 -->
+    <!-- 导航栏操作区域-->
     <div class="navbar__actions">
       <LayoutToolbar />
     </div>
@@ -33,6 +33,10 @@ function toggleSideBar() {
   align-items: center;
   justify-content: space-between;
   height: $navbar-height;
+  padding: 0 16px 0 4px;
+  background-color: var(--content-bg);
+  border-bottom: 1px solid var(--card-border);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 3%);
 
   &__actions {
     display: flex;

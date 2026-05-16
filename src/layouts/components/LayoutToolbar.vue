@@ -27,8 +27,8 @@
         <NoticeDropdown />
       </div>
 
-      <!-- 租户选择（如启用多租户且租户数大于 1） -->
-      <div v-if="showTenantSelect" class="navbar-actions__item">
+      <!-- 租户选择（如果启用多租户）-->
+      <div v-if="showTenantSwitcher" class="navbar-actions__item">
         <TenantSwitcher @change="handleTenantChange" />
       </div>
     </template>
@@ -67,81 +67,77 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
+import { defaults } from "@/settings";
+import { DeviceEnum, SidebarColor, ThemeMode, LayoutMode } from "@/enums/settings";
+import { useAppStore, useSettingsStore, useUserStore } from "@/stores";
+
+// 导入子组件
 import CommandPalette from "@/components/CommandPalette/index.vue";
 import Fullscreen from "@/components/Fullscreen/index.vue";
 import SizeSelect from "@/components/SizeSelect/index.vue";
 import LangSelect from "@/components/LangSelect/index.vue";
 import NoticeDropdown from "@/components/NoticeDropdown/index.vue";
 import TenantSwitcher from "@/components/TenantSwitcher/index.vue";
-import { useAppStore, useSettingsStore, useUserStore } from "@/stores";
 import { useTenantStoreHook } from "@/stores/tenant";
-import { defaults } from "@/settings";
-import { DeviceEnum, LayoutMode, SidebarColor, ThemeMode } from "@/enums/settings";
 
 const { t } = useI18n();
 const appStore = useAppStore();
 const settingStore = useSettingsStore();
 const userStore = useUserStore();
 const tenantStore = useTenantStoreHook();
+
 const route = useRoute();
 const router = useRouter();
 
+// 是否为桌面设备
 const isDesktop = computed(() => appStore.device === DeviceEnum.DESKTOP);
 
-const showTenantSelect = computed(() => {
-  if (!tenantStore.tenantList || tenantStore.tenantList.length === 0) {
+const canSwitchTenant = computed(() => userStore.userInfo?.canSwitchTenant === true);
+
+// 是否显示租户选择
+const showTenantSwitcher = computed(() => {
+  if (!canSwitchTenant.value) {
     return false;
   }
-  if (tenantStore.tenantList.length === 1) {
-    return false;
-  }
-  return true;
+  return tenantStore.tenantList.length > 1;
 });
 
 function handleTenantChange(tenantId) {
-  tenantStore
-    .switchTenant(tenantId)
-    .then(() => {
+  tenantStore.switchTenant(tenantId).then(
+    () => {
       ElMessage.success("切换租户成功");
-      window.location.reload();
-    })
-    .catch((error) => {
-      ElMessage.error(error?.message || "切换租户失败");
-    });
+      window.location.href = "/";
+    },
+    (error) => {
+      ElMessage.error(error.message || "切换租户失败");
+    }
+  );
 }
 
+/**
+ * 打开个人中心页面
+ */
 function handleProfileClick() {
   router.push({ name: "Profile" });
 }
 
-function logout() {
-  ElMessageBox.confirm("确定注销并退出系统吗？", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-    lockScroll: false,
-  }).then(() => {
-    userStore.logout().then(() => {
-      router.push(`/login?redirect=${route.fullPath}`);
-    });
-  });
-}
-
-function handleSettingsClick() {
-  settingStore.settingsVisible = true;
-}
-
+// 根据主题和侧边栏配色方案选择样式类
 const navbarActionsClass = computed(() => {
-  if (settingStore.theme === ThemeMode.DARK) {
+  const { resolvedTheme, sidebarColorScheme, layout } = settingStore;
+
+  // 暗黑主题下，所有布局都使用白色文字
+  if (resolvedTheme === ThemeMode.DARK) {
     return "navbar-actions--white-text";
   }
 
-  if (settingStore.theme === ThemeMode.LIGHT) {
-    if (settingStore.layout === LayoutMode.TOP || settingStore.layout === LayoutMode.MIX) {
-      if (settingStore.sidebarColorScheme === SidebarColor.CLASSIC_BLUE) {
+  // 明亮主题下
+  if (resolvedTheme === ThemeMode.LIGHT) {
+    // 顶部布局和混合布局的顶部区域：
+    // - 如果侧边栏是经典蓝色，使用白色文字
+    // - 如果侧边栏是极简白色，使用深色文字
+    if (layout === LayoutMode.TOP || layout === LayoutMode.MIX) {
+      if (sidebarColorScheme === SidebarColor.CLASSIC_BLUE) {
         return "navbar-actions--white-text";
       } else {
         return "navbar-actions--dark-text";
@@ -151,6 +147,31 @@ const navbarActionsClass = computed(() => {
 
   return "navbar-actions--dark-text";
 });
+
+/**
+ * 退出登录
+ */
+function logout() {
+  ElMessageBox.confirm("确定注销并退出系统吗？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+    lockScroll: false,
+  }).then(() => {
+    userStore.logout().then(() => {
+      // 若当前已在 404/401 等错误页，退出后不再跳回错误页
+      const redirect = ["/404", "/401"].includes(route.path) ? "/" : route.fullPath;
+      router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+    });
+  });
+}
+
+/**
+ * 打开系统设置页面
+ */
+function handleSettingsClick() {
+  settingStore.settingsVisible = true;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -164,19 +185,21 @@ const navbarActionsClass = computed(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
+    min-width: 44px; /* 增加最小点击区域到44px，符合人机交互标准 */
     height: 44px;
     padding: 0 8px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
 
-    > * {
+    // 只对需要居中的子元素生效，不使用通配符避免影响选择器组件
+    > [class^="i-svg:"] {
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
+    // 确保 Element Plus 组件可以正常工作
     :deep(.el-dropdown),
     :deep(.el-tooltip) {
       display: flex;
@@ -186,24 +209,25 @@ const navbarActionsClass = computed(() => {
       height: 44px;
     }
 
-    :deep([class^="i-svg:"]) {
-      font-size: 18px;
-      line-height: 1;
-      color: var(--el-text-color-regular);
-      transition: color 0.3s;
-    }
-
     :deep(.i-svg\:language) {
       flex-shrink: 0;
-      width: 18px;
-      height: 18px;
-      font-size: 18px;
-      line-height: 18px;
-      background-size: 18px 18px;
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+      line-height: 16px;
+      background-size: 16px 16px;
+    }
+
+    // 图标样式
+    :deep([class^="i-svg:"]) {
+      font-size: 16px;
+      line-height: 1;
+      color: var(--el-text-color-secondary);
+      transition: color 0.2s;
     }
 
     &:hover {
-      background: rgba(0, 0, 0, 0.04);
+      background: var(--el-fill-color-light);
 
       :deep([class^="i-svg:"]) {
         color: var(--el-color-primary);
@@ -217,8 +241,6 @@ const navbarActionsClass = computed(() => {
     justify-content: center;
     height: 44px;
     padding: 0 8px;
-    cursor: pointer;
-    user-select: none;
 
     &__avatar {
       flex-shrink: 0;
@@ -236,44 +258,47 @@ const navbarActionsClass = computed(() => {
   }
 }
 
+// 白色文字样式（用于深色背景：暗黑主题、顶部布局、混合布局等）
 .navbar-actions--white-text {
   .navbar-actions__item {
     :deep([class^="i-svg:"]) {
-      color: rgba(255, 255, 255, 0.85);
+      color: color-mix(in srgb, var(--el-color-white) 85%, transparent);
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: color-mix(in srgb, var(--el-color-white) 10%, transparent);
 
       :deep([class^="i-svg:"]) {
-        color: #fff;
+        color: var(--el-color-white);
       }
     }
   }
 
   .user-profile__name {
-    color: rgba(255, 255, 255, 0.85);
+    color: color-mix(in srgb, var(--el-color-white) 85%, transparent);
   }
 
+  // 租户选择器在白色文字模式下的样式
   ::v-deep(.tenant-switcher__trigger) {
-    color: rgba(255, 255, 255, 0.85);
+    color: color-mix(in srgb, var(--el-color-white) 85%, transparent);
   }
   ::v-deep(.tenant-switcher__trigger .tenant-switcher__icon) {
-    color: rgba(255, 255, 255, 0.85);
+    color: color-mix(in srgb, var(--el-color-white) 85%, transparent);
   }
   ::v-deep(.tenant-switcher__trigger:hover) {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--el-color-white);
+    background: color-mix(in srgb, var(--el-color-white) 10%, transparent);
   }
   ::v-deep(.tenant-switcher__trigger:hover .tenant-switcher__icon) {
-    color: #fff;
+    color: var(--el-color-white);
   }
 }
 
+// 深色文字样式（用于浅色背景：明亮主题下的左侧布局等）
 .navbar-actions--dark-text {
   .navbar-actions__item {
     :deep([class^="i-svg:"]) {
-      color: var(--el-text-color-regular) !important;
+      color: var(--el-text-color-secondary) !important;
     }
 
     &:hover {
@@ -289,6 +314,7 @@ const navbarActionsClass = computed(() => {
     color: var(--el-text-color-regular) !important;
   }
 
+  // 租户选择器在深色文字模式下的样式
   ::v-deep(.tenant-switcher__trigger) {
     color: var(--el-text-color-regular) !important;
   }
@@ -297,13 +323,14 @@ const navbarActionsClass = computed(() => {
   }
   ::v-deep(.tenant-switcher__trigger:hover) {
     color: var(--el-color-primary) !important;
-    background: rgba(0, 0, 0, 0.04);
+    background: var(--el-fill-color-light);
   }
   ::v-deep(.tenant-switcher__trigger:hover .tenant-switcher__icon) {
     color: var(--el-color-primary) !important;
   }
 }
 
+// 确保下拉菜单中的图标不受影响
 ::v-deep(.el-dropdown-menu) {
   [class^="i-svg:"] {
     color: var(--el-text-color-regular) !important;

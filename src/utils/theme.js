@@ -1,3 +1,7 @@
+import { ThemeMode } from "@/enums/settings";
+
+const SYSTEM_DARK_MEDIA = "(prefers-color-scheme: dark)";
+
 // 辅助函数：将十六进制颜色转换为 RGB
 function hexToRgb(hex) {
   const bigint = parseInt(hex.slice(1), 16);
@@ -8,6 +12,17 @@ function hexToRgb(hex) {
 function rgbToHex(r, g, b) {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
+
+// 辅助函数：调整颜色亮度
+/** function adjustBrightness(hex, factor, theme) {
+  const rgb = hexToRgb(hex);
+  // 是否是暗黑模式
+  const isDarkMode = theme === "dark" ? 0 : 255;
+  const newRgb = rgb.map((val) =>
+    Math.max(0, Math.min(255, Math.round(val + (isDarkMode - val) * factor)))
+  );
+  return rgbToHex(...newRgb);
+} */
 
 /**
  * 加深颜色值
@@ -39,22 +54,66 @@ export const getLightColor = (color, level) => {
  * @param theme 主题类型
  */
 export function generateThemeColors(primary, theme) {
+  const resolvedTheme = resolveThemeMode(theme);
   const colors = {
     primary,
   };
 
-  // 生成浅色变体
+  // 生成 primary 浅色/深色变体
   for (let i = 1; i <= 9; i++) {
-    const primaryColor =
-      theme === "light" ? `${getLightColor(primary, i / 10)}` : `${getDarkColor(primary, i / 10)}`;
-    colors[`primary-light-${i}`] = primaryColor;
+    colors[`primary-light-${i}`] =
+      resolvedTheme === ThemeMode.LIGHT
+        ? `${getLightColor(primary, i / 10)}`
+        : `${getDarkColor(primary, i / 10)}`;
   }
 
-  // 生成深色变体
   colors["primary-dark-2"] =
-    theme === "light" ? `${getLightColor(primary, 0.2)}` : `${getDarkColor(primary, 0.3)}`;
+    resolvedTheme === ThemeMode.LIGHT
+      ? `${getLightColor(primary, 0.2)}`
+      : `${getDarkColor(primary, 0.3)}`;
+
+  // 语义色（success / warning / danger / info）
+  const semanticColors = {
+    success: "#22c55e",
+    warning: "#faad14",
+    danger: "#ff4d4f",
+    info: "#788896",
+  };
+
+  Object.entries(semanticColors).forEach(([name, base]) => {
+    colors[name] = base;
+    for (let i = 1; i <= 9; i++) {
+      colors[`${name}-light-${i}`] =
+        resolvedTheme === ThemeMode.LIGHT
+          ? `${getLightColor(base, i / 10)}`
+          : `${getDarkColor(base, i / 10)}`;
+    }
+    colors[`${name}-dark-2`] =
+      resolvedTheme === ThemeMode.LIGHT
+        ? `${getLightColor(base, 0.2)}`
+        : `${getDarkColor(base, 0.3)}`;
+  });
 
   return colors;
+}
+
+export function getSystemTheme() {
+  return window.matchMedia(SYSTEM_DARK_MEDIA).matches ? ThemeMode.DARK : ThemeMode.LIGHT;
+}
+
+export function resolveThemeMode(theme) {
+  return theme === ThemeMode.AUTO ? getSystemTheme() : theme;
+}
+
+export function watchSystemTheme(callback) {
+  const mediaQuery = window.matchMedia(SYSTEM_DARK_MEDIA);
+  const handler = () => callback(mediaQuery.matches ? ThemeMode.DARK : ThemeMode.LIGHT);
+
+  mediaQuery.addEventListener("change", handler);
+
+  return () => {
+    mediaQuery.removeEventListener("change", handler);
+  };
 }
 
 export function applyTheme(colors) {
@@ -62,6 +121,12 @@ export function applyTheme(colors) {
 
   Object.entries(colors).forEach(([key, value]) => {
     el.style.setProperty(`--el-color-${key}`, value);
+  });
+
+  // 确保主题色立即生效，强制重新渲染
+  requestAnimationFrame(() => {
+    // 触发样式重新计算
+    el.style.setProperty("--theme-update-trigger", Date.now().toString());
   });
 }
 
@@ -72,9 +137,9 @@ export function applyTheme(colors) {
  */
 export function toggleDarkMode(isDark) {
   if (isDark) {
-    document.documentElement.classList.add("dark");
+    document.documentElement.classList.add(ThemeMode.DARK);
   } else {
-    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.remove(ThemeMode.DARK);
   }
 }
 

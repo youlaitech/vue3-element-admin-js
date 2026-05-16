@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <h3 text-center m-0 mb-20px>{{ t("login.resetPassword") }}</h3>
     <el-form ref="formRef" :model="model" :rules="rules" size="large">
@@ -24,8 +24,6 @@
   </div>
 </template>
 <script setup>
-import { useI18n } from "vue-i18n";
-
 const { t } = useI18n();
 
 const emit = defineEmits(["update:modelValue"]);

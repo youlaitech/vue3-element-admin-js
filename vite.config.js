@@ -101,6 +101,7 @@ export default defineConfig(({ mode }) => {
         "echarts/charts",
         "echarts/components",
         "vue-i18n",
+        "vxe-table",
         "nprogress",
         "sortablejs",
         "qs",
