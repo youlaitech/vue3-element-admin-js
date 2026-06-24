@@ -9,18 +9,8 @@
  * 主题模式枚举
  */
 export const ThemeMode = {
-  /**
-   * 明亮主题
-   */
   LIGHT: "light",
-  /**
-   * 暗黑主题
-   */
   DARK: "dark",
-
-  /**
-   * 系统自动
-   */
   AUTO: "auto",
 };
 
@@ -28,13 +18,7 @@ export const ThemeMode = {
  * 侧边栏配色方案枚举
  */
 export const SidebarColor = {
-  /**
-   * 经典蓝
-   */
   CLASSIC_BLUE: "classic-blue",
-  /**
-   * 极简白
-   */
   MINIMAL_WHITE: "minimal-white",
 };
 
@@ -42,33 +26,25 @@ export const SidebarColor = {
  * 菜单布局枚举
  */
 export const LayoutMode = {
-  /**
-   * 左侧菜单布局
-   */
   LEFT: "left",
-  /**
-   * 顶部菜单布局
-   */
   TOP: "top",
-
-  /**
-   * 混合菜单布局
-   */
   MIX: "mix",
+  DOUBLE: "double",
+};
+
+/**
+ * 页签风格枚举
+ */
+export const TagsViewStyle = {
+  LINE: "line",
+  CARD: "card",
 };
 
 /**
  * 侧边栏状态枚举
  */
 export const SidebarStatus = {
-  /**
-   * 展开
-   */
   OPENED: "opened",
-
-  /**
-   * 关闭
-   */
   CLOSED: "closed",
 };
 
@@ -76,19 +52,8 @@ export const SidebarStatus = {
  * 组件尺寸枚举
  */
 export const ComponentSize = {
-  /**
-   * 默认
-   */
   DEFAULT: "default",
-
-  /**
-   * 大型
-   */
   LARGE: "large",
-
-  /**
-   * 小型
-   */
   SMALL: "small",
 };
 
@@ -96,14 +61,7 @@ export const ComponentSize = {
  * 语言枚举
  */
 export const LanguageEnum = {
-  /**
-   * 中文
-   */
   ZH_CN: "zh-cn",
-
-  /**
-   * 英文
-   */
   EN: "en",
 };
 
@@ -111,14 +69,7 @@ export const LanguageEnum = {
  * 设备枚举
  */
 export const DeviceEnum = {
-  /**
-   * 宽屏设备
-   */
   DESKTOP: "desktop",
-
-  /**
-   * 窄屏设备
-   */
   MOBILE: "mobile",
 };
 
@@ -126,21 +77,9 @@ export const DeviceEnum = {
  * 页面切换动画枚举
  */
 export const PageSwitchingAnimationEnum = {
-  /**
-   * 无动画
-   */
   NONE: "none",
-  /**
-   * 淡入淡出
-   */
   FADE: "fade",
-  /**
-   * 平滑切换
-   */
   FADE_SLIDE: "fade-slide",
-  /**
-   * 缩放切换
-   */
   FADE_SCALE: "fade-scale",
 };
 export const PageSwitchingAnimationOptions = {

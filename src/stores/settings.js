@@ -1,4 +1,4 @@
-import { SidebarColor, ThemeMode } from "@/enums/settings";
+import { SidebarColor, ThemeMode, TagsViewStyle } from "@/enums/settings";
 import {
   applyTheme,
   generateThemeColors,
@@ -8,12 +8,16 @@ import {
   watchSystemTheme,
 } from "@/utils/theme";
 import { STORAGE_KEYS } from "@/constants";
-import { defaults } from "@/settings";
+import { defaults, themePalettePresets } from "@/settings";
+
+const CUSTOM_THEME_PALETTE = "custom";
+const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
 
 export const useSettingsStore = defineStore("setting", () => {
   // 界面显示
   const settingsVisible = ref(false);
   const showTagsView = useStorage(STORAGE_KEYS.SHOW_TAGS_VIEW, defaults.showTagsView);
+  const tagsViewStyle = useStorage(STORAGE_KEYS.TAGS_VIEW_STYLE, defaults.tagsViewStyle);
   const showAppLogo = useStorage(STORAGE_KEYS.SHOW_APP_LOGO, defaults.showAppLogo);
   const showWatermark = useStorage(STORAGE_KEYS.SHOW_WATERMARK, defaults.showWatermark);
   const pageSwitchingAnimation = useStorage(
@@ -30,13 +34,28 @@ export const useSettingsStore = defineStore("setting", () => {
 
   // 主题
   const theme = useStorage(STORAGE_KEYS.THEME, defaults.theme);
-  const themeColor = useStorage(STORAGE_KEYS.THEME_COLOR, defaults.themeColor);
+  const themePalette = useStorage(STORAGE_KEYS.THEME_PALETTE, defaults.themePalette);
+  const themeColors = useStorage(STORAGE_KEYS.THEME_COLORS, {
+    ...defaults.themeColors,
+  });
 
-  // 旧默认值 → 新默认值 自动迁移（用户自定义的颜色不会被覆盖）
-  const LEGACY_DEFAULTS = ["#4080FF", "#4080ff", "#2563EB", "#2563eb"];
-  if (LEGACY_DEFAULTS.includes(themeColor.value)) {
-    themeColor.value = defaults.themeColor;
+  // 兼容旧版单色存储 → 新版调色板
+  const LEGACY_KEY = STORAGE_KEYS.THEME_COLOR;
+  if (localStorage.getItem(LEGACY_KEY)) {
+    const oldColor = localStorage.getItem(LEGACY_KEY);
+    try {
+      const parsed = JSON.parse(oldColor);
+      if (typeof parsed === "string" && /^#[0-9a-f]{6}$/i.test(parsed)) {
+        themeColors.value = { ...themeColors.value, primary: parsed };
+      }
+    } catch { /* 解析失败忽略 */ }
+    localStorage.removeItem(LEGACY_KEY);
   }
+
+  const activeThemePalette = computed(
+    () => themePalettePresets.find((item) => item.id === themePalette.value) || null
+  );
+
   const resolvedTheme = ref(resolveThemeMode(theme.value));
 
   // 特殊模式
@@ -64,12 +83,12 @@ export const useSettingsStore = defineStore("setting", () => {
   );
 
   watch(
-    [resolvedTheme, themeColor],
-    ([t, c]) => {
+    [resolvedTheme, themeColors],
+    ([t, colors]) => {
       toggleDarkMode(t === ThemeMode.DARK);
-      applyTheme(generateThemeColors(c, t));
+      applyTheme(generateThemeColors(colors, t));
     },
-    { immediate: true }
+    { immediate: true, deep: true }
   );
 
   watch(sidebarColorScheme, (v) => toggleSidebarColor(v === SidebarColor.CLASSIC_BLUE), {
@@ -94,8 +113,27 @@ export const useSettingsStore = defineStore("setting", () => {
     { immediate: true }
   );
 
+  function applyThemePalette(id) {
+    const preset = themePalettePresets.find((item) => item.id === id);
+    if (!preset) return;
+
+    themePalette.value = preset.id;
+    themeColors.value = { ...preset.colors };
+  }
+
+  function updateThemeColor(name, color) {
+    if (!HEX_COLOR_RE.test(color)) return;
+
+    themePalette.value = CUSTOM_THEME_PALETTE;
+    themeColors.value = {
+      ...themeColors.value,
+      [name]: color,
+    };
+  }
+
   function resetSettings() {
     showTagsView.value = defaults.showTagsView;
+    tagsViewStyle.value = defaults.tagsViewStyle;
     showAppLogo.value = defaults.showAppLogo;
     showWatermark.value = defaults.showWatermark;
     pageSwitchingAnimation.value = defaults.pageSwitchingAnimation;
@@ -103,13 +141,15 @@ export const useSettingsStore = defineStore("setting", () => {
     colorWeak.value = false;
     sidebarColorScheme.value = defaults.sidebarColorScheme;
     layout.value = defaults.layout;
-    themeColor.value = defaults.themeColor;
+    themePalette.value = defaults.themePalette;
+    themeColors.value = { ...defaults.themeColors };
     theme.value = defaults.theme;
   }
 
   return {
     settingsVisible,
     showTagsView,
+    tagsViewStyle,
     showAppLogo,
     showWatermark,
     pageSwitchingAnimation,
@@ -117,9 +157,13 @@ export const useSettingsStore = defineStore("setting", () => {
     colorWeak,
     sidebarColorScheme,
     layout,
-    themeColor,
+    themePalette,
+    themeColors,
     theme,
     resolvedTheme,
+    activeThemePalette,
+    applyThemePalette,
+    updateThemeColor,
     resetSettings,
   };
 });

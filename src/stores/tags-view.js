@@ -141,6 +141,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     return new Promise((resolve) => {
       const currIndex = visitedViews.value.findIndex((v) => v.path === view.path);
       if (currIndex === -1) {
+        resolve({ visitedViews: [...visitedViews.value] });
         return;
       }
       visitedViews.value = visitedViews.value.filter((item, index) => {
@@ -164,6 +165,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     return new Promise((resolve) => {
       const currIndex = visitedViews.value.findIndex((v) => v.path === view.path);
       if (currIndex === -1) {
+        resolve({ visitedViews: [...visitedViews.value] });
         return;
       }
       visitedViews.value = visitedViews.value.filter((item, index) => {

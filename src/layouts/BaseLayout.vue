@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { useLayout } from "./useLayout";
+import { useLayout } from "./composables/useLayout";
 
 const { layoutClass, isSidebarOpen, isMobile, closeSidebar } = useLayout();
 </script>

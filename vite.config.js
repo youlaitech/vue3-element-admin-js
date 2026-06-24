@@ -33,7 +33,7 @@ export default defineConfig(({ mode }) => {
       preprocessorOptions: {
         // 定义全局 SCSS 变量
         scss: {
-          additionalData: `@use "@/styles/base/variables.scss" as *;`,
+          additionalData: `@use "@/styles/variables.scss" as *;`,
         },
       },
     },
@@ -71,6 +71,7 @@ export default defineConfig(({ mode }) => {
         vueTemplate: true,
         // 导入函数类型声明文件路径 (false:关闭自动生成)
         dts: false,
+        // dts: "types/auto-imports.d.ts",
       }),
       // 组件自动导入
       Components({
@@ -82,6 +83,7 @@ export default defineConfig(({ mode }) => {
         dirs: ["src/components", "src/**/components"],
         // 导入组件类型声明文件路径 (false:关闭自动生成)
         dts: false,
+        //dts: "types/components.d.ts",
       }),
     ],
     // 预加载项目必需的依赖
@@ -106,6 +108,7 @@ export default defineConfig(({ mode }) => {
         "sortablejs",
         "qs",
         "path-browserify",
+        "lodash-es",
         "@element-plus/icons-vue",
         "element-plus/es",
         "element-plus/es/locale/lang/en",
@@ -128,6 +131,7 @@ export default defineConfig(({ mode }) => {
           "col",
           "color-picker",
           "config-provider",
+          "collapse-transition",
           "date-picker",
           "descriptions",
           "descriptions-item",
@@ -195,6 +199,10 @@ export default defineConfig(({ mode }) => {
       cssMinify: "lightningcss", // Vite 8 默认使用 Lightning CSS 压缩
       // minify 默认使用 'oxc'，压缩速度比 terser 快 30-90 倍
       rolldownOptions: {
+        checks: {
+          invalidAnnotation: false,
+          pluginTimings: false,
+        },
         output: {
           // 用于从入口点创建的块的打包输出格式
           entryFileNames: "js/[name].[hash].js",

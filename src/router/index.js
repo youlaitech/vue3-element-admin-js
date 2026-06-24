@@ -11,7 +11,7 @@ export const constantRoutes = [
     children: [
       {
         path: "/redirect/:path(.*)",
-        component: () => import("@/views/redirect/index.vue"),
+        component: () => import("@/views/redirect.vue"),
       },
     ],
   },
@@ -58,7 +58,7 @@ export const constantRoutes = [
         meta: { title: "个人中心", icon: "user", hidden: true },
       },
       {
-        path: "my-notice",
+        path: "profile/notice",
         name: "MyNotice",
         component: () => import("@/views/profile/notice/index.vue"),
         meta: { title: "我的通知", icon: "user", hidden: true },
