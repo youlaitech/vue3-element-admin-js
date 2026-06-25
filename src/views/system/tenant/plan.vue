@@ -1,11 +1,10 @@
-<template>
+﻿<template>
   <div class="page-container">
-    <!-- 搜索区域 -->
-    <el-card class="page-search" shadow="never">
-      <el-form ref="queryFormRef" :model="queryParams" :inline="true">
+    <el-card ref="tableWrapperRef" class="page-search" shadow="never">
+      <el-form ref="queryFormRef" :model="params" :inline="true">
         <el-form-item label="关键字" prop="keywords">
           <el-input
-            v-model="queryParams.keywords"
+            v-model="params.keywords"
             placeholder="套餐名称/套餐编码"
             clearable
             @keyup.enter="handleQuery"
@@ -13,15 +12,15 @@
         </el-form-item>
 
         <el-form-item label="状态" prop="status">
-          <el-select v-model="queryParams.status" placeholder="全部" clearable style="width: 120px">
-            <el-option label="启用" :value="1" />
-            <el-option label="停用" :value="0" />
+          <el-select v-model="params.status" placeholder="全部" clearable style="width: 120px">
+            <el-option label="启用" :value="CommonStatus.ENABLED" />
+            <el-option label="停用" :value="CommonStatus.DISABLED" />
           </el-select>
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" icon="search" @click="handleQuery">搜索</el-button>
-          <el-button icon="refresh" @click="handleResetQuery">重置</el-button>
+          <el-button type="primary" @click="handleQuery">搜索</el-button>
+          <el-button @click="handleResetQuery">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -31,87 +30,98 @@
         <div class="page-toolbar__left">
           <el-button
             v-hasPerm="['sys:tenant-plan:create']"
-            type="success"
-            icon="plus"
-            @click="handleOpenDialog()"
+            type="primary"
+            @click="handleCreateClick()"
           >
             新增
           </el-button>
         </div>
+        <div class="page-toolbar__right">
+          <el-tooltip content="刷新" placement="top">
+            <el-button class="page-icon-btn" @click="fetchData">
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip content="全屏" placement="top">
+            <el-button class="page-icon-btn" @click="toggleFullscreen">
+              <el-icon><FullScreen /></el-icon>
+            </el-button>
+          </el-tooltip>
+        </div>
       </div>
 
-      <el-table
-        ref="dataTableRef"
-        v-loading="loading"
-        :data="pageData"
-        highlight-current-row
-        border
-      >
-        <el-table-column type="index" label="序号" width="60" />
-        <el-table-column label="套餐名称" prop="name" min-width="120" />
-        <el-table-column label="套餐编码" prop="code" width="160" />
-        <el-table-column label="状态" width="100" align="center">
-          <template #default="scope">
-            <el-tag v-if="scope.row.status === 1" type="success">启用</el-tag>
-            <el-tag v-else type="info">停用</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="排序" prop="sort" width="80" align="center" />
-        <el-table-column label="备注" prop="remark" min-width="140" />
-        <el-table-column label="创建时间" prop="createTime" width="180" />
-        <el-table-column fixed="right" label="操作" width="240">
-          <template #default="scope">
-            <el-button
-              v-hasPerm="['sys:tenant-plan:assign']"
-              type="primary"
-              size="small"
-              link
-              icon="menu"
-              @click="handleOpenPlanMenuDialog(scope.row)"
-            >
-              菜单配置
-            </el-button>
-            <el-button
-              v-hasPerm="['sys:tenant-plan:update']"
-              type="primary"
-              size="small"
-              link
-              icon="edit"
-              @click="handleOpenDialog(scope.row.id)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              v-hasPerm="['sys:tenant-plan:delete']"
-              type="danger"
-              size="small"
-              link
-              icon="delete"
-              @click="handleDelete(scope.row.id)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div class="page-table-wrapper">
+        <el-table
+          v-loading="loading"
+          :data="list"
+          class="page-table"
+          height="100%"
+          highlight-current-row
+          border
+        >
+          <el-table-column type="index" label="序号" width="60" />
+          <el-table-column label="套餐名称" prop="name" min-width="120" />
+          <el-table-column label="套餐编码" prop="code" width="160" />
+          <el-table-column label="状态" width="100" align="center">
+            <template #default="scope">
+              <el-tag v-if="scope.row.status === CommonStatus.ENABLED" type="success">启用</el-tag>
+              <el-tag v-else type="info">停用</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="排序" prop="sort" width="80" align="center" />
+          <el-table-column label="备注" prop="remark" min-width="140" />
+          <el-table-column label="创建时间" prop="createTime" width="180" />
+          <el-table-column fixed="right" label="操作" width="240">
+            <template #default="scope">
+              <el-button
+                v-hasPerm="['sys:tenant-plan:assign']"
+                type="primary"
+                size="small"
+                link
+                icon="menu"
+                @click="handleAssignMenuClick(scope.row)"
+              >
+                菜单配置
+              </el-button>
+              <el-button
+                v-hasPerm="['sys:tenant-plan:update']"
+                type="primary"
+                size="small"
+                link
+                @click="handleEditClick(scope.row.id)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-hasPerm="['sys:tenant-plan:delete']"
+                type="danger"
+                size="small"
+                link
+                @click="handleDelete(scope.row.id)"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
 
       <pagination
         v-if="total > 0"
         v-model:total="total"
-        v-model:page="queryParams.pageNum"
-        v-model:limit="queryParams.pageSize"
+        v-model:page="params.pageNum"
+        v-model:limit="params.pageSize"
         @pagination="fetchData"
       />
     </el-card>
 
-    <!-- 租户套餐表单弹窗 -->
     <el-dialog
       v-model="dialogState.visible"
       :title="dialogState.title"
       width="520px"
       @close="closeDialog"
     >
-      <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
+      <el-form ref="planFormRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="套餐名称" prop="name">
           <el-input v-model="formData.name" placeholder="请输入套餐名称" />
         </el-form-item>
@@ -120,8 +130,8 @@
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="formData.status">
-            <el-radio :value="1">启用</el-radio>
-            <el-radio :value="0">停用</el-radio>
+            <el-radio :value="CommonStatus.ENABLED">启用</el-radio>
+            <el-radio :value="CommonStatus.DISABLED">停用</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="排序" prop="sort">
@@ -144,12 +154,11 @@
       </template>
     </el-dialog>
 
-    <!-- 方案菜单配置 -->
     <el-drawer
       v-model="planMenuDialogVisible"
       :title="'【' + checkedPlan.name + '】菜单配置'"
       size="600px"
-      @close="handleClosePlanMenuDialog"
+      @close="closePlanMenuDialog"
     >
       <div class="flex-x-between">
         <el-input v-model="menuKeywords" clearable class="w-[150px]" placeholder="菜单名称">
@@ -211,132 +220,153 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import {
+  ElMessage,
+  ElMessageBox,
+  type FormInstance,
+  type FormRules,
+  type TreeInstance,
+  type TreeNodeData,
+} from "element-plus";
+import { FullScreen, QuestionFilled, Refresh, Search, Switch } from "@element-plus/icons-vue";
+
+import MenuAPI from "@/api/system/menu";
+import TenantPlanAPI from "@/api/system/tenant-plan";
+import type {
+  TenantPlanForm,
+  TenantPlanItem,
+  TenantPlanQueryParams,
+} from "@/api/system/tenant-plan";
+import type { OptionItem } from "@/api/common";
+import { usePageTable } from "@/composables";
+import { CommonStatus } from "@/enums";
+import { MenuScopeEnum } from "@/enums/business";
+
 defineOptions({
   name: "TenantPlan",
   inheritAttrs: false,
 });
 
-import { ElMessage, ElMessageBox } from "element-plus";
-import { useDebounceFn } from "@vueuse/core";
+const tableWrapperRef = ref<HTMLElement | null>(null);
+const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-import MenuAPI from "@/api/system/menu";
-import TenantPlanAPI from "@/api/system/tenant-plan";
-import { MenuScopeEnum } from "@/enums/business";
+const queryFormRef = ref<FormInstance>();
+const planFormRef = ref<FormInstance>();
+const menuTreeRef = ref<TreeInstance>();
 
-const queryFormRef = ref();
-const dataFormRef = ref();
-const dataTableRef = ref();
-const menuTreeRef = ref();
-
-const loading = ref(false);
-const total = ref(0);
-
-const queryParams = reactive({
-  pageNum: 1,
-  pageSize: 10,
-  keywords: "",
+/** 分页表格数据管理 */
+const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable<
+  TenantPlanItem,
+  TenantPlanQueryParams
+>({
+  initialParams: {
+    pageNum: 1,
+    pageSize: 10,
+    keywords: "",
+  },
+  request: (query) => TenantPlanAPI.getPage(query),
+  onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
-
-const pageData = ref([]);
-const menuPermOptions = ref([]);
 
 const dialogState = reactive({
   title: "",
   visible: false,
 });
 
-const formData = reactive({
-  id: undefined,
+const initialFormData: TenantPlanForm = {
   name: "",
   code: "",
-  status: 1,
+  status: CommonStatus.ENABLED,
   sort: 1,
   remark: "",
-});
+};
 
-const rules = reactive({
+const formData = reactive<TenantPlanForm>({ ...initialFormData });
+
+const rules: FormRules<TenantPlanForm> = {
   name: [{ required: true, message: "请输入套餐名称", trigger: "blur" }],
   code: [{ required: true, message: "请输入套餐编码", trigger: "blur" }],
   status: [{ required: true, message: "请选择状态", trigger: "change" }],
-});
+};
+
+interface CheckedPlan {
+  id?: number;
+  name?: string;
+}
 
 const planMenuDialogVisible = ref(false);
-const checkedPlan = ref({});
+const checkedPlan = ref<CheckedPlan>({});
+const menuPermOptions = ref<OptionItem[]>([]);
 const menuKeywords = ref("");
 const menuExpanded = ref(true);
 const menuParentChildLinked = ref(true);
 
-// 获取租户套餐分页数据
-function fetchData() {
-  loading.value = true;
-  TenantPlanAPI.getPage(queryParams)
-    .then((data) => {
-      pageData.value = data.list;
-      total.value = data.total ?? 0;
-    })
-    .finally(() => {
-      loading.value = false;
-    });
+interface ToggleableTreeNode {
+  expand: () => void;
+  collapse: () => void;
 }
 
-// 查询
-function handleQuery() {
-  queryParams.pageNum = 1;
-  fetchData();
-}
-
-// 重置查询条件
-function handleResetQuery() {
-  queryFormRef.value?.resetFields();
-  queryParams.pageNum = 1;
-  fetchData();
-}
-
-// 打开新增/编辑弹窗
-async function handleOpenDialog(planId) {
-  dialogState.visible = true;
-  if (planId) {
-    dialogState.title = "修改套餐";
-    const data = await TenantPlanAPI.getFormData(String(planId));
-    Object.assign(formData, data);
-    if (formData.status == null) {
-      formData.status = 1;
-    }
-    if (formData.sort == null) {
-      formData.sort = 1;
-    }
-  } else {
-    dialogState.title = "新增套餐";
-    Object.assign(formData, {
-      id: undefined,
-      name: "",
-      code: "",
-      status: 1,
-      sort: 1,
-      remark: "",
-    });
-  }
-}
-
-// 关闭弹窗并重置表单
-function closeDialog() {
-  dialogState.visible = false;
-  dataFormRef.value?.resetFields();
-  dataFormRef.value?.clearValidate();
-  Object.assign(formData, {
-    id: undefined,
-    name: "",
-    code: "",
-    status: 1,
-    sort: 1,
-    remark: "",
+/**
+ * 重置表单数据和验证状态
+ */
+function resetForm(): void {
+  planFormRef.value?.resetFields();
+  planFormRef.value?.clearValidate();
+  Object.keys(formData).forEach((key) => {
+    delete (formData as Record<string, unknown>)[key];
   });
+  Object.assign(formData, initialFormData);
 }
 
-// 提交新增/编辑
-const handleSubmit = useDebounceFn(async () => {
-  const valid = await dataFormRef.value?.validate().catch(() => false);
+/**
+ * 打开表单弹窗。
+ */
+function openDialog(): void {
+  dialogState.visible = true;
+}
+
+/**
+ * 关闭表单弹窗并清理临时状态。
+ */
+function closeDialog(): void {
+  dialogState.visible = false;
+  resetForm();
+}
+
+/**
+ * 打开新增套餐弹窗
+ */
+function handleCreateClick(): void {
+  dialogState.title = "新增套餐";
+  openDialog();
+}
+
+/**
+ * 打开编辑套餐弹窗并回填数据
+ *
+ * @param planId 套餐 ID
+ */
+async function handleEditClick(planId?: number): Promise<void> {
+  if (!planId) return;
+  dialogState.title = "修改套餐";
+  const data = await TenantPlanAPI.getFormData(String(planId));
+  Object.assign(formData, data);
+  if (formData.status == null) {
+    formData.status = CommonStatus.ENABLED;
+  }
+  if (formData.sort == null) {
+    formData.sort = 1;
+  }
+  openDialog();
+}
+
+/** 校验并提交套餐表单 */
+const handleSubmit = useDebounceFn(async (): Promise<void> => {
+  const valid = await planFormRef.value?.validate().then(
+    () => true,
+    () => false
+  );
   if (!valid) return;
 
   loading.value = true;
@@ -355,39 +385,55 @@ const handleSubmit = useDebounceFn(async () => {
   }
 }, 300);
 
-// 删除
-function handleDelete(planId) {
+/**
+ * 删除套餐。
+ *
+ * @param planId 套餐 ID
+ */
+async function handleDelete(planId?: number): Promise<void> {
   if (!planId) return;
-  ElMessageBox.confirm("确认删除该租户套餐吗？", "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  }).then(() => {
-    loading.value = true;
-    TenantPlanAPI.deleteByIds(String(planId))
-      .then(() => {
-        ElMessage.success("删除成功");
-        handleResetQuery();
-      })
-      .finally(() => {
-        loading.value = false;
-      });
-  });
-}
-
-// 打开方案菜单配置抽屉
-async function handleOpenPlanMenuDialog(row) {
-  if (!row.id) return;
-  planMenuDialogVisible.value = true;
-  loading.value = true;
-  checkedPlan.value = { id: row.id, name: row.name };
 
   try {
-    // 套餐菜单仅允许业务菜单
-    const menuOptions = await MenuAPI.getOptions(false, MenuScopeEnum.TENANT);
+    await ElMessageBox.confirm("确认删除该租户套餐吗？", "警告", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+  } catch {
+    return;
+  }
+
+  loading.value = true;
+  try {
+    await TenantPlanAPI.deleteByIds(String(planId));
+    ElMessage.success("删除成功");
+    handleResetQuery();
+  } finally {
+    loading.value = false;
+  }
+}
+
+/**
+ * 打开菜单配置抽屉并回显已分配菜单。
+ *
+ * @param row 当前套餐行
+ */
+async function handleAssignMenuClick(row: TenantPlanItem): Promise<void> {
+  if (!row.id) return;
+
+  planMenuDialogVisible.value = true;
+  checkedPlan.value = { id: row.id, name: row.name };
+
+  loading.value = true;
+  try {
+    const [menuOptions, menuIds] = await Promise.all([
+      MenuAPI.getOptions(false, MenuScopeEnum.TENANT),
+      TenantPlanAPI.getPlanMenuIds(row.id),
+    ]);
+
     menuPermOptions.value = menuOptions;
-    const menuIds = await TenantPlanAPI.getPlanMenuIds(row.id);
     await nextTick();
+
     menuTreeRef.value?.setCheckedKeys([], false);
     menuIds.forEach((menuId) => menuTreeRef.value?.setChecked(menuId, true, false));
   } finally {
@@ -395,8 +441,10 @@ async function handleOpenPlanMenuDialog(row) {
   }
 }
 
-// 关闭方案菜单配置抽屉并重置状态
-function handleClosePlanMenuDialog() {
+/**
+ * 关闭菜单配置抽屉并清理临时状态
+ */
+function closePlanMenuDialog(): void {
   planMenuDialogVisible.value = false;
   menuKeywords.value = "";
   menuExpanded.value = true;
@@ -404,42 +452,53 @@ function handleClosePlanMenuDialog() {
   menuTreeRef.value?.setCheckedKeys([], false);
 }
 
-// 展开/收缩菜单树
-function toggleMenuTree() {
+/**
+ * 展开或收起菜单树全部节点。
+ */
+function toggleMenuTree(): void {
   menuExpanded.value = !menuExpanded.value;
-  if (menuTreeRef.value) {
-    Object.values(menuTreeRef.value.store.nodesMap).forEach((node) => {
-      if (menuExpanded.value) {
-        node.expand();
-      } else {
-        node.collapse();
-      }
-    });
-  }
+  if (!menuTreeRef.value) return;
+
+  Object.values(menuTreeRef.value.store.nodesMap).forEach((node) => {
+    const treeNode = node as ToggleableTreeNode;
+    if (menuExpanded.value) {
+      treeNode.expand();
+    } else {
+      treeNode.collapse();
+    }
+  });
 }
 
-// 切换父子联动
-function handleMenuLinkChange(val) {
+/**
+ * 父子联动开关变化处理。
+ *
+ * @param val 开关当前值
+ */
+function handleMenuLinkChange(val: string | number | boolean): void {
   menuParentChildLinked.value = Boolean(val);
 }
 
-// 菜单树关键字过滤
-watch(menuKeywords, (val) => {
-  menuTreeRef.value?.filter(val);
-});
-
-// 菜单树过滤逻辑
-function handleMenuFilter(value, data) {
+/**
+ * 菜单树过滤函数。
+ *
+ * @param value 输入的关键字
+ * @param data 当前节点数据
+ */
+function handleMenuFilter(value: string, data: TreeNodeData): boolean {
   if (!value) return true;
-  return data.label.includes(value);
+  return String(data.label ?? "").includes(value);
 }
 
-// 提交方案菜单配置
-async function handlePlanMenuSubmit() {
+/**
+ * 提交当前套餐的菜单权限配置。
+ */
+async function handlePlanMenuSubmit(): Promise<void> {
   const planId = checkedPlan.value.id;
   if (!planId) return;
 
-  const checkedMenuIds = menuTreeRef.value.getCheckedNodes(false, true).map((node) => node.value);
+  const checkedMenuIds: number[] = (menuTreeRef.value?.getCheckedNodes(false, true) ?? [])
+    .map((node: TreeNodeData) => Number(node.value))
+    .filter((value: number) => !Number.isNaN(value));
 
   loading.value = true;
   try {
@@ -451,10 +510,11 @@ async function handlePlanMenuSubmit() {
   }
 }
 
-// 初始化
+watch(menuKeywords, (val) => {
+  menuTreeRef.value?.filter(val);
+});
+
 onMounted(() => {
   fetchData();
 });
 </script>
-
-<style scoped lang="scss"></style>

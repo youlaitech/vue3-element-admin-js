@@ -17,7 +17,7 @@ const __APP_INFO__ = {
   buildTimestamp: Date.now(),
 };
 
-const pathSrc = resolve(__dirname, "src");
+const pathSrc = resolve(import.meta.dirname, "src");
 
 // Vite配置  https://cn.vitejs.dev/config
 export default defineConfig(({ mode }) => {
