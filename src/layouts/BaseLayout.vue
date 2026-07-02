@@ -1,7 +1,11 @@
 <template>
   <div class="layout" :class="layoutClass">
-    <!-- 移动端遮罩层 -->
-    <div v-if="isMobile && isSidebarOpen" class="layout__overlay" @click="closeSidebar" />
+    <!-- 移动端遮罩层（混布局 MixLayout 中传 false 关闭） -->
+    <div
+      v-if="showOverlay && isMobile && isSidebarOpen"
+      class="layout__overlay"
+      @click="closeSidebar"
+    />
 
     <!-- 布局内容插槽 -->
     <slot />
@@ -10,6 +14,13 @@
 
 <script setup>
 import { useLayout } from "./composables/useLayout";
+
+defineProps({
+  showOverlay: {
+    type: Boolean,
+    default: true,
+  },
+});
 
 const { layoutClass, isSidebarOpen, isMobile, closeSidebar } = useLayout();
 </script>

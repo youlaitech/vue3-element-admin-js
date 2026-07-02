@@ -24,6 +24,11 @@ export const useAppStore = defineStore("app", () => {
     withoutAnimation: false,
   });
 
+  /** 双列布局第二列（次级菜单）展开状态 */
+  const secondarySidebar = reactive({
+    opened: true,
+  });
+
   /** 当前激活的顶部菜单路径 */
   const activeTopMenuPath = useStorage(STORAGE_KEYS.ACTIVE_TOP_MENU_PATH, "");
 
@@ -33,45 +38,42 @@ export const useAppStore = defineStore("app", () => {
   /** Element Plus 当前语言包 */
   const locale = computed(() => (language?.value === "en" ? en : zhCn));
 
-  /** 切换侧边栏展开状态 */
   function toggleSidebar() {
     sidebar.opened = !sidebar.opened;
     sidebarStatus.value = sidebar.opened ? SidebarStatus.OPENED : SidebarStatus.CLOSED;
   }
 
-  /** 关闭侧边栏 */
   function closeSidebar() {
     sidebar.opened = false;
     sidebarStatus.value = SidebarStatus.CLOSED;
   }
 
-  /** 打开侧边栏 */
   function openSidebar() {
     sidebar.opened = true;
     sidebarStatus.value = SidebarStatus.OPENED;
   }
 
-  /** 切换设备类型 */
+  /** 切换第二列（次级菜单）展开状态 */
+  function toggleSecondarySidebar() {
+    secondarySidebar.opened = !secondarySidebar.opened;
+  }
+
   function toggleDevice(val) {
     device.value = val;
   }
 
-  /** 切换组件尺寸 */
   function changeSize(val) {
     size.value = val;
   }
 
-  /** 切换语言 */
   function changeLanguage(val) {
     language.value = val;
   }
 
-  /** 设置顶部菜单激活路径 */
   function setActiveTopMenuPath(path) {
     activeTopMenuPath.value = path;
   }
 
-  /** 切换内容区全屏状态 */
   function toggleContentFullscreen() {
     contentFullscreen.value = !contentFullscreen.value;
   }
@@ -79,19 +81,21 @@ export const useAppStore = defineStore("app", () => {
   return {
     device,
     sidebar,
+    secondarySidebar,
     language,
     locale,
     size,
     contentFullscreen,
-    activeTopMenuPath,
     toggleDevice,
     changeSize,
     changeLanguage,
     toggleSidebar,
     closeSidebar,
     openSidebar,
+    toggleSecondarySidebar,
     setActiveTopMenuPath,
     toggleContentFullscreen,
+    activeTopMenuPath,
   };
 });
 
