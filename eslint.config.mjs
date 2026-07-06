@@ -6,8 +6,6 @@ import globals from "globals";
 // Vue支持
 import pluginVue from "eslint-plugin-vue";
 import vueParser from "vue-eslint-parser";
-// TypeScript解析器（用于Vue文件的底层解析）
-import * as typescriptEslint from "typescript-eslint";
 // 代码风格与格式化
 import configPrettier from "eslint-config-prettier";
 import prettierPlugin from "eslint-plugin-prettier";
@@ -116,13 +114,11 @@ export default [
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
-        parser: typescriptEslint.parser,
         extraFileExtensions: [".vue"],
       },
     },
     plugins: {
       vue: pluginVue,
-      "@typescript-eslint": typescriptEslint.plugin,
     },
     rules: {
       // Vue 规则
