@@ -34,7 +34,11 @@ import variables from "@/styles/variables.module.scss";
 const props = defineProps({
   data: { type: Array, default: () => [] },
   basePath: { type: String, required: true },
-  menuMode: { type: String, default: "vertical", validator: (v) => ["vertical", "horizontal"].includes(v) },
+  menuMode: {
+    type: String,
+    default: "vertical",
+    validator: (v) => ["vertical", "horizontal"].includes(v),
+  },
   alwaysExpand: { type: Boolean, default: false },
   collapseOverride: { type: Boolean, default: null },
 });
@@ -44,7 +48,7 @@ const settingsStore = useSettingsStore();
 const appStore = useAppStore();
 const currentRoute = useRoute();
 
-const expandedMenuIndexes = ref<string[]>([]);
+const expandedMenuIndexes = ref([]);
 
 const theme = computed(() => settingsStore.resolvedTheme);
 
@@ -61,7 +65,7 @@ const menuThemeProps = computed(() => {
   };
 });
 
-const activeMenuPath = computed((): string => {
+const activeMenuPath = computed(() => {
   const { meta, path } = currentRoute;
 
   if (meta?.activeMenu && typeof meta.activeMenu === "string") {
@@ -74,7 +78,7 @@ const activeMenuPath = computed((): string => {
 /**
  * 解析菜单跳转路径
  */
-function resolveFullPath(routePath: string) {
+function resolveFullPath(routePath) {
   if (isExternal(routePath)) {
     return routePath;
   }
@@ -92,7 +96,7 @@ function resolveFullPath(routePath: string) {
 /**
  * 记录展开的子菜单
  */
-const onMenuOpen = (index: string) => {
+const onMenuOpen = (index) => {
   if (expandedMenuIndexes.value.includes(index)) return;
   expandedMenuIndexes.value.push(index);
 };
@@ -100,7 +104,7 @@ const onMenuOpen = (index: string) => {
 /**
  * 移除已收起的子菜单
  */
-const onMenuClose = (index: string) => {
+const onMenuClose = (index) => {
   expandedMenuIndexes.value = expandedMenuIndexes.value.filter((item) => item !== index);
 };
 
@@ -121,7 +125,7 @@ watch(
   () => props.menuMode,
   (newMode) => {
     if (newMode === "horizontal" && menuRef.value) {
-      expandedMenuIndexes.value.forEach((item) => menuRef.value!.close(item));
+      expandedMenuIndexes.value.forEach((item) => menuRef.value.close(item));
     }
   }
 );
@@ -159,7 +163,7 @@ function syncActiveParentMenus() {
 
   nextTick(() => {
     try {
-      const menuEl = menuRef.value?.$el as HTMLElement;
+      const menuEl = menuRef.value?.$el;
       if (!menuEl) return;
 
       const allSubMenus = menuEl.querySelectorAll(".el-sub-menu");
@@ -184,7 +188,7 @@ function syncActiveParentMenus() {
 
       const currentPath = activeMenuPath.value;
       allSubMenus.forEach((subMenu) => {
-        const subMenuEl = subMenu as HTMLElement;
+        const subMenuEl = subMenu;
         const subMenuPath =
           subMenuEl.getAttribute("data-path") ||
           subMenuEl.querySelector(".el-sub-menu__title")?.getAttribute("data-path");
