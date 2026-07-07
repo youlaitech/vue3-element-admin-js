@@ -74,31 +74,24 @@
   </el-card>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { onMounted } from "vue";
 import { MagicStick, Refresh, RefreshLeft, Search } from "@element-plus/icons-vue";
-import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 import GeneratorAPI from "@/api/codegen";
-import type { TableItem, TableQueryParams } from "@/api/codegen";
 import { usePageTable } from "@/composables";
 
 /** 表已配置代码生成（1:是;0:否）。 */
 const TABLE_CONFIGURED = 1;
 
-const emit = defineEmits<{
-  generate: [tableName: string];
-  "reset-config": [tableName: string];
-}>();
+const emit = defineEmits(["generate", "reset-config"]);
 
-const queryFormRef = ref<FormInstance>();
+const queryFormRef = ref();
 
 // ── 分页表格状态 ────────────────────────────────────────────
 /** 分页表格数据管理 */
-const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable<
-  TableItem,
-  TableQueryParams
->({
+const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
     pageSize: 10,
@@ -112,7 +105,7 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
  *
  * @param tableName 表名
  */
-async function handleResetConfig(tableName: string): Promise<void> {
+async function handleResetConfig(tableName) {
   try {
     await ElMessageBox.confirm("确定要重置配置吗？", "提示", { type: "warning" });
   } catch {

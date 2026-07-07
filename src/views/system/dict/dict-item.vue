@@ -64,12 +64,7 @@
 
           <el-table-column fixed="right" label="操作" align="center" width="220">
             <template #default="scope">
-              <el-button
-                type="primary"
-                link
-                size="small"
-                @click.stop="handleEditClick(scope.row as DictItem)"
-              >
+              <el-button type="primary" link size="small" @click.stop="handleEditClick(scope.row)">
                 编辑
               </el-button>
               <el-button type="danger" link size="small" @click.stop="handleDelete(scope.row.id)">
@@ -136,7 +131,7 @@
             </template>
             <el-option v-for="type in tagTypeOptions" :key="type" :label="type" :value="type">
               <div flex-y-center gap-10px>
-                <el-tag :type="type as any">{{ formData.label ?? "字典标签" }}</el-tag>
+                <el-tag :type="type">{{ formData.label ?? "字典标签" }}</el-tag>
                 <span>{{ type }}</span>
               </div>
             </el-option>
@@ -154,12 +149,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus";
+<script setup>
+import { ElMessage, ElMessageBox } from "element-plus";
 import { FullScreen, QuestionFilled, Refresh } from "@element-plus/icons-vue";
 
 import DictAPI from "@/api/system/dict";
-import type { DictItem, DictItemForm, DictItemQueryParams } from "@/api/system/dict";
 import { usePageTable, useTableSelection } from "@/composables";
 import { CommonStatus } from "@/enums";
 
@@ -173,26 +167,17 @@ const route = useRoute();
 // 当前字典编码，由路由 query 传入。
 const dictCode = ref(String(route.query.dictCode ?? ""));
 
-const tableWrapperRef = ref<HTMLElement | null>(null);
+const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-const queryFormRef = ref<FormInstance>();
-const dictItemFormRef = ref<FormInstance>();
+const queryFormRef = ref();
+const dictItemFormRef = ref();
 
 // 标签类型可选项。
-const tagTypeOptions: NonNullable<DictItemForm["tagType"]>[] = [
-  "primary",
-  "success",
-  "info",
-  "warning",
-  "danger",
-];
+const tagTypeOptions = ["primary", "success", "info", "warning", "danger"];
 
 /** 分页表格数据管理 */
-const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable<
-  DictItem,
-  DictItemQueryParams
->({
+const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
     pageSize: 10,
@@ -203,23 +188,23 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
 
-const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection<DictItem>();
+const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
 
 const dialogState = reactive({
   title: "",
   visible: false,
 });
 
-const initialFormData: DictItemForm = {
+const initialFormData = {
   dictCode: dictCode.value,
   sort: 1,
   status: CommonStatus.ENABLED,
   tagType: "",
 };
 
-const formData = reactive<DictItemForm>({ ...initialFormData });
+const formData = reactive({ ...initialFormData });
 
-const rules: FormRules<DictItemForm> = {
+const rules = {
   value: [{ required: true, message: "请输入字典值", trigger: "blur" }],
   label: [{ required: true, message: "请输入字典标签", trigger: "blur" }],
 };
@@ -227,11 +212,11 @@ const rules: FormRules<DictItemForm> = {
 /**
  * 重置表单数据和验证状态
  */
-function resetForm(): void {
+function resetForm() {
   dictItemFormRef.value?.resetFields();
   dictItemFormRef.value?.clearValidate();
   Object.keys(formData).forEach((key) => {
-    delete (formData as Record<string, unknown>)[key];
+    delete formData[key];
   });
   Object.assign(formData, initialFormData);
 }
@@ -239,14 +224,14 @@ function resetForm(): void {
 /**
  * 打开表单弹窗。
  */
-function openDialog(): void {
+function openDialog() {
   dialogState.visible = true;
 }
 
 /**
  * 关闭表单弹窗并清理临时状态
  */
-function closeDialog(): void {
+function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
@@ -254,7 +239,7 @@ function closeDialog(): void {
 /**
  * 打开新增字典项弹窗
  */
-function handleCreateClick(): void {
+function handleCreateClick() {
   dialogState.title = "新增字典项";
   openDialog();
 }
@@ -264,7 +249,7 @@ function handleCreateClick(): void {
  *
  * @param row 当前字典项行
  */
-async function handleEditClick(row: DictItem): Promise<void> {
+async function handleEditClick(row) {
   if (!row.id) return;
   dialogState.title = "编辑字典值";
   const data = await DictAPI.getDictItemFormData(dictCode.value, row.id);
@@ -275,7 +260,7 @@ async function handleEditClick(row: DictItem): Promise<void> {
 /**
  * 校验并提交字典项表单。
  */
-async function handleSubmit(): Promise<void> {
+async function handleSubmit() {
   const valid = await dictItemFormRef.value?.validate().then(
     () => true,
     () => false
@@ -306,7 +291,7 @@ async function handleSubmit(): Promise<void> {
  *
  * @param id 指定时删除单个字典项；不指定时删除表格勾选项
  */
-async function handleDelete(id?: string): Promise<void> {
+async function handleDelete(id) {
   const itemIds = id ?? selectedIds.value.join(",");
   if (!itemIds) {
     ElMessage.warning("请勾选删除项");
@@ -337,7 +322,7 @@ async function handleDelete(id?: string): Promise<void> {
 /**
  * 批量删除当前勾选字典项
  */
-function handleBatchDelete(): void {
+function handleBatchDelete() {
   handleDelete();
 }
 

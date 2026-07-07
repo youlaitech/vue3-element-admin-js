@@ -62,12 +62,7 @@
           </el-table-column>
           <el-table-column fixed="right" label="操作" align="center" width="220">
             <template #default="scope">
-              <el-button
-                type="primary"
-                link
-                size="small"
-                @click.stop="openDictData(scope.row as any)"
-              >
+              <el-button type="primary" link size="small" @click.stop="openDictData(scope.row)">
                 字典数据
               </el-button>
 
@@ -133,13 +128,12 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { useFullscreen } from "@vueuse/core";
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { Refresh } from "@element-plus/icons-vue";
 
 import DictAPI from "@/api/system/dict";
-import type { DictTypeForm, DictTypeItem, DictTypeQueryParams } from "@/api/system/dict";
 import router from "@/router";
 import { usePageTable, useTableSelection } from "@/composables";
 import { CommonStatus } from "@/enums";
@@ -149,17 +143,14 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const tableWrapperRef = ref<HTMLElement | null>(null);
+const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-const queryFormRef = ref<FormInstance>();
-const dictFormRef = ref<FormInstance>();
+const queryFormRef = ref();
+const dictFormRef = ref();
 
 /** 分页表格数据管理 */
-const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable<
-  DictTypeItem,
-  DictTypeQueryParams
->({
+const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
     pageSize: 10,
@@ -169,20 +160,20 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
 
-const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection<DictTypeItem>();
+const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
 
 const dialogState = reactive({
   title: "",
   visible: false,
 });
 
-const initialFormData: DictTypeForm = {
+const initialFormData = {
   status: CommonStatus.ENABLED,
 };
 
-const formData = reactive<DictTypeForm>({ ...initialFormData });
+const formData = reactive({ ...initialFormData });
 
-const rules: FormRules<DictTypeForm> = {
+const rules = {
   name: [{ required: true, message: "请输入字典名称", trigger: "blur" }],
   dictCode: [{ required: true, message: "请输入字典编码", trigger: "blur" }],
 };
@@ -190,23 +181,23 @@ const rules: FormRules<DictTypeForm> = {
 /**
  * 重置表单数据和验证状态
  */
-function resetForm(): void {
+function resetForm() {
   dictFormRef.value?.resetFields();
   dictFormRef.value?.clearValidate();
   Object.keys(formData).forEach((key) => {
-    delete (formData as Record<string, unknown>)[key];
+    delete formData[key];
   });
   Object.assign(formData, initialFormData);
 }
 
-function openDialog(): void {
+function openDialog() {
   dialogState.visible = true;
 }
 
 /**
  * 关闭字典表单弹窗并清理临时状态
  */
-function closeDialog(): void {
+function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
@@ -214,7 +205,7 @@ function closeDialog(): void {
 /**
  * 打开新增字典弹窗
  */
-function handleCreateClick(): void {
+function handleCreateClick() {
   resetForm();
   dialogState.title = "新增字典";
   openDialog();
@@ -225,7 +216,7 @@ function handleCreateClick(): void {
  *
  * @param id 字典 ID
  */
-async function handleEditClick(id: string): Promise<void> {
+async function handleEditClick(id) {
   resetForm();
   dialogState.title = "修改字典";
   const data = await DictAPI.getFormData(id);
@@ -236,7 +227,7 @@ async function handleEditClick(id: string): Promise<void> {
 /**
  * 校验并提交字典表单
  */
-async function handleSubmit(): Promise<void> {
+async function handleSubmit() {
   const valid = await dictFormRef.value?.validate().then(
     () => true,
     () => false
@@ -265,7 +256,7 @@ async function handleSubmit(): Promise<void> {
  *
  * @param id 指定时删除单个字典；不指定时删除表格勾选项
  */
-async function handleDelete(id?: string): Promise<void> {
+async function handleDelete(id) {
   const dictIds = id ?? selectedIds.value.join(",");
   if (!dictIds) {
     ElMessage.warning("请勾选删除项");
@@ -300,7 +291,7 @@ async function handleDelete(id?: string): Promise<void> {
  *
  * @param row 当前字典行
  */
-function openDictData(row: DictTypeItem): void {
+function openDictData(row) {
   try {
     const route = router.resolve({
       name: "DictItem",

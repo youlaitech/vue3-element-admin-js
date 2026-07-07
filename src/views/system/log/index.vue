@@ -82,7 +82,7 @@
           <el-table-column label="操作时间" prop="createTime" width="180" />
           <el-table-column label="操作" width="80" align="center" fixed="right">
             <template #default="{ row }">
-              <el-button type="primary" link size="small" @click="handleDetail(row as LogItem)">
+              <el-button type="primary" link size="small" @click="handleDetail(row)">
                 详情
               </el-button>
             </template>
@@ -137,13 +137,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { useFullscreen } from "@vueuse/core";
-import { type FormInstance, type TagProps } from "element-plus";
 import { FullScreen, Refresh } from "@element-plus/icons-vue";
 
 import LogAPI from "@/api/system/log";
-import type { LogItem, LogQueryParams } from "@/api/system/log";
 import { usePageTable } from "@/composables";
 
 defineOptions({
@@ -151,19 +149,16 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const tableWrapperRef = ref<HTMLElement | null>(null);
+const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-const queryFormRef = ref<FormInstance>();
+const queryFormRef = ref();
 
 // 日志状态：1=成功，0=失败。
 const LOG_STATUS_SUCCESS = 1;
 
 /** 分页表格数据管理 */
-const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable<
-  LogItem,
-  LogQueryParams
->({
+const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
     pageSize: 10,
@@ -175,15 +170,15 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
 });
 
 const detailVisible = ref(false);
-const detailData = ref<Partial<LogItem>>({});
+const detailData = ref({});
 
 /**
  * 请求方法 → el-tag 类型映射。
  *
  * @param method HTTP 方法（GET/POST/PUT/DELETE/PATCH 等）
  */
-function getMethodTagType(method: string): TagProps["type"] {
-  const map: Record<string, TagProps["type"]> = {
+function getMethodTagType(method) {
+  const map = {
     GET: undefined,
     POST: "success",
     PUT: "warning",
@@ -198,7 +193,7 @@ function getMethodTagType(method: string): TagProps["type"] {
  *
  * @param row 当前日志行
  */
-function handleDetail(row: LogItem): void {
+function handleDetail(row) {
   detailData.value = row;
   detailVisible.value = true;
 }

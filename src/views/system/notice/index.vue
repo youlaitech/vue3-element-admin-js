@@ -308,14 +308,12 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus";
+<script setup>
+import { ElMessage, ElMessageBox } from "element-plus";
 import { Close, CopyDocument, FullScreen, Refresh } from "@element-plus/icons-vue";
 
 import NoticeAPI from "@/api/system/notice";
-import type { NoticeDetail, NoticeForm, NoticeItem, NoticeQueryParams } from "@/api/system/notice";
 import UserAPI from "@/api/system/user";
-import type { OptionItem } from "@/api/common";
 import { usePageTable, useTableSelection } from "@/composables";
 
 defineOptions({
@@ -323,11 +321,11 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const tableWrapperRef = ref<HTMLElement | null>(null);
+const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-const queryFormRef = ref<FormInstance>();
-const noticeFormRef = ref<FormInstance>();
+const queryFormRef = ref();
+const noticeFormRef = ref();
 
 // 通知发布状态：0=未发布，1=已发布，-1=已撤回。
 const NOTICE_STATUS_DRAFT = 0;
@@ -338,10 +336,7 @@ const NOTICE_TARGET_ALL = 1;
 const NOTICE_TARGET_SPECIFIED = 2;
 
 /** 分页表格数据管理 */
-const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable<
-  NoticeItem,
-  NoticeQueryParams
->({
+const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
     pageSize: 10,
@@ -352,9 +347,9 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
 
-const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection<NoticeItem>();
+const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
 
-const userOptions = ref<OptionItem[]>([]);
+const userOptions = ref([]);
 
 const dialogState = reactive({
   title: "",
@@ -362,21 +357,21 @@ const dialogState = reactive({
   fullscreen: false,
 });
 
-const initialFormData: NoticeForm = {
+const initialFormData = {
   level: "L",
   targetType: NOTICE_TARGET_ALL,
 };
 
-const formData = reactive<NoticeForm>({ ...initialFormData });
+const formData = reactive({ ...initialFormData });
 
-const rules: FormRules<NoticeForm> = {
+const rules = {
   title: [{ required: true, message: "请输入通知标题", trigger: "blur" }],
   content: [
     {
       required: true,
       message: "请输入通知内容",
       trigger: "blur",
-      validator: (rule, value: string, callback) => {
+      validator: (rule, value, callback) => {
         if (!value.replace(/<[^>]+>/g, "").trim()) {
           callback(new Error("请输入通知内容"));
         } else {
@@ -391,7 +386,7 @@ const rules: FormRules<NoticeForm> = {
 const detailDialog = reactive({
   visible: false,
 });
-const currentNotice = ref<NoticeDetail>({});
+const currentNotice = ref({});
 
 /**
  * 将后端返回的 `targetUserIds`（可能是数组、JSON 字符串、逗号分隔字符串）标准化为数字数组。
@@ -400,12 +395,11 @@ const currentNotice = ref<NoticeDetail>({});
  *
  * @param value 后端返回的原始值
  */
-function normalizeTargetUsers(value?: unknown): number[] {
+function normalizeTargetUsers(value) {
   if (!value) {
     return [];
   }
-  const toNumberArray = (arr: unknown[]): number[] =>
-    arr.map((v) => Number(v)).filter((v) => Number.isFinite(v));
+  const toNumberArray = (arr) => arr.map((v) => Number(v)).filter((v) => Number.isFinite(v));
   if (Array.isArray(value)) {
     return toNumberArray(value);
   }
@@ -436,7 +430,7 @@ function normalizeTargetUsers(value?: unknown): number[] {
  *
  * 字段名转换：targetUsers → targetUserIds。
  */
-function buildSubmitPayload(): Omit<NoticeForm, "targetUsers"> & { targetUserIds: number[] } {
+function buildSubmitPayload() {
   const { targetUsers, ...rest } = formData;
   return {
     ...rest,
@@ -449,11 +443,11 @@ function buildSubmitPayload(): Omit<NoticeForm, "targetUsers"> & { targetUserIds
  *
  * 重置表单数据。
  */
-function resetForm(): void {
+function resetForm() {
   noticeFormRef.value?.resetFields();
   noticeFormRef.value?.clearValidate();
   Object.keys(formData).forEach((key) => {
-    delete (formData as Record<string, unknown>)[key];
+    delete formData[key];
   });
   Object.assign(formData, initialFormData);
 }
@@ -461,7 +455,7 @@ function resetForm(): void {
 /**
  * 切换表单弹窗的全屏状态。
  */
-function toggleDialogFullscreen(): void {
+function toggleDialogFullscreen() {
   dialogState.fullscreen = !dialogState.fullscreen;
 }
 
@@ -469,7 +463,7 @@ function toggleDialogFullscreen(): void {
  * 打开新增/编辑通知弹窗。
  * @param id 通知 ID（编辑时传入）
  */
-async function openDialog(id?: string): Promise<void> {
+async function openDialog(id) {
   dialogState.fullscreen = false;
   // 用户选项与弹窗并行加载
   UserAPI.getOptions().then((data) => {
@@ -493,7 +487,7 @@ async function openDialog(id?: string): Promise<void> {
 /**
  * 关闭表单弹窗并重置表单。
  */
-function closeDialog(): void {
+function closeDialog() {
   dialogState.visible = false;
   dialogState.fullscreen = false;
   resetForm();
@@ -502,7 +496,7 @@ function closeDialog(): void {
 /**
  * 校验并提交通知表单
  */
-async function handleSubmit(): Promise<void> {
+async function handleSubmit() {
   const valid = await noticeFormRef.value?.validate().then(
     () => true,
     () => false
@@ -532,7 +526,7 @@ async function handleSubmit(): Promise<void> {
  *
  * @param id 通知 ID
  */
-async function handlePublish(id: string): Promise<void> {
+async function handlePublish(id) {
   await NoticeAPI.publish(id);
   ElMessage.success("发布成功");
   fetchData();
@@ -543,7 +537,7 @@ async function handlePublish(id: string): Promise<void> {
  *
  * @param id 通知 ID
  */
-async function handleRevoke(id: string): Promise<void> {
+async function handleRevoke(id) {
   await NoticeAPI.revoke(id);
   ElMessage.success("撤回成功");
   fetchData();
@@ -554,7 +548,7 @@ async function handleRevoke(id: string): Promise<void> {
  *
  * @param id 指定时删除单个通知；不指定时删除表格勾选项
  */
-async function handleDelete(id?: string): Promise<void> {
+async function handleDelete(id) {
   const deleteIds = id ?? selectedIds.value.join(",");
   if (!deleteIds) {
     ElMessage.warning("请勾选删除项");
@@ -587,7 +581,7 @@ async function handleDelete(id?: string): Promise<void> {
  *
  * @param id 通知 ID
  */
-async function openDetailDialog(id: string): Promise<void> {
+async function openDetailDialog(id) {
   currentNotice.value = await NoticeAPI.getDetail(id);
   detailDialog.visible = true;
 }
@@ -595,7 +589,7 @@ async function openDetailDialog(id: string): Promise<void> {
 /**
  * 关闭通知详情弹窗。
  */
-function closeDetailDialog(): void {
+function closeDetailDialog() {
   detailDialog.visible = false;
 }
 
