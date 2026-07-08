@@ -196,7 +196,9 @@
                   `settings-tabs-style__preview--${item.value}`,
                 ]"
               >
-                <i /><i /><i />
+                <i />
+                <i />
+                <i />
               </span>
               <span class="settings-tabs-style__label">{{ item.label }}</span>
             </button>

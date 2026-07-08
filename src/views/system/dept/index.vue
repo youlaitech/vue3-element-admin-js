@@ -162,13 +162,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus";
+<script setup>
+import { ElMessage, ElMessageBox } from "element-plus";
 import { Refresh, FullScreen } from "@element-plus/icons-vue";
 
 import DeptAPI from "@/api/system/dept";
-import type { DeptForm, DeptItem, DeptQueryParams } from "@/api/system/dept";
-import type { OptionItem } from "@/api/common";
 import { useTableSelection } from "@/composables";
 import { CommonStatus } from "@/enums";
 
@@ -177,37 +175,37 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const tableWrapperRef = ref<HTMLElement | null>(null);
+const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-const queryFormRef = ref<FormInstance>();
-const deptFormRef = ref<FormInstance>();
+const queryFormRef = ref();
+const deptFormRef = ref();
 
 const loading = ref(false);
-const list = ref<DeptItem[]>([]);
-const queryParams = reactive<DeptQueryParams>({
+const list = ref([]);
+const queryParams = reactive({
   keywords: "",
   status: undefined,
 });
 
-const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection<DeptItem>();
+const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
 
 const dialogState = reactive({
   title: "",
   visible: false,
 });
 
-const deptOptions = ref<OptionItem[]>([]);
+const deptOptions = ref([]);
 
-const initialFormData: DeptForm = {
+const initialFormData = {
   status: CommonStatus.ENABLED,
   parentId: "0",
   sort: 1,
 };
 
-const formData = reactive<DeptForm>({ ...initialFormData });
+const formData = reactive({ ...initialFormData });
 
-const rules: FormRules<DeptForm> = {
+const rules = {
   parentId: [{ required: true, message: "上级部门不能为空", trigger: "change" }],
   name: [{ required: true, message: "部门名称不能为空", trigger: "blur" }],
   code: [{ required: true, message: "部门编号不能为空", trigger: "blur" }],
@@ -217,7 +215,7 @@ const rules: FormRules<DeptForm> = {
 /**
  * 拉取部门列表数据（一次性返回全量树）
  */
-async function fetchData(): Promise<void> {
+async function fetchData() {
   loading.value = true;
   try {
     list.value = await DeptAPI.getList(queryParams);
@@ -229,14 +227,14 @@ async function fetchData(): Promise<void> {
 /**
  * 按当前筛选条件重新查询。
  */
-function handleQuery(): void {
+function handleQuery() {
   fetchData();
 }
 
 /**
  * 重置搜索表单后重新查询
  */
-function handleResetQuery(): void {
+function handleResetQuery() {
   queryFormRef.value?.resetFields();
   fetchData();
 }
@@ -244,11 +242,11 @@ function handleResetQuery(): void {
 /**
  * 重置表单数据和验证状态
  */
-function resetForm(): void {
+function resetForm() {
   deptFormRef.value?.resetFields();
   deptFormRef.value?.clearValidate();
   Object.keys(formData).forEach((key) => {
-    delete (formData as Record<string, unknown>)[key];
+    delete formData[key];
   });
   Object.assign(formData, initialFormData);
 }
@@ -259,7 +257,7 @@ function resetForm(): void {
  * @param parentId 父部门 ID（新增子部门时传入）
  * @param deptId 部门 ID（编辑时传入）
  */
-async function openDialog(parentId?: string, deptId?: string): Promise<void> {
+async function openDialog(parentId, deptId) {
   const data = await DeptAPI.getOptions();
   deptOptions.value = [
     {
@@ -283,7 +281,7 @@ async function openDialog(parentId?: string, deptId?: string): Promise<void> {
 /**
  * 校验并提交部门表单。
  */
-async function handleSubmit(): Promise<void> {
+async function handleSubmit() {
   const valid = await deptFormRef.value?.validate().then(
     () => true,
     () => false
@@ -312,7 +310,7 @@ async function handleSubmit(): Promise<void> {
  *
  * @param deptId 指定时删除单个部门；不指定时删除表格勾选项
  */
-async function handleDelete(deptId?: string): Promise<void> {
+async function handleDelete(deptId) {
   const deptIds = deptId ?? selectedIds.value.join(",");
   if (!deptIds) {
     ElMessage.warning("请勾选删除项");
@@ -343,7 +341,7 @@ async function handleDelete(deptId?: string): Promise<void> {
 /**
  * 关闭弹窗并重置表单
  */
-function closeDialog(): void {
+function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }

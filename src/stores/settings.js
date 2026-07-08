@@ -48,7 +48,9 @@ export const useSettingsStore = defineStore("setting", () => {
       if (typeof parsed === "string" && /^#[0-9a-f]{6}$/i.test(parsed)) {
         themeColors.value = { ...themeColors.value, primary: parsed };
       }
-    } catch { /* 解析失败忽略 */ }
+    } catch {
+      /* 解析失败忽略 */
+    }
     localStorage.removeItem(LEGACY_KEY);
   }
 

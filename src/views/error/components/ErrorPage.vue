@@ -36,7 +36,14 @@
               <path class="error-visual__route-line" d="M56 48 H148 C174 48 174 88 200 88 H302" />
               <rect class="error-visual__node" x="24" y="30" width="64" height="36" rx="6" />
               <rect class="error-visual__node" x="136" y="30" width="64" height="36" rx="6" />
-              <rect class="error-visual__node error-visual__node--muted" x="272" y="70" width="64" height="36" rx="6" />
+              <rect
+                class="error-visual__node error-visual__node--muted"
+                x="272"
+                y="70"
+                width="64"
+                height="36"
+                rx="6"
+              />
               <path class="error-visual__break" d="M224 76 L246 98 M246 76 L224 98" />
             </svg>
 

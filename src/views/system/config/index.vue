@@ -135,12 +135,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus";
+<script setup>
+import { ElMessage, ElMessageBox } from "element-plus";
 import { Refresh, FullScreen } from "@element-plus/icons-vue";
 
 import ConfigAPI from "@/api/system/config";
-import type { ConfigItem, ConfigForm, ConfigQueryParams } from "@/api/system/config";
 import { usePageTable } from "@/composables";
 
 defineOptions({
@@ -148,17 +147,14 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const tableWrapperRef = ref<HTMLElement | null>(null);
+const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-const queryFormRef = ref<FormInstance>();
-const dataFormRef = ref<FormInstance>();
+const queryFormRef = ref();
+const dataFormRef = ref();
 
 /** 分页表格数据管理 */
-const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable<
-  ConfigItem,
-  ConfigQueryParams
->({
+const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: { pageNum: 1, pageSize: 10, keywords: "" },
   request: ConfigAPI.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
@@ -166,7 +162,7 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
 
 const dialogState = reactive({ title: "", visible: false });
 
-const formData = reactive<ConfigForm>({
+const formData = reactive({
   id: undefined,
   configName: "",
   configKey: "",
@@ -174,20 +170,20 @@ const formData = reactive<ConfigForm>({
   remark: "",
 });
 
-const rules: FormRules = {
+const rules = {
   configName: [{ required: true, message: "请输入系统配置名称", trigger: "blur" }],
   configKey: [{ required: true, message: "请输入系统配置编码", trigger: "blur" }],
   configValue: [{ required: true, message: "请输入系统配置值", trigger: "blur" }],
 };
 
-function handleSelectionChange(selection: ConfigItem[]): void {
+function handleSelectionChange(selection) {
   void selection;
 }
 
 /**
  * 打开新增/编辑系统配置弹窗
  */
-async function openDialog(id?: string): Promise<void> {
+async function openDialog(id) {
   dialogState.visible = true;
   if (id) {
     dialogState.title = "修改系统配置";
@@ -208,7 +204,7 @@ const refreshCache = useDebounceFn(async () => {
 /**
  * 校验并提交系统配置表单
  */
-async function handleSubmit(): Promise<void> {
+async function handleSubmit() {
   const valid = await dataFormRef.value?.validate().catch(() => false);
   if (!valid) return;
 
@@ -232,7 +228,7 @@ async function handleSubmit(): Promise<void> {
 /**
  * 关闭弹窗并重置表单
  */
-function closeDialog(): void {
+function closeDialog() {
   dialogState.visible = false;
   dataFormRef.value?.resetFields();
   dataFormRef.value?.clearValidate();
@@ -242,7 +238,7 @@ function closeDialog(): void {
 /**
  * 删除系统配置
  */
-async function handleDelete(id: string): Promise<void> {
+async function handleDelete(id) {
   await ElMessageBox.confirm("确认删除该项配置?", "警告", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",

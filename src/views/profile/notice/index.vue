@@ -108,12 +108,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { onMounted, ref } from "vue";
 import { Refresh, Search, Timer, User } from "@element-plus/icons-vue";
 
 import NoticeAPI from "@/api/system/notice";
-import type { NoticeDetail, NoticeItem, NoticeQueryParams } from "@/api/system/notice";
 import { usePageTable } from "@/composables";
 
 defineOptions({
@@ -127,10 +126,7 @@ const NOTICE_READ = 1;
 const queryFormRef = ref();
 
 /** 分页表格数据管理 */
-const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable<
-  NoticeItem,
-  NoticeQueryParams
->({
+const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
     pageSize: 10,
@@ -140,14 +136,14 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
 });
 
 const noticeDialogVisible = ref(false);
-const noticeDetail = ref<NoticeDetail | null>(null);
+const noticeDetail = ref(null);
 
 /**
  * 查看通知详情。
  *
  * @param id 通知 ID
  */
-async function handleReadNotice(id: string): Promise<void> {
+async function handleReadNotice(id) {
   const data = await NoticeAPI.getDetail(id);
   noticeDetail.value = data;
   noticeDialogVisible.value = true;

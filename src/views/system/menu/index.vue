@@ -425,9 +425,9 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { useFullscreen } from "@vueuse/core";
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import {
   CirclePlusFilled,
   DeleteFilled,
@@ -437,8 +437,6 @@ import {
 } from "@element-plus/icons-vue";
 
 import MenuAPI from "@/api/system/menu";
-import type { MenuForm, MenuItem, MenuQueryParams } from "@/api/system/menu";
-import type { OptionItem } from "@/api/common";
 import { useAppStore } from "@/stores/app";
 import { CommonStatus, MenuScopeEnum, MenuTypeEnum } from "@/enums";
 import { DeviceEnum } from "@/enums/settings";
@@ -452,24 +450,24 @@ defineOptions({
 
 const appStore = useAppStore();
 
-const tableWrapperRef = ref<HTMLElement | null>(null);
+const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-const queryFormRef = ref<FormInstance>();
-const menuFormRef = ref<FormInstance>();
+const queryFormRef = ref();
+const menuFormRef = ref();
 
 const loading = ref(false);
-const list = ref<MenuItem[]>([]);
-const queryParams = reactive<MenuQueryParams>({ keywords: "" });
+const list = ref([]);
+const queryParams = reactive({ keywords: "" });
 
 const dialogState = reactive({
   title: "新增菜单",
   visible: false,
 });
 
-const menuOptions = ref<OptionItem[]>([]);
+const menuOptions = ref([]);
 
-const initialFormData: MenuForm = {
+const initialFormData = {
   id: undefined,
   parentId: "0",
   visible: CommonStatus.ENABLED,
@@ -488,9 +486,9 @@ const menuTypes = [
   MenuTypeEnum.BUTTON,
 ];
 
-const formData = reactive<MenuForm>({ ...initialFormData });
-const currentMenuType = ref<MenuTypeEnum>(MenuTypeEnum.MENU);
-const menuTypeDrafts = reactive<Record<MenuTypeEnum, Partial<MenuForm>>>(createMenuTypeDrafts());
+const formData = reactive({ ...initialFormData });
+const currentMenuType = ref(MenuTypeEnum.MENU);
+const menuTypeDrafts = reactive(createMenuTypeDrafts());
 
 // 多租户关闭时隐藏菜单范围字段。
 const showMenuScope = computed(() => isTenantEnabled());
@@ -556,7 +554,7 @@ const menuTypeHint = computed(() => {
   return "";
 });
 
-const validateRouteName = (_: unknown, value: string, callback: (error?: Error) => void) => {
+const validateRouteName = (_, value, callback) => {
   if (showRouteName.value && !value) {
     callback(new Error("请输入页面标识"));
     return;
@@ -564,11 +562,11 @@ const validateRouteName = (_: unknown, value: string, callback: (error?: Error) 
   callback();
 };
 
-function isStatusEnabled(value?: number | boolean): boolean {
+function isStatusEnabled(value) {
   return value === CommonStatus.ENABLED || value === true;
 }
 
-function createMenuTypeDrafts(): Record<MenuTypeEnum, Partial<MenuForm>> {
+function createMenuTypeDrafts() {
   return {
     [MenuTypeEnum.CATALOG]: {
       routePath: "",
@@ -598,11 +596,11 @@ function createMenuTypeDrafts(): Record<MenuTypeEnum, Partial<MenuForm>> {
   };
 }
 
-function getMenuType(type?: MenuForm["type"]): MenuTypeEnum {
-  return menuTypes.includes(type as MenuTypeEnum) ? (type as MenuTypeEnum) : MenuTypeEnum.MENU;
+function getMenuType(type) {
+  return menuTypes.includes(type) ? type : MenuTypeEnum.MENU;
 }
 
-const validateRoutePath = (_: unknown, value: string, callback: (error?: Error) => void) => {
+const validateRoutePath = (_, value, callback) => {
   if (showRoutePath.value && !value) {
     callback(new Error(isEmbeddedExternal.value ? "请输入系统路径" : "请输入访问路径"));
     return;
@@ -610,7 +608,7 @@ const validateRoutePath = (_: unknown, value: string, callback: (error?: Error) 
   callback();
 };
 
-const validateComponent = (_: unknown, value: string, callback: (error?: Error) => void) => {
+const validateComponent = (_, value, callback) => {
   if (formData.type === MenuTypeEnum.MENU && !value) {
     callback(new Error("请输入页面组件"));
     return;
@@ -618,7 +616,7 @@ const validateComponent = (_: unknown, value: string, callback: (error?: Error) 
   callback();
 };
 
-const validateExternalUrl = (_: unknown, value: string, callback: (error?: Error) => void) => {
+const validateExternalUrl = (_, value, callback) => {
   if (formData.type !== MenuTypeEnum.EXTERNAL) {
     callback();
     return;
@@ -637,7 +635,7 @@ const validateExternalUrl = (_: unknown, value: string, callback: (error?: Error
   callback();
 };
 
-const validatePerm = (_: unknown, value: string, callback: (error?: Error) => void) => {
+const validatePerm = (_, value, callback) => {
   if (formData.type === MenuTypeEnum.BUTTON && !value) {
     callback(new Error("请输入权限标识"));
     return;
@@ -645,7 +643,7 @@ const validatePerm = (_: unknown, value: string, callback: (error?: Error) => vo
   callback();
 };
 
-const rules: FormRules<MenuForm> = {
+const rules = {
   parentId: [{ required: true, message: "请选择父级菜单", trigger: "blur" }],
   name: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
   type: [{ required: true, message: "请选择菜单类型", trigger: "blur" }],
@@ -670,7 +668,7 @@ const rules: FormRules<MenuForm> = {
 /**
  * 拉取菜单列表数据（一次性返回全量树）。
  */
-async function fetchData(): Promise<void> {
+async function fetchData() {
   loading.value = true;
   try {
     list.value = await MenuAPI.getList(queryParams);
@@ -682,14 +680,14 @@ async function fetchData(): Promise<void> {
 /**
  * 按当前筛选条件重新查询。
  */
-function handleQuery(): void {
+function handleQuery() {
   fetchData();
 }
 
 /**
  * 重置搜索表单后重新查询。
  */
-function handleResetQuery(): void {
+function handleResetQuery() {
   queryFormRef.value?.resetFields();
   fetchData();
 }
@@ -699,14 +697,14 @@ function handleResetQuery(): void {
  *
  * @param row 当前菜单行
  */
-function handleRowClick(row: MenuItem): void {
+function handleRowClick(row) {
   void row;
 }
 
 /**
  * 获取菜单列表中的路径
  */
-function getMenuAccessPath(row: MenuItem): string {
+function getMenuAccessPath(row) {
   if (row.type === MenuTypeEnum.EXTERNAL) {
     return row.externalUrl ?? "";
   }
@@ -716,7 +714,7 @@ function getMenuAccessPath(row: MenuItem): string {
 /**
  * 获取菜单列表中的组件路径
  */
-function getMenuComponentPath(row: MenuItem): string {
+function getMenuComponentPath(row) {
   if (row.type !== MenuTypeEnum.MENU) return "";
   return row.component ?? "";
 }
@@ -724,7 +722,7 @@ function getMenuComponentPath(row: MenuItem): string {
 /**
  * 根据父级菜单推断新增类型
  */
-function getDefaultMenuType(parentId?: string): MenuForm["type"] {
+function getDefaultMenuType(parentId) {
   if (!parentId || parentId === "0") return MenuTypeEnum.CATALOG;
 
   const parent = findMenuById(list.value, parentId);
@@ -736,7 +734,7 @@ function getDefaultMenuType(parentId?: string): MenuForm["type"] {
 /**
  * 从菜单树中查找指定菜单
  */
-function findMenuById(menus: MenuItem[], id: string): MenuItem | undefined {
+function findMenuById(menus, id) {
   for (const menu of menus) {
     if (menu.id === id) return menu;
 
@@ -748,8 +746,8 @@ function findMenuById(menus: MenuItem[], id: string): MenuItem | undefined {
 /**
  * 按菜单类型清理无关字段
  */
-function normalizeMenuPayload(): MenuForm {
-  const payload: MenuForm = {
+function normalizeMenuPayload() {
+  const payload = {
     ...formData,
     params: formData.params?.filter((item) => item.key && item.value) ?? [],
   };
@@ -806,11 +804,11 @@ function normalizeMenuPayload(): MenuForm {
   return payload;
 }
 
-function resetMenuTypeDrafts(): void {
+function resetMenuTypeDrafts() {
   Object.assign(menuTypeDrafts, createMenuTypeDrafts());
 }
 
-function saveMenuTypeDraft(type: MenuTypeEnum): void {
+function saveMenuTypeDraft(type) {
   menuTypeDrafts[type] = {
     routeName: formData.routeName,
     routePath: formData.routePath,
@@ -828,12 +826,12 @@ function saveMenuTypeDraft(type: MenuTypeEnum): void {
 /**
  * 保留各类型已填写内容，避免切换类型时丢失草稿
  */
-function syncCurrentMenuTypeDraft(): void {
+function syncCurrentMenuTypeDraft() {
   saveMenuTypeDraft(currentMenuType.value);
   restoreMenuTypeDraft(currentMenuType.value);
 }
 
-function restoreMenuTypeDraft(type: MenuTypeEnum): void {
+function restoreMenuTypeDraft(type) {
   const draft = menuTypeDrafts[type] ?? {};
   Object.assign(formData, {
     routeName: undefined,
@@ -856,9 +854,9 @@ function restoreMenuTypeDraft(type: MenuTypeEnum): void {
 /**
  * 替换表单数据，避免上一次编辑残留字段
  */
-function assignFormData(data: MenuForm): void {
+function assignFormData(data) {
   Object.keys(formData).forEach((key) => {
-    delete (formData as Record<string, unknown>)[key];
+    delete formData[key];
   });
   Object.assign(formData, data);
 
@@ -871,7 +869,7 @@ function assignFormData(data: MenuForm): void {
 /**
  * 重置表单数据和验证状态
  */
-function resetForm(): void {
+function resetForm() {
   menuFormRef.value?.resetFields();
   menuFormRef.value?.clearValidate();
   assignFormData({ ...initialFormData });
@@ -883,7 +881,7 @@ function resetForm(): void {
  * @param parentId 父菜单 ID（新增子菜单时传入）
  * @param menuId 菜单 ID（编辑时传入）
  */
-async function openDialog(parentId?: string, menuId?: string): Promise<void> {
+async function openDialog(parentId, menuId) {
   const data = await MenuAPI.getOptions(true);
   menuOptions.value = [{ value: "0", label: "顶级菜单", children: data }];
 
@@ -906,7 +904,7 @@ async function openDialog(parentId?: string, menuId?: string): Promise<void> {
 /**
  * 补齐当前菜单类型的默认字段
  */
-function applyMenuTypeDefaults(): void {
+function applyMenuTypeDefaults() {
   if (formData.type === MenuTypeEnum.CATALOG) {
     formData.alwaysShow ??= 0;
   }
@@ -932,7 +930,7 @@ function applyMenuTypeDefaults(): void {
 /**
  * 菜单类型切换事件
  */
-function handleMenuTypeChange(): void {
+function handleMenuTypeChange() {
   const nextType = getMenuType(formData.type);
   if (currentMenuType.value === nextType) return;
 
@@ -946,7 +944,7 @@ function handleMenuTypeChange(): void {
 /**
  * 外链组件切换事件（新标签页 → 系统内嵌）
  */
-function handleComponentChange(): void {
+function handleComponentChange() {
   if (formData.component === "iframe") {
     formData.keepAlive ??= 1;
   }
@@ -957,14 +955,14 @@ function handleComponentChange(): void {
 /**
  * 切换缓存状态后刷新页面标识校验
  */
-function handleKeepAliveChange(): void {
+function handleKeepAliveChange() {
   menuFormRef.value?.clearValidate("routeName");
 }
 
 /**
  * 校验并提交菜单表单。
  */
-async function handleSubmit(): Promise<void> {
+async function handleSubmit() {
   const valid = await menuFormRef.value?.validate().then(
     () => true,
     () => false
@@ -999,7 +997,7 @@ async function handleSubmit(): Promise<void> {
  *
  * @param menuId 菜单 ID
  */
-async function handleDelete(menuId: string): Promise<void> {
+async function handleDelete(menuId) {
   if (!menuId) {
     ElMessage.warning("请勾选删除项");
     return;
@@ -1029,7 +1027,7 @@ async function handleDelete(menuId: string): Promise<void> {
 /**
  * 关闭弹窗并重置表单。
  */
-function closeDialog(): void {
+function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
