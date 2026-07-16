@@ -1,8 +1,6 @@
 <div align="center">
 
-<img alt="vue3-element-admin-js" width="80" src="./src/assets/images/logo.png">
-
-# vue3-element-admin-js
+# <img alt="logo" width="40" valign="middle" src="./src/assets/images/logo.png"> vue3-element-admin-js
 
 **Vue3 + Vite + JavaScript 企业级后台管理前端**
 
@@ -20,7 +18,9 @@
 
 <div align="center">
 
-[🖥️ 在线预览](https://vue.youlai.tech) | [📲 移动端预览](https://app.youlai.tech) | [📖 文档](https://www.youlai.tech/vue3-element-admin)
+[![在线预览](https://img.shields.io/badge/在线预览-2D8CF0?style=for-the-badge&logo=google-chrome&logoColor=white)](https://vue.youlai.tech)
+[![移动端预览](https://img.shields.io/badge/移动端预览-19BE6B?style=for-the-badge&logo=android&logoColor=white)](https://app.youlai.tech)
+[![文档](https://img.shields.io/badge/文档-8B5CF6?style=for-the-badge&logo=gitbook&logoColor=white)](https://www.youlai.tech/vue3-element-admin)
 
 </div>
 
