@@ -1,5 +1,5 @@
 <template>
-  <section class="app-main" :style="{ height: appMainHeight }">
+  <section class="layout-content" :style="{ height: appMainHeight }">
     <router-view>
       <template #default="{ Component, route }">
         <transition :name="transitionName" mode="out-in">
@@ -11,7 +11,7 @@
     </router-view>
 
     <!-- 返回顶部按钮 -->
-    <el-backtop target=".app-main">
+    <el-backtop target=".layout-content">
       <div class="i-svg:backtop w-6 h-6" />
     </el-backtop>
   </section>
@@ -75,7 +75,7 @@ const transitionName = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-.app-main {
+.layout-content {
   position: relative;
   overflow-y: auto;
   background-color: var(--page-bg);

@@ -3,7 +3,7 @@
     <!-- 移动端遮罩层（混布局 MixLayout 中传 false 关闭） -->
     <div
       v-if="showOverlay && isMobile && isSidebarOpen"
-      class="layout__overlay"
+      class="layout-root__overlay"
       @click="closeSidebar"
     />
 
@@ -26,7 +26,7 @@ const { layoutClass, isSidebarOpen, isMobile, closeSidebar } = useLayout();
 </script>
 
 <style lang="scss" scoped>
-.layout {
+.layout-root {
   width: 100%;
   height: 100%;
 

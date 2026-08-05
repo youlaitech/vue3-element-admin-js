@@ -1,26 +1,21 @@
 <template>
-  <el-icon v-if="isElementPlusIcon" class="layout-menu-icon">
-    <component :is="iconName" />
+  <el-icon v-if="isElementIcon" class="layout-menu-icon layout-menu-icon--element menu-icon">
+    <component :is="elementIconName" />
   </el-icon>
-  <span v-else-if="isSvgIcon" class="layout-menu-icon" :class="icon" />
-  <span v-else class="layout-menu-icon i-svg:menu" />
+  <div v-else :class="['layout-menu-icon', 'layout-menu-icon--svg', 'menu-icon', svgIconClass]" />
 </template>
 
 <script setup>
-defineProps({
-  icon: { type: String, default: "" },
-});
+const props = withDefaults(
+  defineProps({
+    icon: String,
+  }),
+  {
+    icon: "",
+  }
+);
 
-const isElementPlusIcon = computed(() => {
-  return typeof icon === "string" && icon.startsWith("el-icon-");
-});
-
-const isSvgIcon = computed(() => {
-  return typeof icon === "string" && icon.startsWith("i-svg:");
-});
-
-const iconName = computed(() => {
-  if (!isElementPlusIcon.value) return "";
-  return icon.value?.replace("el-icon-", "") || "";
-});
+const isElementIcon = computed(() => (props.icon || "").startsWith("el-icon"));
+const elementIconName = computed(() => (props.icon || "").replace("el-icon-", ""));
+const svgIconClass = computed(() => `i-svg:${props.icon || "menu"}`);
 </script>
