@@ -215,7 +215,7 @@
           <el-select v-model="settingsStore.pageSwitchingAnimation" style="width: 150px">
             <el-option
               v-for="(item, key) in pageSwitchingAnimationOptions"
-              :key
+              :key="key"
               :label="t(`settings.${item.value}`)"
               :value="item.value"
             />

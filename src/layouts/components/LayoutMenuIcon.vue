@@ -6,14 +6,12 @@
 </template>
 
 <script setup>
-const props = withDefaults(
-  defineProps({
-    icon: String,
-  }),
-  {
-    icon: "",
-  }
-);
+const props = defineProps({
+  icon: {
+    type: String,
+    default: "",
+  },
+});
 
 const isElementIcon = computed(() => (props.icon || "").startsWith("el-icon"));
 const elementIconName = computed(() => (props.icon || "").replace("el-icon-", ""));
