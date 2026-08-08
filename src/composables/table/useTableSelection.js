@@ -17,12 +17,8 @@ export function useTableSelection() {
    */
   const selectedIds = ref([]);
 
-  /**
-   * 表格选中项变化处理
-   * @param selection 选中的行数据列表
-   */
   function handleSelectionChange(selection) {
-    selectedIds.value = selection.map((item) => item.id);
+    selectedIds.value = selection.flatMap((item) => (item.id ? [item.id] : []));
   }
 
   /**

@@ -221,6 +221,7 @@
 </template>
 
 <script setup>
+import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { FullScreen, QuestionFilled, Refresh, Search, Switch } from "@element-plus/icons-vue";
 
@@ -294,14 +295,14 @@ function resetForm() {
 }
 
 /**
- * 打开表单弹窗。
+ * 打开表单弹窗
  */
 function openDialog() {
   dialogState.visible = true;
 }
 
 /**
- * 关闭表单弹窗并清理临时状态。
+ * 关闭表单弹窗并清理临时状态
  */
 function closeDialog() {
   dialogState.visible = false;
@@ -360,7 +361,7 @@ const handleSubmit = useDebounceFn(async () => {
 }, 300);
 
 /**
- * 删除套餐。
+ * 删除套餐
  *
  * @param planId 套餐 ID
  */
@@ -388,7 +389,7 @@ async function handleDelete(planId) {
 }
 
 /**
- * 打开菜单配置抽屉并回显已分配菜单。
+ * 打开菜单配置抽屉并回显已分配菜单
  *
  * @param row 当前套餐行
  */
@@ -427,7 +428,7 @@ function closePlanMenuDialog() {
 }
 
 /**
- * 展开或收起菜单树全部节点。
+ * 展开或收起菜单树全部节点
  */
 function toggleMenuTree() {
   menuExpanded.value = !menuExpanded.value;
@@ -443,7 +444,7 @@ function toggleMenuTree() {
 }
 
 /**
- * 父子联动开关变化处理。
+ * 父子联动开关变化处理
  *
  * @param val 开关当前值
  */
@@ -452,7 +453,7 @@ function handleMenuLinkChange(val) {
 }
 
 /**
- * 菜单树过滤函数。
+ * 菜单树过滤函数
  *
  * @param value 输入的关键字
  * @param data 当前节点数据
@@ -463,7 +464,7 @@ function handleMenuFilter(value, data) {
 }
 
 /**
- * 提交当前套餐的菜单权限配置。
+ * 提交当前套餐的菜单权限配置
  */
 async function handlePlanMenuSubmit() {
   const planId = checkedPlan.value.id;

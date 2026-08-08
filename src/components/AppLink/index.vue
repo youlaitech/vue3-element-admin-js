@@ -1,16 +1,16 @@
 <template>
-  <component :is="linkType" v-bind="linkProps(to)">
+  <component :is="linkType" v-bind="linkProps(to)" @click="handleClick">
     <slot />
   </component>
 </template>
 
 <script setup>
+import { isExternal } from "@/utils/index";
+
 defineOptions({
   name: "AppLink",
   inheritAttrs: false,
 });
-
-import { isExternal } from "@/utils/index";
 
 const props = defineProps({
   to: {
@@ -19,8 +19,12 @@ const props = defineProps({
   },
 });
 
+const externalUrl = computed(() => {
+  return isExternal(props.to.path || "") ? props.to.path : "";
+});
+
 const isExternalLink = computed(() => {
-  return isExternal(props.to.path || "");
+  return Boolean(externalUrl.value);
 });
 
 const linkType = computed(() => (isExternalLink.value ? "a" : "router-link"));
@@ -28,11 +32,22 @@ const linkType = computed(() => (isExternalLink.value ? "a" : "router-link"));
 const linkProps = (to) => {
   if (isExternalLink.value) {
     return {
-      href: to.path,
+      href: externalUrl.value,
       target: "_blank",
       rel: "noopener noreferrer",
     };
   }
-  return { to };
+
+  const { meta, ...routeTo } = to;
+  void meta;
+  return { to: routeTo };
 };
+
+function handleClick(event) {
+  if (!isExternalLink.value) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  window.open(externalUrl.value, "_blank", "noopener,noreferrer");
+}
 </script>

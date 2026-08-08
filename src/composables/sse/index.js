@@ -1,5 +1,5 @@
 import { useDictSync } from "./useDictSync";
-import { useOnlineCount } from "./useOnlineCount";
+import { useOnlineUsers } from "./useOnlineUsers";
 import { useSse, cleanupSse } from "./useSse";
 
 /**
@@ -12,8 +12,8 @@ export function setupSse() {
   const dictSync = useDictSync();
   dictSync.initialize();
 
-  const onlineCount = useOnlineCount();
-  onlineCount.initialize();
+  const onlineUsers = useOnlineUsers();
+  onlineUsers.initialize();
 }
 
 /**
@@ -23,12 +23,13 @@ export function cleanupSseServices() {
   const dictSync = useDictSync();
   dictSync.cleanup();
 
-  const onlineCount = useOnlineCount();
-  onlineCount.cleanup();
+  const onlineUsers = useOnlineUsers();
+  onlineUsers.cleanup();
 
   cleanupSse();
 }
 
 export { useDictSync } from "./useDictSync";
-export { useOnlineCount } from "./useOnlineCount";
+export { useOnlineUsers } from "./useOnlineUsers";
 export { useSse, cleanupSse, SseConnectionState } from "./useSse";
+export { SseTopics } from "./sseTopics";

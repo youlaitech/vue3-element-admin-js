@@ -52,7 +52,14 @@
       <div class="login-card">
         <div class="login-card__inner">
           <transition name="fade-slide" mode="out-in">
-            <div v-if="component === 'login'" key="login" class="login-card__form">
+            <QrCodeLogin
+              v-if="component === 'qrcode'"
+              key="qrcode"
+              class="login-card__form"
+              @switch="component = 'login'"
+            />
+
+            <div v-else-if="component === 'login'" key="login" class="login-card__form">
               <h2 class="login-card__title">欢迎回来</h2>
               <p class="login-card__desc">请完成身份验证后进入系统</p>
 
@@ -126,7 +133,7 @@
               <div class="login-alt">
                 <div class="login-alt__divider">其他登录方式</div>
                 <div class="login-alt__buttons">
-                  <button class="login-alt__btn">
+                  <button class="login-alt__btn" @click="component = 'qrcode'">
                     <span class="login-alt__icon i-svg:qr-code" />
                     扫码登录
                   </button>
@@ -163,6 +170,7 @@ import { useUserStore } from "@/stores";
 import { AuthStorage } from "@/utils/auth";
 import { appConfig } from "@/settings";
 import ThemeSwitch from "@/components/ThemeSwitch/index.vue";
+import QrCodeLogin from "./components/QrCodeLogin.vue";
 import ResetPwd from "./components/ResetPwd.vue";
 import logo from "@/assets/images/logo.png";
 
@@ -706,6 +714,10 @@ $input-h: 44px;
 
 .dark .login-footer {
   color: rgb(255 255 255 / 15%);
+}
+
+.dark .login-alt__divider {
+  color: rgb(255 255 255 / 20%);
 }
 
 .fade-slide-enter-active,

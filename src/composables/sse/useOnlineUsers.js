@@ -1,9 +1,10 @@
 import { ref, readonly } from "vue";
 import { useSse } from "./useSse";
+import { SseTopics } from "./sseTopics";
 
 let globalInstance = null;
 
-function createOnlineCountComposable() {
+function createOnlineUsersComposable() {
   const onlineUserCount = ref(0);
   const lastUpdateTime = ref(0);
 
@@ -11,19 +12,16 @@ function createOnlineCountComposable() {
 
   let unsubscribe = null;
 
-  /** 处理在线用户数变更消息 */
   const handleOnlineUsersMessage = (count) => {
     if (!Number.isFinite(count) || count < 0) return;
     onlineUserCount.value = count;
     lastUpdateTime.value = Date.now();
   };
 
-  /** 订阅 SSE 在线用户数事件 */
   const initialize = () => {
-    unsubscribe = sse.on("online-users", handleOnlineUsersMessage);
+    unsubscribe = sse.on(SseTopics.ONLINE_USERS, handleOnlineUsersMessage);
   };
 
-  /** 取消 SSE 订阅并重置计数 */
   const cleanup = () => {
     if (unsubscribe) {
       unsubscribe();
@@ -43,10 +41,10 @@ function createOnlineCountComposable() {
   };
 }
 
-/** 在线用户数组合式函数（单例模式） */
-export function useOnlineCount() {
+/** 鍦ㄧ嚎鐢ㄦ埛鏁扮粍鍚堝紡鍑芥暟锛堝崟渚嬫ā寮忥級 */
+export function useOnlineUsers() {
   if (!globalInstance) {
-    globalInstance = createOnlineCountComposable();
+    globalInstance = createOnlineUsersComposable();
   }
   return globalInstance;
 }

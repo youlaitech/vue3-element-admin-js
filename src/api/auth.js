@@ -60,6 +60,34 @@ const AuthAPI = {
       method: "get",
     });
   },
+
+  // ============ 扫码登录 ============
+
+  /** 申请扫码票据 */
+  qrGenerate() {
+    return request({
+      url: `${AUTH_BASE_URL}/qr-code/generate`,
+      method: "post",
+    });
+  },
+
+  /** 轮询扫码状态 */
+  qrStatus(ticket) {
+    return request({
+      url: `${AUTH_BASE_URL}/qr-code/status`,
+      method: "get",
+      params: { ticket },
+    });
+  },
+
+  /** 扫码票据换取登录令牌 */
+  qrLogin(ticket) {
+    return request({
+      url: `${AUTH_BASE_URL}/qr-code/login`,
+      method: "post",
+      data: { ticket },
+    });
+  },
 };
 
 export default AuthAPI;

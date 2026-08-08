@@ -258,11 +258,11 @@ import {
   Document,
   VideoPlay,
 } from "@element-plus/icons-vue";
-import { useOnlineCount } from "@/composables";
+import { useOnlineUsers } from "@/composables";
 
 const userStore = useUserStore();
 const settingsStore = useSettingsStore();
-const { onlineUserCount, isConnected } = useOnlineCount();
+const { onlineUserCount, isConnected } = useOnlineUsers();
 
 const hours = new Date().getHours();
 const greetings = computed(() => {
