@@ -1,32 +1,32 @@
 <template>
   <div class="qr-login">
-    <h2 class="qr-login__title">鎵爜鐧诲綍</h2>
-    <p class="qr-login__desc">浣跨敤 youlai-app 鎵弿涓嬫柟浜岀淮鐮佺櫥褰?/p>
+    <h2 class="qr-login__title">扫码登录</h2>
+    <p class="qr-login__desc">使用 youlai-app 扫描下方二维码登录</p>
 
     <div class="qr-login__board">
       <div v-if="state === 'loading'" class="qr-login__mask">
         <el-icon class="is-loading"><Loading /></el-icon>
-        <span>浜岀淮鐮佺敓鎴愪腑...</span>
+        <span>二维码生成中...</span>
       </div>
 
       <div v-else-if="state === 'scanned'" class="qr-login__mask qr-login__mask--info">
         <el-avatar :size="56" :src="avatar || undefined">
           <el-icon><User /></el-icon>
         </el-avatar>
-        <span class="qr-login__mask-text">{{ nickname }} 宸叉壂鐮?/span>
-        <span class="qr-login__mask-hint">璇峰湪鎵嬫満涓婄‘璁ょ櫥褰?/span>
+        <span class="qr-login__mask-text">{{ nickname }} 已扫码</span>
+        <span class="qr-login__mask-hint">请在手机上确认登录</span>
       </div>
 
       <div v-else-if="state === 'expired'" class="qr-login__mask">
         <el-icon :size="28"><CircleClose /></el-icon>
-        <span>浜岀淮鐮佸凡杩囨湡</span>
-        <el-button type="primary" link @click="start">鐐瑰嚮鍒锋柊</el-button>
+        <span>二维码已过期</span>
+        <el-button type="primary" link @click="start">点击刷新</el-button>
       </div>
 
       <div v-else-if="state === 'canceled'" class="qr-login__mask">
         <el-icon :size="28"><CircleClose /></el-icon>
-        <span>宸插彇娑堢櫥褰?/span>
-        <el-button type="primary" link @click="start">閲嶆柊鐢熸垚</el-button>
+        <span>已取消登录</span>
+        <el-button type="primary" link @click="start">重新生成</el-button>
       </div>
 
       <canvas v-show="state === 'waiting'" ref="canvasRef" class="qr-login__canvas" />
@@ -35,7 +35,7 @@
     <div class="qr-login__footer">
       <el-button text @click="emit('switch', 'login')">
         <el-icon><ArrowLeft /></el-icon>
-        杩斿洖璐﹀彿鐧诲綍
+        返回账号登录
       </el-button>
     </div>
   </div>
@@ -50,31 +50,31 @@ import router from "@/router";
 import { useRoute } from "vue-router";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
-// 鐣岄潰鐘舵€佹満锛歭oading(鐢熸垚涓? 鈫?waiting(寰呮壂鐮? 鈫?scanned(宸叉壂鐮佸緟纭)
-// 鈫?done(宸茬櫥褰? / expired(杩囨湡鎴栧凡浣跨敤) / canceled(APP 鍙栨秷)
+// 界面状态机：loading(生成中) → waiting(待扫码) → scanned(已扫码待确认)
+// → done(已登录) / expired(过期或已使用) / canceled(APP 取消)
 
 const emit = defineEmits(["switch"]);
 
 const userStore = useUserStore();
 const route = useRoute();
 
-// 浜岀淮鐮佺敾甯冨厓绱犲紩鐢紝renderQrCode 鎶?ticket 缁樿繘瀹?
+// 二维码画布元素引用，renderQrCode 把 ticket 绘进它
 const canvasRef = ref();
-// 褰撳墠鐣岄潰鐘舵€侊紝椹卞姩妯℃澘涓伄缃╁眰鐨勬樉闅?
+// 当前界面状态，驱动模板中遮罩层的显隐
 const state = ref("loading");
-// 鎵爜鐢ㄦ埛鑴辨晱鏄电О涓庡ご鍍忥紝scanned 鐘舵€佸睍绀?
+// 扫码用户脱敏昵称与头像，scanned 状态展示
 const nickname = ref("");
 const avatar = ref("");
 
-// 褰撳墠绁ㄦ嵁锛岃疆璇笌鐧诲綍鎹护鐗岄兘渚濊禆瀹?
+// 当前票据，轮询与登录换令牌都依赖它
 let ticket = "";
-// 杞瀹氭椂鍣ㄥ彞鏌勶紝缁勪欢鍗歌浇鎴栧仠姝㈣疆璇㈡椂娓呯┖
+// 轮询定时器句柄，组件卸载或停止轮询时清空
 let pollTimer = null;
 
-// 杞闂撮殧锛堟绉掞級
+// 轮询间隔（毫秒）
 const QR_POLL_INTERVAL = 2000;
 
-// 鐢宠绁ㄦ嵁骞舵覆鏌撲簩缁寸爜锛屽紑濮嬭疆璇?
+// 申请票据并渲染二维码，开始轮询
 async function start() {
   stopPolling();
   state.value = "loading";
@@ -118,7 +118,7 @@ async function pollOnce() {
   }
 }
 
-// 鏍规嵁鍚庣杩斿洖鐘舵€佹帹杩涚晫闈笌涓嬩竴姝ュ姩浣?
+// 根据后端返回状态推进界面与下一步动作
 function handleStatus(res) {
   switch (res.status) {
     case "WAITING":
