@@ -99,10 +99,10 @@ http.interceptors.response.use(
       return Promise.reject(new Error(msg || "Token Invalid"));
     }
 
-    // 权限不足：刷新权限快照后提示
+    // 权限不足
     if (code === ApiCodeEnum.PERMISSION_DENIED) {
       const permissionStore = usePermissionStoreHook();
-      await permissionStore.reloadPermissionSnapshotOnce();
+      await permissionStore.refreshPermissions();
       ElMessage.error(msg || "权限不足");
       return Promise.reject(new Error(msg || "权限不足"));
     }

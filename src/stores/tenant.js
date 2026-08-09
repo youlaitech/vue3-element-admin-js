@@ -39,17 +39,10 @@ export const useTenantStore = defineStore("tenant", () => {
   /**
    * 获取用户租户列表
    */
-  function fetchTenantList() {
-    return new Promise((resolve, reject) => {
-      TenantAPI.getTenantList()
-        .then((data) => {
-          tenantList.value = data || [];
-          resolve(data || []);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+  async function fetchTenantList() {
+    const data = await TenantAPI.getTenantList();
+    tenantList.value = data || [];
+    return data || [];
   }
 
   /**
@@ -72,34 +65,27 @@ export const useTenantStore = defineStore("tenant", () => {
 
     // 2. 校验本地恢复的租户是否仍然可用（避免 tenantId 不在列表导致无默认选中）
     if (
-      currentTenantId.value &&
+      currentTenantId.value != null &&
       tenantList.value.length > 0 &&
       !tenantList.value.some((t) => t.id === currentTenantId.value)
     ) {
       console.debug("[Tenant] 本地租户已不可用，清除并重新选择:", currentTenantId.value);
-      currentTenantId.value = null;
-      currentTenant.value = null;
-      localStorage.removeItem(STORAGE_KEYS.TENANT_ID);
-      localStorage.removeItem(STORAGE_KEYS.TENANT_INFO);
+      clearLocalTenant();
     }
 
     // 3. 如果已有租户列表，则保证一定有一个默认租户被选中
     if (tenantList.value.length > 0) {
       // 3.1 优先后端当前租户
-      if (!currentTenantId.value) {
-        try {
-          const currentTenantInfo = await TenantAPI.getCurrentTenant();
-          if (currentTenantInfo) {
-            setCurrentTenant(currentTenantInfo);
-            return;
-          }
-        } catch (error) {
-          console.debug("[Tenant] 获取当前租户失败，尝试本地/默认选择:", error);
+      if (currentTenantId.value == null) {
+        const currentTenantInfo = await safeGetCurrentTenant();
+        if (currentTenantInfo) {
+          setCurrentTenant(currentTenantInfo);
+          return;
         }
       }
 
       // 3.2 本地已有 tenantId，但 currentTenant 为空时，从列表补全 tenantInfo（保持展示名称一致）
-      if (currentTenantId.value && !currentTenant.value) {
+      if (currentTenantId.value != null && !currentTenant.value) {
         const matched = tenantList.value.find((t) => t.id === currentTenantId.value);
         if (matched) {
           setCurrentTenant(matched);
@@ -108,7 +94,7 @@ export const useTenantStore = defineStore("tenant", () => {
       }
 
       // 3.3 兜底：默认选中第一个（即使有多个租户，也保证 TenantSwitcher 有默认选中）
-      if (!currentTenantId.value) {
+      if (currentTenantId.value == null) {
         setCurrentTenant(tenantList.value[0]);
         console.debug("[Tenant] 默认选中第一个租户:", tenantList.value[0].name);
       }
@@ -185,6 +171,10 @@ export const useTenantStore = defineStore("tenant", () => {
     currentTenantId.value = null;
     currentTenant.value = null;
     tenantList.value = [];
+    clearLocalTenant();
+  }
+
+  function clearLocalTenant() {
     localStorage.removeItem(STORAGE_KEYS.TENANT_ID);
     localStorage.removeItem(STORAGE_KEYS.TENANT_INFO);
   }

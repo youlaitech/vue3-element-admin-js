@@ -2,31 +2,13 @@
   <div class="page-container">
     <el-card class="page-search" shadow="never">
       <el-form ref="queryFormRef" :model="params" :inline="true">
-        <el-form-item label="关键字" prop="keywords">
+        <el-form-item prop="keywords" label="关键字">
           <el-input
             v-model="params.keywords"
-            placeholder="应用名称/编码/AppId"
+            placeholder="应用名称/编码"
             clearable
             @keyup.enter="handleQuery"
           />
-        </el-form-item>
-
-        <el-form-item label="平台" prop="platform">
-          <el-select v-model="params.platform" placeholder="全部" clearable style="width: 140px">
-            <el-option
-              v-for="item in platformOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="params.status" placeholder="全部" clearable style="width: 120px">
-            <el-option label="正常" :value="CommonStatus.ENABLED" />
-            <el-option label="禁用" :value="CommonStatus.DISABLED" />
-          </el-select>
         </el-form-item>
 
         <el-form-item>
@@ -39,17 +21,8 @@
     <el-card ref="tableWrapperRef" class="page-content" shadow="never">
       <div class="page-toolbar">
         <div class="page-toolbar__left">
-          <el-button v-hasPerm="['sys:app:create']" type="primary" @click="handleCreateClick">
-            新增
-          </el-button>
-          <el-button
-            v-hasPerm="['sys:app:delete']"
-            type="danger"
-            :disabled="!hasSelection"
-            @click="handleBatchDelete"
-          >
-            删除
-          </el-button>
+          <el-button type="primary" @click="handleCreateClick">新增</el-button>
+          <el-button type="danger" :disabled="!hasSelection" @click="handleDelete()">删除</el-button>
         </div>
         <div class="page-toolbar__right">
           <el-tooltip content="刷新" placement="top">
@@ -72,59 +45,41 @@
           class="page-table"
           :data="list"
           height="100%"
-          border
           highlight-current-row
+          border
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" align="center" />
-          <el-table-column type="index" label="序号" width="60" />
-          <el-table-column key="appName" label="应用名称" prop="appName" min-width="140" />
-          <el-table-column key="appCode" label="应用编码" prop="appCode" min-width="120" />
-          <el-table-column key="platform" label="平台" width="130" align="center">
+          <el-table-column label="应用名称" prop="name" min-width="120" />
+          <el-table-column label="应用编码" prop="code" min-width="120" />
+
+          <el-table-column label="平台" align="center" width="100">
             <template #default="scope">
-              <el-tag>{{ resolvePlatformLabel(scope.row.platform) }}</el-tag>
+              <DictLabel v-if="scope.row.platform" code="app_platform" :value="scope.row.platform" />
+              <span v-else>-</span>
             </template>
           </el-table-column>
-          <el-table-column key="appId" label="AppId" prop="appId" min-width="160" />
-          <el-table-column label="状态" width="90" align="center">
+
+          <el-table-column label="状态" align="center" width="100">
             <template #default="scope">
-              <el-switch
-                v-model="scope.row.status"
-                v-hasPerm="['sys:app:change-status']"
-                :active-value="CommonStatus.ENABLED"
-                :inactive-value="CommonStatus.DISABLED"
-                @change="handleStatusChange(scope.row)"
-              />
+              <el-tag :type="scope.row.status === CommonStatus.ENABLED ? 'success' : 'info'">
+                {{ scope.row.status === CommonStatus.ENABLED ? "正常" : "禁用" }}
+              </el-tag>
             </template>
           </el-table-column>
-          <el-table-column
-            key="remark"
-            label="备注"
-            prop="remark"
-            min-width="160"
-            show-overflow-tooltip
-          />
-          <el-table-column key="createTime" label="创建时间" prop="createTime" width="160" />
-          <el-table-column fixed="right" label="操作" width="180">
+
+          <el-table-column label="排序" prop="sort" width="80" align="center" />
+
+          <el-table-column fixed="right" label="操作" width="180" align="center">
             <template #default="scope">
-              <el-button
-                v-hasPerm="['sys:app:update']"
-                type="primary"
-                size="small"
-                link
-                @click="handleEditClick(String(scope.row.id))"
-              >
-                编辑
-              </el-button>
-              <el-button
-                v-hasPerm="['sys:app:delete']"
-                type="danger"
-                size="small"
-                link
-                @click="handleDelete(String(scope.row.id))"
-              >
-                删除
-              </el-button>
+              <div>
+                <el-button type="primary" size="small" link @click="handleEditClick(scope.row.id)">
+                  编辑
+                </el-button>
+                <el-button type="danger" size="small" link @click="handleDelete(scope.row.id)">
+                  删除
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -140,75 +95,50 @@
       />
     </el-card>
 
-    <el-dialog v-model="dialog.visible" :title="dialog.title" width="640px" @close="closeDialog">
-      <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
-        <el-form-item label="应用名称" prop="appName">
-          <el-input v-model="formData.appName" placeholder="请输入应用名称" :maxlength="100" />
+    <el-dialog
+      v-model="dialogState.visible"
+      :title="dialogState.title"
+      width="600px"
+      @close="closeDialog"
+    >
+      <el-form ref="appFormRef" :model="formData" :rules="rules" label-width="100px">
+        <el-form-item label="应用名称" prop="name">
+          <el-input v-model="formData.name" placeholder="请输入应用名称" />
         </el-form-item>
 
-        <el-form-item label="应用编码" prop="appCode">
-          <el-input v-model="formData.appCode" placeholder="请输入应用编码" :maxlength="100" />
+        <el-form-item label="应用编码" prop="code">
+          <el-input
+            v-model="formData.code"
+            placeholder="请输入应用编码（保存后不可修改）"
+            :readonly="!!formData.id"
+          />
         </el-form-item>
 
         <el-form-item label="平台" prop="platform">
-          <el-select v-model="formData.platform" placeholder="请选择平台" style="width: 100%">
-            <el-option
-              v-for="item in platformOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="AppId" prop="appId">
-          <el-input v-model="formData.appId" placeholder="请输入微信/平台 AppId" :maxlength="64" />
-        </el-form-item>
-
-        <el-form-item label="AppSecret" prop="appSecret">
-          <el-input
-            v-model="formData.appSecret"
-            placeholder="请输入 AppSecret（可选）"
-            :maxlength="256"
-            show-password
-          />
-        </el-form-item>
-
-        <el-form-item label="商户号" prop="merchantId">
-          <el-input
-            v-model="formData.merchantId"
-            placeholder="请输入商户号（可选）"
-            :maxlength="64"
-          />
-        </el-form-item>
-
-        <el-form-item label="商户密钥" prop="merchantKey">
-          <el-input
-            v-model="formData.merchantKey"
-            placeholder="请输入商户密钥（可选）"
-            :maxlength="512"
-            show-password
-          />
+          <DictSelect v-model="formData.platform" code="app_platform" />
         </el-form-item>
 
         <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="formData.status">
-            <el-radio :value="CommonStatus.ENABLED">正常</el-radio>
-            <el-radio :value="CommonStatus.DISABLED">禁用</el-radio>
-          </el-radio-group>
+          <el-switch
+            v-model="formData.status"
+            inline-prompt
+            active-text="正常"
+            inactive-text="禁用"
+            :active-value="CommonStatus.ENABLED"
+            :inactive-value="CommonStatus.DISABLED"
+          />
         </el-form-item>
 
-        <el-form-item label="备注" prop="remark">
-          <el-input
-            v-model="formData.remark"
-            :rows="3"
-            :maxlength="255"
-            show-word-limit
-            type="textarea"
-            placeholder="请输入备注（可选）"
+        <el-form-item label="排序" prop="sort">
+          <el-input-number
+            v-model="formData.sort"
+            controls-position="right"
+            :min="0"
+            style="width: 100px"
           />
         </el-form-item>
       </el-form>
+
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmit">确定</el-button>
@@ -223,8 +153,9 @@
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { FullScreen, Refresh } from "@element-plus/icons-vue";
-import { usePageTable, useTableSelection } from "@/composables";
+
 import AppAPI from "@/api/system/app";
+import { usePageTable, useTableSelection } from "@/composables";
 import { CommonStatus } from "@/enums";
 
 defineOptions({
@@ -232,45 +163,17 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const queryFormRef = ref();
-const dataFormRef = ref();
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
 
-/** 三方平台下拉选项 */
-const platformOptions = [
-  { value: "WECHAT_MP", label: "微信公众号" },
-  { value: "WECHAT_MINI", label: "微信小程序" },
-  { value: "ALIPAY", label: "支付宝" },
-  { value: "APPLE", label: "苹果" },
-  { value: "QQ", label: "QQ" },
-];
+const queryFormRef = ref();
+const appFormRef = ref();
 
-/** 根据平台值解析中文名称。 */
-function resolvePlatformLabel(platform) {
-  return platformOptions.find((item) => item.value === platform)?.label || "-";
-}
-
-const initialFormData = {
-  appName: "",
-  appCode: "",
-  platform: "WECHAT_MINI",
-  appId: "",
-  appSecret: "",
-  merchantId: "",
-  merchantKey: "",
-  status: CommonStatus.ENABLED,
-  remark: "",
-};
-
-/** 应用表格数据 */
+/** 分页表格数据管理 */
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
     pageSize: 10,
-    keywords: "",
-    status: undefined,
-    platform: undefined,
   },
   request: AppAPI.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
@@ -278,69 +181,84 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
 
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
 
-const dialog = reactive({ title: "", visible: false });
+const dialogState = reactive({
+  title: "",
+  visible: false,
+});
+
+const initialFormData = {
+  status: CommonStatus.ENABLED,
+};
 
 const formData = reactive({ ...initialFormData });
 
 const rules = {
-  appName: [{ required: true, message: "请输入应用名称", trigger: "blur" }],
-  appCode: [{ required: true, message: "请输入应用编码", trigger: "blur" }],
-  platform: [{ required: true, message: "请选择平台", trigger: "change" }],
-  appId: [{ required: true, message: "请输入 AppId", trigger: "blur" }],
+  name: [{ required: true, message: "请输入应用名称", trigger: "blur" }],
+  code: [{ required: true, message: "请输入应用编码", trigger: "blur" }],
 };
 
-/** 关闭弹窗并重置表单 */
+/**
+ * 打开应用表单弹窗
+ */
+function openDialog() {
+  dialogState.visible = true;
+}
+
+/**
+ * 关闭应用表单弹窗
+ */
 function closeDialog() {
-  dialog.visible = false;
+  dialogState.visible = false;
   resetForm();
 }
 
-/** 重置表单数据为初始值并清理校验 */
+/**
+ * 重置应用表单
+ */
 function resetForm() {
-  dataFormRef.value?.resetFields();
-  dataFormRef.value?.clearValidate();
+  appFormRef.value?.resetFields();
+  appFormRef.value?.clearValidate();
   Object.keys(formData).forEach((key) => {
     delete formData[key];
   });
   Object.assign(formData, initialFormData);
 }
 
-/** 打开新增弹窗 */
+/**
+ * 打开新增应用弹窗
+ */
 function handleCreateClick() {
-  dialog.title = "新增应用";
-  dialog.visible = true;
+  dialogState.title = "新增应用";
+  openDialog();
 }
 
-/** 打开编辑弹窗并回填数据 */
-async function handleEditClick(id) {
-  dialog.title = "修改应用";
-  const data = await AppAPI.getFormData(id);
+/**
+ * 打开编辑应用弹窗并回填数据
+ *
+ * @param appId 应用 ID
+ */
+async function handleEditClick(appId) {
+  dialogState.title = "修改应用";
+  const data = await AppAPI.getFormData(appId);
   Object.assign(formData, data);
-  dialog.visible = true;
+  openDialog();
 }
 
-/** 切换应用状态 */
-async function handleStatusChange(row) {
-  const id = String(row.id);
-  const status = row.status;
-  try {
-    await AppAPI.updateStatus(id, status);
-    ElMessage.success("状态已更新");
-  } catch {
-    row.status = status === CommonStatus.ENABLED ? CommonStatus.DISABLED : CommonStatus.ENABLED;
-  }
-}
-
-/** 提交应用表单 */
+/**
+ * 校验并提交应用表单
+ */
 async function handleSubmit() {
-  const valid = await dataFormRef.value?.validate().catch(() => false);
+  const valid = await appFormRef.value?.validate().then(
+    () => true,
+    () => false
+  );
   if (!valid) return;
 
   loading.value = true;
   try {
-    const id = formData.id;
-    if (id) {
-      await AppAPI.update(id, formData);
+    const appId = formData.id;
+    if (appId) {
+      await AppAPI.update(appId, formData);
       ElMessage.success("修改成功");
     } else {
       await AppAPI.create(formData);
@@ -353,21 +271,20 @@ async function handleSubmit() {
   }
 }
 
-/** 批量删除应用 */
-function handleBatchDelete() {
-  handleDelete();
-}
-
-/** 删除应用（单个或批量） */
-async function handleDelete(id) {
-  const ids = id || selectedIds.value.join(",");
-  if (!ids) {
+/**
+ * 删除单个或批量应用
+ *
+ * @param appId 指定时删除单个应用；不指定时删除表格勾选项
+ */
+async function handleDelete(appId) {
+  const appIds = appId ?? selectedIds.value.join(",");
+  if (!appIds) {
     ElMessage.warning("请勾选删除项");
     return;
   }
 
   try {
-    await ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
+    await ElMessageBox.confirm("确认删除已选中的应用?", "警告", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       type: "warning",
@@ -379,7 +296,7 @@ async function handleDelete(id) {
 
   loading.value = true;
   try {
-    await AppAPI.deleteByIds(ids);
+    await AppAPI.deleteByIds(appIds);
     ElMessage.success("删除成功");
     handleResetQuery();
   } finally {
