@@ -22,6 +22,14 @@ export const constantRoutes = [
     meta: { hidden: true },
   },
 
+  // 公开表单分享页（匿名访问，守卫白名单，不套管理端 Layout）
+  {
+    path: "/f/:formKey",
+    name: "FormShare",
+    component: () => import("@/views/dynamic-form/share.vue"),
+    meta: { hidden: true, title: "表单填写" },
+  },
+
   {
     path: "/",
     name: "/",
@@ -66,7 +74,7 @@ export const constantRoutes = [
       {
         path: "/detail/:id(\\d+)",
         name: "DemoDetail",
-        component: () => import("@/views/demo/detail.vue"),
+        component: () => import("@/views/demo/route/detail.vue"),
         meta: { title: "详情页缓存", icon: "user", hidden: true, keepAlive: true },
       },
     ],

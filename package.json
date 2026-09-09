@@ -1,7 +1,7 @@
 {
   "name": "vue3-element-admin-js",
   "description": "Vue3 + Vite + JavaScript + Element-Plus 的后台管理模板，vue3-element-admin 的 JavaScript 版本",
-  "version": "4.7.7",
+  "version": "4.9.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -47,11 +47,14 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "@form-create/designer": "3.5.0",
+    "@form-create/element-ui": "3.3.3",
     "@vueuse/core": "^14.3.0",
     "@wangeditor-next/editor": "^5.7.12",
     "@wangeditor-next/editor-for-vue": "^5.1.14",
     "animate.css": "^4.1.1",
     "axios": "^1.18.0",
+    "bpmn-js": "^18.27.0",
     "codemirror": "^5.65.21",
     "codemirror-editor-vue3": "^2.8.0",
     "echarts": "^6.1.0",
@@ -62,6 +65,7 @@
     "path-browserify": "^1.0.1",
     "path-to-regexp": "^8.4.2",
     "pinia": "^3.0.4",
+    "qrcode": "^1.5.4",
     "qs": "^6.15.2",
     "sortablejs": "^1.15.7",
     "vue": "^3.5.38",

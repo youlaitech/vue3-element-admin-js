@@ -1,15 +1,15 @@
-/** SSE 浜嬩欢鍚嶅父閲忥紝涓庡悗绔?SseTopics.java 涓€涓€瀵瑰簲 */
+/** SSE 事件名常量，与后端 SseTopics.java 一一对应 */
 export const SseTopics = {
-  /** 瀛楀吀鍙樻洿浜嬩欢 */
+  /** 字典变更事件 */
   DICT: "dict",
-  /** 鍦ㄧ嚎鐢ㄦ埛鏁颁簨浠?*/
+  /** 在线用户数事件 */
   ONLINE_USERS: "online-users",
-  /** 绯荤粺娑堟伅浜嬩欢 */
+  /** 系统消息事件 */
   SYSTEM: "system",
-  /** 蹇冭烦浜嬩欢 */
+  /** 心跳事件 */
   PING: "ping",
-  /** 閫氱煡浜嬩欢 */
+  /** 通知事件 */
   NOTICE: "notice",
-  /** 閫氱煡鎾ゅ洖浜嬩欢 */
+  /** 通知撤回事件 */
   NOTICE_REVOKE: "notice-revoke",
 };

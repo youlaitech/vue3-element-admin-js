@@ -28,6 +28,17 @@ const RoleAPI = {
   },
 
   /**
+   * 获取角色编码下拉数据源（value 为角色编码，供流程候选组等场景）
+   * @returns {Promise} 角色编码选项列表
+   */
+  getCodeOptions() {
+    return request({
+      url: `${ROLE_BASE_URL}/code-options`,
+      method: "get",
+    });
+  },
+
+  /**
    * 获取角色的菜单ID集合
    * @param {string} roleId 角色ID
    * @returns {Promise} 角色的菜单ID集合

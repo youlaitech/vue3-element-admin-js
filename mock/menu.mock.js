@@ -236,7 +236,7 @@ export default defineMock([
           children: [
             {
               path: "internal-doc",
-              component: "demo/internal-doc",
+              component: "demo/component/internal-doc",
               name: "InternalDoc",
               meta: {
                 title: "document",
@@ -272,9 +272,9 @@ export default defineMock([
           },
           children: [
             {
-              path: "multi-level1",
-              component: "demo/multi-level/level1",
-              name: "MultiLevel1",
+              path: "level-one",
+              component: "Layout",
+              name: "MultiLevelLevelOne",
               meta: {
                 title: "菜单一级",
                 icon: "",
@@ -284,9 +284,9 @@ export default defineMock([
               },
               children: [
                 {
-                  path: "multi-level2",
-                  component: "demo/multi-level/children/level2",
-                  name: "MultiLevel2",
+                  path: "level-two",
+                  component: "Layout",
+                  name: "MultiLevelLevelTwo",
                   meta: {
                     title: "菜单二级",
                     icon: "",
@@ -296,9 +296,9 @@ export default defineMock([
                   },
                   children: [
                     {
-                      path: "multi-level3-1",
-                      component: "demo/multi-level/children/children/level3-1",
-                      name: "MultiLevel31",
+                      path: "level-three-a",
+                      component: "demo/route/multi-level/level-one/level-two/level-three-a/index",
+                      name: "MultiLevelLevelThreeA",
                       meta: {
                         title: "菜单三级-1",
                         icon: "",
@@ -309,9 +309,9 @@ export default defineMock([
                       },
                     },
                     {
-                      path: "multi-level3-2",
-                      component: "demo/multi-level/children/children/level3-2",
-                      name: "MultiLevel32",
+                      path: "level-three-b",
+                      component: "demo/route/multi-level/level-one/level-two/level-three-b/index",
+                      name: "MultiLevelLevelThreeB",
                       meta: {
                         title: "菜单三级-2",
                         icon: "",
@@ -341,7 +341,7 @@ export default defineMock([
           children: [
             {
               path: "curd",
-              component: "demo/curd/index",
+              component: "demo/table/curd/index",
               name: "Curd",
               meta: {
                 title: "增删改查",
@@ -354,7 +354,7 @@ export default defineMock([
             },
             {
               path: "table-select",
-              component: "demo/table-select/index",
+              component: "demo/component/table-select/index",
               name: "TableSelect",
               meta: {
                 title: "列表选择器",
@@ -367,7 +367,7 @@ export default defineMock([
             },
             {
               path: "wang-editor",
-              component: "demo/wang-editor",
+              component: "demo/component/wang-editor",
               name: "WangEditor",
               meta: {
                 title: "富文本编辑器",
@@ -380,7 +380,7 @@ export default defineMock([
             },
             {
               path: "upload",
-              component: "demo/upload",
+              component: "demo/component/upload",
               name: "Upload",
               meta: {
                 title: "图片上传",
@@ -393,7 +393,7 @@ export default defineMock([
             },
             {
               path: "dict-demo",
-              component: "demo/dictionary",
+              component: "demo/component/dictionary",
               name: "DictDemo",
               meta: {
                 title: "字典组件",
@@ -406,7 +406,7 @@ export default defineMock([
             },
             {
               path: "icon-select",
-              component: "demo/icon-select",
+              component: "demo/component/icon-select",
               name: "IconSelect",
               meta: {
                 title: "图标选择器",
@@ -419,7 +419,7 @@ export default defineMock([
             },
             {
               path: "drag",
-              component: "demo/drag",
+              component: "demo/component/drag",
               name: "Drag",
               meta: {
                 title: "拖拽组件",
@@ -432,7 +432,7 @@ export default defineMock([
             },
             {
               path: "text-scroll",
-              component: "demo/text-scroll",
+              component: "demo/component/text-scroll",
               name: "TextScroll",
               meta: {
                 title: "滚动文本",
@@ -459,7 +459,7 @@ export default defineMock([
           children: [
             {
               path: "route-param-type1",
-              component: "demo/route-param",
+              component: "demo/route/route-param",
               name: "RouteParamType1",
               meta: {
                 title: "参数(type=1)",
@@ -474,7 +474,7 @@ export default defineMock([
             },
             {
               path: "route-param-type2",
-              component: "demo/route-param",
+              component: "demo/route/route-param",
               name: "RouteParamType2",
               meta: {
                 title: "参数(type=2)",
@@ -503,7 +503,7 @@ export default defineMock([
           children: [
             {
               path: "icon-demo",
-              component: "demo/icons",
+              component: "demo/component/icons",
               name: "IconDemo",
               meta: {
                 title: "Icons",
@@ -1280,7 +1280,7 @@ export default defineMock([
               type: "EXTLINK",
               routeName: null,
               routePath: "internal-doc",
-              component: "demo/internal-doc",
+              component: "demo/component/internal-doc",
               sort: 1,
               visible: 1,
               icon: "document",
@@ -1325,8 +1325,8 @@ export default defineMock([
               name: "菜单一级",
               type: "MENU",
               routeName: null,
-              routePath: "multi-level1",
-              component: "demo/multi-level/level1",
+              routePath: "level-one",
+              component: "Layout",
               sort: 1,
               visible: 1,
               icon: "",
@@ -1339,8 +1339,8 @@ export default defineMock([
                   name: "菜单二级",
                   type: "MENU",
                   routeName: null,
-                  routePath: "multi-level2",
-                  component: "demo/multi-level/children/level2",
+                  routePath: "level-two",
+                  component: "Layout",
                   sort: 1,
                   visible: 1,
                   icon: "",
@@ -1353,8 +1353,8 @@ export default defineMock([
                       name: "菜单三级-1",
                       type: "MENU",
                       routeName: null,
-                      routePath: "multi-level3-1",
-                      component: "demo/multi-level/children/children/level3-1",
+                      routePath: "level-three-a",
+                      component: "demo/route/multi-level/level-one/level-two/level-three-a/index",
                       sort: 1,
                       visible: 1,
                       icon: "",
@@ -1368,8 +1368,8 @@ export default defineMock([
                       name: "菜单三级-2",
                       type: "MENU",
                       routeName: null,
-                      routePath: "multi-level3-2",
-                      component: "demo/multi-level/children/children/level3-2",
+                      routePath: "level-three-b",
+                      component: "demo/route/multi-level/level-one/level-two/level-three-b/index",
                       sort: 2,
                       visible: 1,
                       icon: "",
@@ -1404,7 +1404,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "curd",
-              component: "demo/curd/index",
+              component: "demo/table/curd/index",
               sort: 0,
               visible: 1,
               icon: "",
@@ -1419,7 +1419,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "table-select",
-              component: "demo/table-select/index",
+              component: "demo/component/table-select/index",
               sort: 1,
               visible: 1,
               icon: "",
@@ -1434,7 +1434,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "wang-editor",
-              component: "demo/wang-editor",
+              component: "demo/component/wang-editor",
               sort: 2,
               visible: 1,
               icon: "",
@@ -1449,7 +1449,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "upload",
-              component: "demo/upload",
+              component: "demo/component/upload",
               sort: 3,
               visible: 1,
               icon: "",
@@ -1464,7 +1464,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "dict-demo",
-              component: "demo/dict",
+              component: "demo/component/dict-sync",
               sort: 4,
               visible: 1,
               icon: "",
@@ -1479,7 +1479,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "icon-select",
-              component: "demo/icon-select",
+              component: "demo/component/icon-select",
               sort: 4,
               visible: 1,
               icon: "",
@@ -1510,7 +1510,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "route-param-type1",
-              component: "demo/route-param",
+              component: "demo/route/route-param",
               sort: 1,
               visible: 1,
               icon: "el-icon-Star",
@@ -1525,7 +1525,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "route-param-type2",
-              component: "demo/route-param",
+              component: "demo/route/route-param",
               sort: 2,
               visible: 1,
               icon: "el-icon-StarFilled",
@@ -1556,7 +1556,7 @@ export default defineMock([
               type: "MENU",
               routeName: null,
               routePath: "icon-demo",
-              component: "demo/icons",
+              component: "demo/component/icons",
               sort: 2,
               visible: 1,
               icon: "el-icon-Notification",

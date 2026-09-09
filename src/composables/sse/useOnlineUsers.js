@@ -41,7 +41,7 @@ function createOnlineUsersComposable() {
   };
 }
 
-/** 鍦ㄧ嚎鐢ㄦ埛鏁扮粍鍚堝紡鍑芥暟锛堝崟渚嬫ā寮忥級 */
+/** 在线用户数组合式函数（单例模式） */
 export function useOnlineUsers() {
   if (!globalInstance) {
     globalInstance = createOnlineUsersComposable();

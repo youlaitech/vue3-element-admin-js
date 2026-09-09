@@ -25,6 +25,20 @@ function resolveComponent(componentPath) {
   );
 }
 
+/**
+ * 移除已注册的动态路由（静态路由保留）
+ *
+ * @param routeList 待移除的路由清单
+ */
+const removeDynamicRoutes = (routeList) => {
+  const constantNames = new Set(constantRoutes.map((route) => route.name).filter(Boolean));
+  routeList.forEach((route) => {
+    if (route.name && !constantNames.has(route.name)) {
+      router.removeRoute(route.name);
+    }
+  });
+};
+
 export const usePermissionStore = defineStore("permission", () => {
   const routes = ref([]);
   const mixLayoutSideMenus = ref([]);
@@ -55,12 +69,7 @@ export const usePermissionStore = defineStore("permission", () => {
 
   /** 重置路由状态 */
   const resetRouter = () => {
-    const constantNames = new Set(constantRoutes.map((route) => route.name).filter(Boolean));
-    routes.value.forEach((route) => {
-      if (route.name && !constantNames.has(route.name)) {
-        router.removeRoute(route.name);
-      }
-    });
+    removeDynamicRoutes(routes.value);
 
     routes.value = [...constantRoutes];
     mixLayoutSideMenus.value = [];
@@ -72,18 +81,22 @@ export const usePermissionStore = defineStore("permission", () => {
   /**
    * 重新加载动态路由
    *
-   * 同一时刻只允许一个请求进行中
+   * 同一时刻只允许一个请求进行中；拉取期间旧路由保持在线，
+   * 摘旧与注册新之间无 await，导航无法插入，避免路由空窗触发 404 告警
    */
   async function reloadRoutes() {
     if (pendingReload) return pendingReload;
 
     pendingReload = (async () => {
       try {
-        resetRouter();
+        const staleRoutes = [...routes.value];
         const dynamicRoutes = await generateRoutes();
+
+        removeDynamicRoutes(staleRoutes);
         dynamicRoutes.forEach((route) => {
           router.addRoute(route);
         });
+        mixLayoutSideMenus.value = [];
         return dynamicRoutes;
       } finally {
         pendingReload = null;

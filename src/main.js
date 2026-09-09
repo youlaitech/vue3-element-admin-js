@@ -10,6 +10,7 @@ import { setupDirective } from "@/directives";
 import { setupRouter } from "@/router";
 import { setupStore } from "@/stores";
 import { setupI18n } from "@/lang";
+import { setupFormCreate } from "@/plugins/form-create";
 import * as ElementPlusIcons from "@element-plus/icons-vue";
 import { setupPermissionGuard } from "@/router/guards/permission";
 import { setupSse } from "@/composables";
@@ -20,6 +21,7 @@ setupDirective(app);
 setupI18n(app);
 setupRouter(app);
 setupStore(app);
+setupFormCreate(app);
 
 Object.entries(ElementPlusIcons).forEach(([name, comp]) => app.component(name, comp));
 

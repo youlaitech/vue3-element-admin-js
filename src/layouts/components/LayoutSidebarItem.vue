@@ -31,6 +31,9 @@
             >
               {{ translateRouteTitle(onlyOneChild.meta.title) }}
             </span>
+            <span v-if="getBadge(onlyOneChild.meta)" class="menu-badge">
+              {{ getBadge(onlyOneChild.meta) }}
+            </span>
           </template>
         </el-menu-item>
       </AppLink>
@@ -43,6 +46,9 @@
           <LayoutMenuIcon :icon="item.meta.icon" />
           <span v-if="item.meta.title" class="ml-1" :title="translateRouteTitle(item.meta.title)">
             {{ translateRouteTitle(item.meta.title) }}
+          </span>
+          <span v-if="getBadge(item.meta)" class="menu-badge">
+            {{ getBadge(item.meta) }}
           </span>
         </template>
       </template>
@@ -142,4 +148,28 @@ function resolvePath(routePath) {
   // 拼接父路径和当前路径
   return path.resolve(props.basePath, routePath);
 }
+
+/**
+ * 读取菜单角标（如 NEW/HOT）：来自 sys_menu.params 的 {"badge":"NEW"}，
+ * 经 meta.params 透传至此；不配置则不渲染，纯数据驱动，无需菜单管理表单支持
+ */
+function getBadge(meta) {
+  const params = meta?.params;
+  return params?.badge ? String(params.badge) : "";
+}
 </script>
+
+<style lang="scss" scoped>
+/* 菜单角标：小巧不抢视觉重心，随侧边栏折叠自动隐藏（折叠态文本 span 均被 el-menu 隐藏） */
+.menu-badge {
+  height: 16px;
+  padding: 0 5px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #fff;
+  background-color: var(--el-color-danger);
+  border-radius: 8px;
+}
+</style>
