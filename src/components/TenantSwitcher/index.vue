@@ -16,7 +16,7 @@
           v-for="item in tenantList"
           :key="item.id"
           :command="item.id"
-          :class="{ 'is-active': item.id === currentTenantIdRef }"
+          :class="{ 'is-active': item.id === currentTenantId }"
         >
           {{ item.name }}
         </el-dropdown-item>
@@ -27,30 +27,26 @@
 
 <script setup>
 import { computed } from "vue";
-import { ArrowDown } from "@element-plus/icons-vue";
 import { useTenantStoreHook } from "@/stores/tenant";
-
 const emit = defineEmits(["change"]);
-
 const tenantStore = useTenantStoreHook();
-
 const tenantList = computed(() => tenantStore.tenantList);
-
-const currentTenantIdRef = computed({
+const currentTenantId = computed({
   get: () => tenantStore.currentTenantId,
   set: (val) => {
     tenantStore.currentTenantId = val;
   },
 });
-
 const currentTenantName = computed(() => {
-  const currentId = currentTenantIdRef.value;
+  const currentId = currentTenantId.value;
   const fromList = tenantList.value.find((t) => t.id === currentId)?.name;
   return fromList || tenantStore.currentTenant?.name || "切换租户";
 });
-
+/**
+ * 选择租户并抛出切换事件
+ */
 function onCommand(tenantId) {
-  if (tenantId === currentTenantIdRef.value) {
+  if (tenantId === currentTenantId.value) {
     return;
   }
   emit("change", tenantId);

@@ -1,6 +1,6 @@
 <template>
   <!-- 布局大小 -->
-  <el-tooltip :content="$t('sizeSelect.tooltip')" effect="dark" placement="bottom">
+  <el-tooltip :content="t('sizeSelect.tooltip')" effect="dark" placement="bottom">
     <el-dropdown trigger="click" @command="handleSizeChange">
       <div class="size-trigger">
         <div class="i-svg:size" />
@@ -10,7 +10,7 @@
           <el-dropdown-item
             v-for="item of sizeOptions"
             :key="item.value"
-            :disabled="appStore.size == item.value"
+            :disabled="appStore.size === item.value"
             :command="item.value"
           >
             {{ item.label }}
@@ -24,7 +24,6 @@
 <script setup>
 import { ComponentSize } from "@/enums/settings";
 import { useAppStore } from "@/stores/app";
-
 const { t } = useI18n();
 const sizeOptions = computed(() => {
   return [
@@ -33,8 +32,10 @@ const sizeOptions = computed(() => {
     { label: t("sizeSelect.small"), value: ComponentSize.SMALL },
   ];
 });
-
 const appStore = useAppStore();
+/**
+ * 切换组件尺寸
+ */
 function handleSizeChange(size) {
   appStore.changeSize(size);
   ElMessage.success(t("sizeSelect.message.success"));

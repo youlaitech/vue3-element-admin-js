@@ -88,7 +88,6 @@
 <script setup>
 import { computed } from "vue";
 import { useCommandPalette } from "./useCommandPalette";
-
 const {
   visible,
   keyword,
@@ -103,32 +102,29 @@ const {
   onNavigate,
   onGo,
 } = useCommandPalette();
-
 const displayList = computed(() => (results.value.length ? results.value : history.value));
-
+/**
+ * 处理输入框键盘操作：上下选择、回车跳转
+ */
 const handleInputKeydown = (evt) => {
   if (!(evt instanceof KeyboardEvent)) return;
   const e = evt;
   const key = e.key.toLowerCase();
-
   if (key === "escape") {
     e.preventDefault();
     close();
     return;
   }
-
   if (key === "arrowup") {
     e.preventDefault();
     onNavigate("up");
     return;
   }
-
   if (key === "arrowdown") {
     e.preventDefault();
     onNavigate("down");
     return;
   }
-
   if (key === "enter") {
     e.preventDefault();
     if (displayList.value.length === 0) return;

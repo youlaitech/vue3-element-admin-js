@@ -1,8 +1,6 @@
 <template>
   <el-dropdown trigger="click" @command="handleLanguageChange">
-    <div class="lang-trigger">
-      <div class="i-svg:language" />
-    </div>
+    <div class="i-svg:language" :class="size" />
     <template #dropdown>
       <el-dropdown-menu>
         <el-dropdown-item
@@ -21,41 +19,26 @@
 <script setup>
 import { useAppStore } from "@/stores/app";
 import { LanguageEnum } from "@/enums/settings";
-
 defineProps({
   size: {
     type: String,
     required: false,
   },
 });
-
 const langOptions = [
   { label: "中文", value: LanguageEnum.ZH_CN },
   { label: "English", value: LanguageEnum.EN },
 ];
-
 const appStore = useAppStore();
 const { locale, t } = useI18n();
-
 /**
  * 处理语言切换
  *
- * @param lang  语言（zh-cn、en）
+ * @param lang 语言（zh-cn、en）
  */
 function handleLanguageChange(lang) {
   locale.value = lang;
   appStore.changeLanguage(lang);
-
   ElMessage.success(t("langSelect.message.success"));
 }
 </script>
-
-<style lang="scss" scoped>
-.lang-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-</style>

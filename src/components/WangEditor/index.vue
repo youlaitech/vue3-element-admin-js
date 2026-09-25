@@ -34,34 +34,28 @@
 
 <script setup>
 import "@wangeditor-next/editor/dist/css/style.css";
-import { Toolbar, Editor } from "@wangeditor-next/editor-for-vue";
-
 // 文件上传 API
 import FileAPI from "@/api/file";
-
 defineProps({
   height: {
     type: String,
     default: "500px",
   },
 });
-
-// 双向绑定 - 直接使用 v-model，无需手动 setHtml
+/**
+ * 双向绑定 - 直接使用 v-model，无需手动 setHtml
+ */
 const modelValue = defineModel({
   type: String,
   required: false,
   default: "",
 });
-
 // 编辑器实例，必须用 shallowRef
 const editorRef = shallowRef();
-
 const editorKey = ref(0);
 const innerUpdating = ref(false);
-
 // 工具栏配置
 const toolbarConfig = {};
-
 // 编辑器配置
 const editorConfig = {
   placeholder: "请输入内容..",
@@ -74,19 +68,21 @@ const editorConfig = {
     },
   },
 };
-
-// 记录 editor 实例
+/**
+ * 记录 editor 实例
+ */
 const handleCreated = (editor) => {
   editorRef.value = editor;
 };
-
+/**
+ * 编辑器内容变化后同步回 v-model
+ */
 const handleChange = () => {
   innerUpdating.value = true;
   Promise.resolve().then(() => {
     innerUpdating.value = false;
   });
 };
-
 watch(
   () => modelValue.value,
   () => {
@@ -95,8 +91,7 @@ watch(
     editorKey.value += 1;
   }
 );
-
-// 组件销毁时，也及时销毁编辑器，重要！
+// 组件销毁时，及时销毁编辑器
 onBeforeUnmount(() => {
   const editor = editorRef.value;
   if (editor == null) return;

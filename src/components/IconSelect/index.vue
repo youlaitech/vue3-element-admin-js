@@ -81,8 +81,7 @@
 </template>
 
 <script setup>
-import * as ElementPlusIconsVue from "@element-plus/icons-vue";
-
+import { elementIconNames, svgIconNames } from "@/utils/icon";
 const props = defineProps({
   modelValue: {
     type: String,
@@ -93,43 +92,34 @@ const props = defineProps({
     default: "500px",
   },
 });
-
 const emit = defineEmits(["update:modelValue"]);
-
 const iconSelectRef = ref();
 const popoverContentRef = ref();
 const popoverVisible = ref(false);
 const activeTab = ref("svg");
-
-const svgIcons = ref([]);
-const elementIcons = ref(Object.keys(ElementPlusIconsVue));
+const svgIcons = ref(svgIconNames);
+const elementIcons = ref(elementIconNames);
 const selectedIcon = defineModel("modelValue", {
   type: String,
   required: true,
   default: "",
 });
-
 const filterText = ref("");
-const filteredSvgIcons = ref([]);
+const filteredSvgIcons = ref(svgIcons.value);
 const filteredElementIcons = ref(elementIcons.value);
 const isElementIcon = computed(() => {
   return selectedIcon.value && selectedIcon.value.startsWith("el-icon");
 });
-
-function loadIcons() {
-  const icons = import.meta.glob("../../assets/icons/*.svg");
-  for (const path in icons) {
-    const iconName = path.replace(/.*\/(.*)\.svg$/, "$1");
-    svgIcons.value.push(iconName);
-  }
-  filteredSvgIcons.value = svgIcons.value;
-}
-
+/**
+ * 切换图标分类页签
+ */
 function handleTabClick(tabPane) {
   activeTab.value = tabPane.props.name;
   filterIcons();
 }
-
+/**
+ * 按关键字过滤当前分类下的图标
+ */
 function filterIcons() {
   if (activeTab.value === "svg") {
     filteredSvgIcons.value = filterText.value
@@ -143,30 +133,30 @@ function filterIcons() {
       : elementIcons.value;
   }
 }
-
+/**
+ * 选中图标并回传给 v-model
+ */
 function selectIcon(icon) {
   const iconName = activeTab.value === "element" ? "el-icon-" + icon : icon;
   emit("update:modelValue", iconName);
   popoverVisible.value = false;
 }
-
+/**
+ * 展开或收起图标选择弹层
+ */
 function togglePopover() {
   popoverVisible.value = !popoverVisible.value;
 }
-
 onClickOutside(iconSelectRef, () => (popoverVisible.value = false), {
   ignore: [popoverContentRef],
 });
-
 /**
  * 清空已选图标
  */
 function clearSelectedIcon() {
   selectedIcon.value = "";
 }
-
 onMounted(() => {
-  loadIcons();
   if (selectedIcon.value) {
     if (elementIcons.value.includes(selectedIcon.value.replace("el-icon-", ""))) {
       activeTab.value = "element";
@@ -201,7 +191,7 @@ onMounted(() => {
 }
 
 .icon-grid-item:hover {
-  border-color: #4080ff;
+  border-color: var(--el-color-primary);
   transform: scale(1.2);
 }
 </style>

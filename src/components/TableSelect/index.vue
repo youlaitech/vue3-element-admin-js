@@ -30,13 +30,13 @@
           </slot>
         </div>
       </template>
-      <!-- 弹出框内容 -->
+      <!-- 弹出框内 -->
       <div ref="popoverContentRef">
         <!-- 表单 -->
         <el-form ref="formRef" :model="queryParams" :inline="true">
           <template v-for="item in selectConfig.formItems" :key="item.prop">
             <el-form-item :label="item.label" :prop="item.prop">
-              <!-- Input 输入框 -->
+              <!-- Input 输入 -->
               <template v-if="item.type === 'input'">
                 <template v-if="item.attrs?.type === 'number'">
                   <el-input
@@ -53,7 +53,7 @@
                   />
                 </template>
               </template>
-              <!-- Select 选择器 -->
+              <!-- Select 选择 -->
               <template v-else-if="item.type === 'select'">
                 <el-select v-model="queryParams[item.prop]" v-bind="item.attrs">
                   <template v-for="option in item.options" :key="option.value">
@@ -65,11 +65,11 @@
               <template v-else-if="item.type === 'tree-select'">
                 <el-tree-select v-model="queryParams[item.prop]" v-bind="item.attrs" />
               </template>
-              <!-- DatePicker 日期选择器 -->
+              <!-- DatePicker 日期选择 -->
               <template v-else-if="item.type === 'date-picker'">
                 <el-date-picker v-model="queryParams[item.prop]" v-bind="item.attrs" />
               </template>
-              <!-- Input 输入框 -->
+              <!-- Input 输入 -->
               <template v-else>
                 <template v-if="item.attrs?.type === 'number'">
                   <el-input
@@ -133,8 +133,8 @@
           <el-button type="primary" size="small" @click="handleConfirm">
             {{ confirmText }}
           </el-button>
-          <el-button size="small" @click="handleClear">清 空</el-button>
-          <el-button size="small" @click="handleClose">关 闭</el-button>
+          <el-button size="small" @click="handleClear">清空</el-button>
+          <el-button size="small" @click="handleClose">关闭</el-button>
         </div>
       </div>
     </el-popover>
@@ -142,9 +142,8 @@
 </template>
 
 <script setup>
+import { ref, reactive, computed } from "vue";
 import { useResizeObserver } from "@vueuse/core";
-
-// 定义接收的属性
 const props = defineProps({
   selectConfig: {
     type: Object,
@@ -165,10 +164,10 @@ const props = defineProps({
     default: "",
   },
 });
-
-// 自定义事件
+/**
+ * 自定义事件
+ */
 const emit = defineEmits(["confirmClick"]);
-
 // 主键
 const pk = props.selectConfig.pk ?? "id";
 // 是否多选
@@ -192,105 +191,147 @@ const queryParams = reactive({
   pageNum: 1,
   pageSize,
 });
-
-// 计算popover的宽度
+// 计算 popover 的宽度
 const tableSelectRef = ref();
 const popoverWidth = ref(width);
 useResizeObserver(tableSelectRef, (entries) => {
   popoverWidth.value = `${entries[0].contentRect.width}px`;
 });
-
 // 表单操作
 const formRef = ref();
 // 初始化搜索条件
 for (const item of props.selectConfig.formItems) {
   queryParams[item.prop] = item.initialValue ?? "";
 }
-// 重置操作
+/**
+ * 重置操作
+ */
 function handleReset() {
   formRef.value?.resetFields();
   fetchPageData(true);
 }
-// 查询操作
+/**
+ * 查询操作
+ */
 function handleQuery() {
   fetchPageData(true);
 }
-// 获取列表数据
-async function fetchPageData(resetPage = false) {
-  if (resetPage) {
-    queryParams.pageNum = 1;
-  }
+/**
+ * 获取分页数据
+ */
+function fetchPageData(isRestart = false) {
   loading.value = true;
-  try {
-    const data = await props.selectConfig.indexAction(queryParams);
-    pageData.value = data?.list ?? [];
-    total.value = data?.total ?? 0;
-  } finally {
-    loading.value = false;
+  if (isRestart) {
+    queryParams.pageNum = 1;
+    queryParams.pageSize = pageSize;
   }
+  props.selectConfig
+    .indexAction(queryParams)
+    .then((data) => {
+      total.value = data.total ?? 0;
+      pageData.value = data.list ?? [];
+    })
+    .finally(() => {
+      loading.value = false;
+    });
 }
-// 表格操作
+// 列表操作
 const tableRef = ref();
-// 选中的行（用于存储选中状态）
-const SELECTION = ref([]);
-// 选择行
-function handleSelect(_selection, row) {
-  if (!isMultiple) {
-    tableRef.value.clearSelection();
-    tableRef.value.toggleRowSelection(row, true);
+// 数据刷新后是否保留选项
+for (const item of props.selectConfig.tableColumns) {
+  if (item.type === "selection") {
+    item.reserveSelection = true;
+    break;
   }
 }
-// 全选
-function handleSelectAll(_selection) {
-  if (!isMultiple) {
-    tableRef.value.clearSelection();
-  }
-}
-// 确认按钮文本
+// 选择
+const selectedItems = ref([]);
 const confirmText = computed(() => {
-  return isMultiple ? "确 定" : "选 择";
+  return selectedItems.value.length > 0 ? `已选${selectedItems.value.length}条` : "请选择";
 });
-// 确认选择
-function handleConfirm() {
-  const selectedRows = tableRef.value.getSelectionRows();
-  emit("confirmClick", selectedRows);
-  handleClose();
+/**
+ * 处理表格单选与多选
+ */
+function handleSelect(selection) {
+  if (isMultiple || selection.length === 0) {
+    // 多选
+    selectedItems.value = selection;
+  } else {
+    // 单选
+    selectedItems.value = [selection[selection.length - 1]];
+    tableRef.value?.clearSelection();
+    tableRef.value?.toggleRowSelection(selectedItems.value[0], true);
+    tableRef.value?.setCurrentRow(selectedItems.value[0]);
+  }
 }
-// 清空选择
-function handleClear() {
-  tableRef.value.clearSelection();
-  emit("confirmClick", []);
+/**
+ * 处理表格全选
+ */
+function handleSelectAll(selection) {
+  if (isMultiple) {
+    selectedItems.value = selection;
+  }
 }
-// 关闭弹出框
-function handleClose() {
-  popoverVisible.value = false;
-}
-// 显示弹出框
-function handleShow() {
-  fetchPageData();
-}
-// 分页操作
+/**
+ * 分页
+ */
 function handlePagination() {
   fetchPageData();
 }
+// 弹出框
+const isInit = ref(false);
+/**
+ * 显示
+ */
+function handleShow() {
+  if (isInit.value === false) {
+    isInit.value = true;
+    fetchPageData();
+  }
+}
+/**
+ * 确定
+ */
+function handleConfirm() {
+  if (selectedItems.value.length === 0) {
+    ElMessage.error("请选择数据");
+    return;
+  }
+  popoverVisible.value = false;
+  emit("confirmClick", selectedItems.value);
+}
+/**
+ * 清空
+ */
+function handleClear() {
+  tableRef.value?.clearSelection();
+  selectedItems.value = [];
+}
+/**
+ * 关闭
+ */
+function handleClose() {
+  popoverVisible.value = false;
+}
+const popoverContentRef = ref();
+/* onClickOutside(tableSelectRef, () => (popoverVisible.value = false), {
+  ignore: [popoverContentRef],
+}); */
 </script>
 
 <style scoped lang="scss">
-.reference {
+.reference :deep(.el-input__wrapper),
+.reference :deep(.el-input__inner) {
   cursor: pointer;
 }
 
 .feedback {
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 6px;
 }
-
-:deep(.radio) {
-  .el-table__header-wrapper {
-    .el-checkbox {
-      display: none;
-    }
-  }
+// 隐藏全选按钮
+.radio :deep(.el-table__header th.el-table__cell:nth-child(1) .el-checkbox) {
+  visibility: hidden;
 }
 </style>
