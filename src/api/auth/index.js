@@ -1,30 +1,48 @@
 import request from "@/utils/request";
-
 const AUTH_BASE_URL = "/api/v1/auth";
-
 const AuthAPI = {
-  /** 登录接口*/
+  /**
+   * 登录
+   */
   login(data) {
     const payload = {
       username: data.username,
       password: data.password,
       captchaId: data.captchaId,
       captchaCode: data.captchaCode,
+      ...(typeof data.tenantId !== "undefined" && { tenantId: data.tenantId }),
     };
-
-    // tenantId is optional — include only when provided (multi-tenant feature)
-    if (typeof data.tenantId !== "undefined") {
-      payload.tenantId = data.tenantId;
-    }
-
     return request({
       url: `${AUTH_BASE_URL}/login`,
       method: "post",
       data: payload,
+      // 白名单接口携带过期令牌仍会被 Spring Security 判 401
+      anonymous: true,
     });
   },
-
-  /** 切换租户(平台用户) - 返回新的 token */
+  /**
+   * 获取验证码图片
+   */
+  getCaptcha() {
+    return request({
+      url: `${AUTH_BASE_URL}/captcha`,
+      method: "get",
+      // 残留过期令牌会让白名单接口 401，登录页取不到验证码
+      anonymous: true,
+    });
+  },
+  /**
+   * 退出登录
+   */
+  logout() {
+    return request({
+      url: `${AUTH_BASE_URL}/logout`,
+      method: "delete",
+    });
+  },
+  /**
+   * 切换租户并重新签发令牌
+   */
   switchTenant(tenantId) {
     return request({
       url: `${AUTH_BASE_URL}/switch-tenant`,
@@ -32,62 +50,48 @@ const AuthAPI = {
       params: { tenantId },
     });
   },
-
-  /** 刷新 token 接口*/
+  /**
+   * 用刷新令牌换取新的访问令牌
+   */
   refreshToken(refreshToken) {
     return request({
       url: `${AUTH_BASE_URL}/refresh-token`,
       method: "post",
       params: { refreshToken },
-      headers: {
-        Authorization: "no-auth",
-      },
+      anonymous: true,
     });
   },
-
-  /** 退出登录接口 */
-  logout() {
-    return request({
-      url: `${AUTH_BASE_URL}/logout`,
-      method: "delete",
-    });
-  },
-
-  /** 获取验证码接口*/
-  getCaptcha() {
-    return request({
-      url: `${AUTH_BASE_URL}/captcha`,
-      method: "get",
-    });
-  },
-
-  // ============ 扫码登录 ============
-
-  /** 申请扫码票据 */
+  /**
+   * 生成扫码登录票据
+   */
   qrGenerate() {
     return request({
       url: `${AUTH_BASE_URL}/qr-code/generate`,
       method: "post",
+      anonymous: true,
     });
   },
-
-  /** 轮询扫码状态 */
+  /**
+   * 轮询扫码登录状态
+   */
   qrStatus(ticket) {
     return request({
       url: `${AUTH_BASE_URL}/qr-code/status`,
       method: "get",
       params: { ticket },
+      anonymous: true,
     });
   },
-
-  /** 扫码票据换取登录令牌 */
+  /**
+   * 用票据换取登录令牌
+   */
   qrLogin(ticket) {
     return request({
       url: `${AUTH_BASE_URL}/qr-code/login`,
       method: "post",
       data: { ticket },
+      anonymous: true,
     });
   },
 };
-
 export default AuthAPI;

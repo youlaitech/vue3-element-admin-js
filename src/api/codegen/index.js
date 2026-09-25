@@ -1,9 +1,22 @@
 import request from "@/utils/request";
-
 const GENERATOR_BASE_URL = "/api/v1/codegen";
-
+/**
+ * 构建预览和下载接口的查询参数
+ */
+const buildCodegenParams = (pageType, type) => {
+  const params = {};
+  if (pageType) {
+    params.pageType = pageType;
+  }
+  if (type) {
+    params.type = type;
+  }
+  return Object.keys(params).length ? params : undefined;
+};
 const GeneratorAPI = {
-  /** 获取数据表分页列表 */
+  /**
+   * 获取数据表分页列表
+   */
   getTablePage(params) {
     return request({
       url: `${GENERATOR_BASE_URL}/table`,
@@ -11,16 +24,28 @@ const GeneratorAPI = {
       params,
     });
   },
-
-  /** 获取代码生成配置 */
+  /**
+   * 获取代码生成配置
+   */
   getGenConfig(tableName) {
     return request({
       url: `${GENERATOR_BASE_URL}/${tableName}/config`,
       method: "get",
     });
   },
-
-  /** 获取代码生成配置 */
+  /**
+   * AI 推断代码生成配置，未开启 AI 时返回业务异常
+   */
+  aiFillConfig(tableName, requirement) {
+    return request({
+      url: `${GENERATOR_BASE_URL}/${tableName}/ai-config`,
+      method: "post",
+      data: requirement ? { requirement } : undefined,
+    });
+  },
+  /**
+   * 保存代码生成配置
+   */
   saveGenConfig(tableName, data) {
     return request({
       url: `${GENERATOR_BASE_URL}/${tableName}/config`,
@@ -28,48 +53,33 @@ const GeneratorAPI = {
       data,
     });
   },
-
-  /** 获取代码生成预览数据 */
+  /**
+   * 获取代码生成预览数据
+   */
   getPreviewData(tableName, pageType, type) {
-    const params = {};
-    if (pageType) {
-      params.pageType = pageType;
-    }
-    if (type) {
-      params.type = type;
-    }
     return request({
       url: `${GENERATOR_BASE_URL}/${tableName}/preview`,
       method: "get",
-      params: Object.keys(params).length ? params : undefined,
+      params: buildCodegenParams(pageType, type),
     });
   },
-
-  /** 重置代码生成配置 */
+  /**
+   * 重置代码生成配置
+   */
   resetGenConfig(tableName) {
     return request({
       url: `${GENERATOR_BASE_URL}/${tableName}/config`,
       method: "delete",
     });
   },
-
   /**
-   * 下载 ZIP 文件
-   * @param url
-   * @param fileName
+   * 下载代码生成 ZIP 文件
    */
   download(tableName, pageType, type) {
-    const params = {};
-    if (pageType) {
-      params.pageType = pageType;
-    }
-    if (type) {
-      params.type = type;
-    }
     return request({
       url: `${GENERATOR_BASE_URL}/${tableName}/download`,
       method: "get",
-      params: Object.keys(params).length ? params : undefined,
+      params: buildCodegenParams(pageType, type),
       responseType: "blob",
     }).then((response) => {
       const contentDisposition = response?.headers?.["content-disposition"];
@@ -85,17 +95,14 @@ const GeneratorAPI = {
           }
         }
       }
-
       const blob = new Blob([response.data], { type: "application/zip" });
       const a = document.createElement("a");
-      const url = window.URL.createObjectURL(blob);
-      a.href = url;
+      const downloadUrl = window.URL.createObjectURL(blob);
+      a.href = downloadUrl;
       a.download = fileName;
-
       a.click();
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(downloadUrl);
     });
   },
 };
-
 export default GeneratorAPI;
