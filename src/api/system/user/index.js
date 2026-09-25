@@ -1,11 +1,10 @@
 import request from "@/utils/request";
-
 const USER_BASE_URL = "/api/v1/users";
-
 const UserAPI = {
   /**
    * 获取当前登录用户信息
-   * @returns {Promise} 登录用户昵称、头像信息，包括角色和权限
+   *
+   * @returns 登录用户昵称、头像信息，包括角色和权限
    */
   getInfo() {
     return request({
@@ -13,11 +12,10 @@ const UserAPI = {
       method: "get",
     });
   },
-
   /**
    * 获取用户分页列表
-   * @param {Object} queryParams 查询参数
-   * @returns {Promise} 用户分页列表
+   *
+   * @param queryParams 查询参数
    */
   getPage(queryParams) {
     return request({
@@ -26,11 +24,11 @@ const UserAPI = {
       params: queryParams,
     });
   },
-
   /**
    * 获取用户表单详情
-   * @param {string} userId 用户ID
-   * @returns {Promise} 用户表单详情
+   *
+   * @param userId 用户 ID
+   * @returns 用户表单详情
    */
   getFormData(userId) {
     return request({
@@ -38,11 +36,10 @@ const UserAPI = {
       method: "get",
     });
   },
-
   /**
    * 添加用户
-   * @param {Object} data 用户表单数据
-   * @returns {Promise} 添加结果
+   *
+   * @param data 用户表单数据
    */
   create(data) {
     return request({
@@ -51,12 +48,11 @@ const UserAPI = {
       data,
     });
   },
-
   /**
    * 修改用户
-   * @param {string} id 用户ID
-   * @param {Object} data 用户表单数据
-   * @returns {Promise} 修改结果
+   *
+   * @param id 用户 ID
+   * @param data 用户表单数据
    */
   update(id, data) {
     return request({
@@ -65,25 +61,23 @@ const UserAPI = {
       data,
     });
   },
-
   /**
    * 修改用户密码
-   * @param {string} id 用户ID
-   * @param {string} password 新密码
-   * @returns {Promise} 修改结果
+   *
+   * @param id 用户 ID
+   * @param password 新密码
    */
   resetPassword(id, password) {
     return request({
       url: `${USER_BASE_URL}/${id}/password/reset`,
       method: "put",
-      params: { password },
+      data: { password },
     });
   },
-
   /**
    * 批量删除用户，多个以英文逗号(,)分割
-   * @param {string} ids 用户ID字符串，多个以英文逗号(,)分割
-   * @returns {Promise} 删除结果
+   *
+   * @param ids 用户 ID 字符串，多个以英文逗号(,)分割
    */
   deleteByIds(ids) {
     return request({
@@ -91,10 +85,8 @@ const UserAPI = {
       method: "delete",
     });
   },
-
   /**
    * 下载用户导入模板
-   * @returns {Promise} 模板文件
    */
   downloadTemplate() {
     return request({
@@ -103,11 +95,10 @@ const UserAPI = {
       responseType: "blob",
     });
   },
-
   /**
    * 导出用户
-   * @param {Object} queryParams 查询参数
-   * @returns {Promise} 导出文件
+   *
+   * @param queryParams 查询参数
    */
   export(queryParams) {
     return request({
@@ -117,11 +108,10 @@ const UserAPI = {
       responseType: "blob",
     });
   },
-
   /**
    * 导入用户
-   * @param {File} file 导入文件
-   * @returns {Promise} 导入结果
+   *
+   * @param file 导入文件
    */
   import(file) {
     const formData = new FormData();
@@ -135,10 +125,8 @@ const UserAPI = {
       },
     });
   },
-
   /**
    * 获取个人中心用户信息
-   * @returns {Promise} 用户信息
    */
   getProfile() {
     return request({
@@ -146,11 +134,8 @@ const UserAPI = {
       method: "get",
     });
   },
-
   /**
    * 修改个人中心用户信息
-   * @param {Object} data 用户信息
-   * @returns {Promise} 修改结果
    */
   updateProfile(data) {
     return request({
@@ -159,11 +144,8 @@ const UserAPI = {
       data,
     });
   },
-
   /**
    * 修改个人中心用户密码
-   * @param {Object} data 密码信息
-   * @returns {Promise} 修改结果
    */
   changePassword(data) {
     return request({
@@ -172,11 +154,8 @@ const UserAPI = {
       data,
     });
   },
-
   /**
    * 发送短信验证码（绑定或更换手机号）
-   * @param {string} mobile 手机号
-   * @returns {Promise} 发送结果
    */
   sendMobileCode(mobile) {
     return request({
@@ -185,11 +164,8 @@ const UserAPI = {
       params: { mobile },
     });
   },
-
   /**
    * 绑定或更换手机号
-   * @param {Object} data 手机号信息
-   * @returns {Promise} 绑定结果
    */
   bindOrChangeMobile(data) {
     return request({
@@ -198,6 +174,9 @@ const UserAPI = {
       data,
     });
   },
+  /**
+   * 解绑手机号
+   */
   unbindMobile(data) {
     return request({
       url: `${USER_BASE_URL}/mobile`,
@@ -205,11 +184,8 @@ const UserAPI = {
       data,
     });
   },
-
   /**
    * 发送邮箱验证码（绑定或更换邮箱）
-   * @param {string} email 邮箱
-   * @returns {Promise} 发送结果
    */
   sendEmailCode(email) {
     return request({
@@ -218,11 +194,8 @@ const UserAPI = {
       params: { email },
     });
   },
-
   /**
    * 绑定或更换邮箱
-   * @param {Object} data 邮箱信息
-   * @returns {Promise} 绑定结果
    */
   bindOrChangeEmail(data) {
     return request({
@@ -231,6 +204,9 @@ const UserAPI = {
       data,
     });
   },
+  /**
+   * 解绑邮箱
+   */
   unbindEmail(data) {
     return request({
       url: `${USER_BASE_URL}/email`,
@@ -238,10 +214,8 @@ const UserAPI = {
       data,
     });
   },
-
   /**
-   * 获取用户选项列表
-   * @returns {Promise} 用户选项列表
+   *  获取用户下拉列表
    */
   getOptions() {
     return request({
@@ -250,5 +224,5 @@ const UserAPI = {
     });
   },
 };
-
 export default UserAPI;
+// 重导出类型
