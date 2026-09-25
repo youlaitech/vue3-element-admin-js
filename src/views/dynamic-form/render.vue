@@ -21,33 +21,25 @@
 
 <script setup>
 import { ElMessage } from "element-plus";
-
 import FormAPI from "@/api/form";
 import { hasPerm } from "@/utils/auth";
-import FormRenderer from "./components/FormRenderer.vue";
 import { useFormRenderer } from "./composables/useFormRenderer";
-
 defineOptions({
   name: "FormRender",
   inheritAttrs: false,
 });
-
 const route = useRoute();
 const router = useRouter();
-
-/** 表单唯一标识（优先菜单路由 meta.params，query 兜底） */
+// 表单唯一标识（优先菜单路由 meta.params，query 兜底）
 const formKey = computed(() => {
   const metaParams = route.meta.params;
   return String(metaParams?.formKey ?? route.query.formKey ?? "");
 });
-
 const renderData = ref();
 const submitting = ref(false);
-
 const { rule, option, loading, submitted, load, refill } = useFormRenderer(() =>
   FormAPI.getRender(formKey.value)
 );
-
 onMounted(async () => {
   if (!formKey.value) {
     ElMessage.error("缺少表单标识参数，请检查菜单路由参数配置");
@@ -55,7 +47,6 @@ onMounted(async () => {
   }
   renderData.value = await load();
 });
-
 /**
  * 提交表单数据（校验通过后触发）
  *
@@ -72,11 +63,11 @@ async function handleSubmit(data) {
     submitting.value = false;
   }
 }
-
-/** 是否有权查看收集数据（无权限时不显示"查看已提交数据"按钮） */
+// 是否有权查看收集数据（无权限时不显示"查看已提交数据"按钮）
 const canViewData = computed(() => hasPerm(["form:data:list"]));
-
-// 跳转数据列表（按提交时间倒序，本次提交在首位）
+/**
+ * 跳转数据列表（按提交时间倒序，本次提交在首位）
+ */
 function handleViewData() {
   router.push({
     name: "FormData",

@@ -8,6 +8,10 @@
         <span class="designer-toolbar__title">{{ title }}</span>
       </div>
       <div class="designer-toolbar__right">
+        <el-button v-if="appConfig.aiEnabled" @click="aiDialogVisible = true">
+          <template #icon><MagicStick /></template>
+          AI 生成
+        </el-button>
         <el-button @click="handlePreview">预 览</el-button>
         <el-button type="primary" :loading="saving" @click="handleSave">保 存</el-button>
       </div>
@@ -16,42 +20,50 @@
     <div class="designer-wrapper">
       <FcDesigner ref="designerRef" :config="designerConfig" height="100%" />
     </div>
+
+    <el-dialog v-model="aiDialogVisible" title="AI 生成表单" width="560px" append-to-body>
+      <el-input
+        v-model="aiDescription"
+        type="textarea"
+        :rows="5"
+        maxlength="1000"
+        show-word-limit
+        placeholder="描述需要的表单，例如：请假申请，包含姓名、请假类型、起止日期、请假事由（必填）、附件"
+      />
+      <template #footer>
+        <el-button @click="aiDialogVisible = false">取 消</el-button>
+        <el-button type="primary" :loading="aiGenerating" @click="handleAiGenerate">
+          生 成
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ElMessage } from "element-plus";
-import { ArrowLeft } from "@element-plus/icons-vue";
-
-import FcDesigner from "@form-create/designer";
-
 import FormAPI from "@/api/form";
 import router from "@/router";
-
 defineOptions({
   name: "FormDesigner",
   inheritAttrs: false,
 });
-
 const route = useRoute();
-
-/** 表单 ID（列表页"设计"按钮携带） */
+// 表单 ID（列表页"设计"按钮携带）
 const formId = computed(() => String(route.query.id ?? ""));
-
-/** 页面标题（列表页携带） */
+// 页面标题（列表页携带）
 const title = computed(() => String(route.query.title ?? "表单设计"));
-
 const designerRef = ref();
-
-/** 隐藏设计器自带保存按钮，统一走工具栏 */
+// 隐藏设计器自带保存按钮，统一走工具栏
 const designerConfig = { showSaveBtn: false };
-
-/** 保存中状态 */
+// 保存中状态
 const saving = ref(false);
-
-/** 表单定义元数据（保存时回传以满足后端非空校验） */
+// AI 生成弹窗与需求描述
+const aiDialogVisible = ref(false);
+const aiDescription = ref("");
+const aiGenerating = ref(false);
+// 表单定义元数据（保存时回传以满足后端非空校验）
 const formMeta = ref({});
-
 // 回显已有规则（空规则为空白画布）
 onMounted(async () => {
   if (!formId.value) {
@@ -72,8 +84,9 @@ onMounted(async () => {
     designerRef.value?.setOption(option);
   }
 });
-
-// 保存设计器产出的规则与全局配置
+/**
+ * 保存设计器产出的规则与全局配置
+ */
 async function handleSave() {
   if (!formId.value) {
     ElMessage.error("缺少表单ID参数");
@@ -89,13 +102,36 @@ async function handleSave() {
     saving.value = false;
   }
 }
-
-// 返回表单列表
+/**
+ * AI 生成的规则直接覆盖画布，用户确认后再点保存
+ */
+async function handleAiGenerate() {
+  const description = aiDescription.value.trim();
+  if (!description) {
+    ElMessage.warning("请输入需求描述");
+    return;
+  }
+  aiGenerating.value = true;
+  try {
+    const formJson = await FormAPI.aiGenerate(description);
+    designerRef.value?.setRule(JSON.parse(formJson));
+    aiDialogVisible.value = false;
+    ElMessage.success("生成完成，请核对后保存");
+  } catch {
+    ElMessage.error("AI 生成失败，请确认已开启 AI 配置或调整描述");
+  } finally {
+    aiGenerating.value = false;
+  }
+}
+/**
+ * @returns 表单列表
+ */
 function handleBack() {
   router.back();
 }
-
-// 预览读取已保存规则，未保存改动不体现
+/**
+ * 预览读取已保存规则，未保存改动不体现
+ */
 function handlePreview() {
   if (!formId.value) {
     ElMessage.error("缺少表单ID参数");

@@ -1,39 +1,33 @@
-/**
- * 表单字段解析（规则字段提取、提交数据解析与展示格式化）
- */
-
+// 表单字段解析（规则字段提取、提交数据解析与展示格式化）
 /**
  * 递归提取表单字段元数据（布局容器的子节点递归收集）
- *
  * @param rules form-create 规则（JSON 解析产物，结构未校验）
- * @returns {Array<{field: string, title: string, optionMap: Map<string, string>}>} 字段元数据列表
  */
 export function extractFields(rules) {
   const result = [];
+  // 递归收集字段
   const walk = (nodes) => {
     nodes.forEach((node) => {
       if (!node || typeof node !== "object") return;
-      if (typeof node.field === "string" && node.field) {
+      const item = node;
+      if (typeof item.field === "string" && item.field) {
         result.push({
-          field: node.field,
-          title: String(node.title ?? node.field),
-          optionMap: extractOptionMap(node.options),
+          field: item.field,
+          title: String(item.title ?? item.field),
+          optionMap: extractOptionMap(item.options),
         });
       }
-      if (Array.isArray(node.children)) {
-        walk(node.children);
+      if (Array.isArray(item.children)) {
+        walk(item.children);
       }
     });
   };
   walk(Array.isArray(rules) ? rules : []);
   return result;
 }
-
 /**
  * 提取字段选项映射（value -> label，脏项跳过）
- *
  * @param options 规则 options 数组
- * @returns {Map<string, string>} 选项映射
  */
 export function extractOptionMap(options) {
   const optionMap = new Map();
@@ -47,12 +41,9 @@ export function extractOptionMap(options) {
   });
   return optionMap;
 }
-
 /**
  * 解析提交数据（field -> value 映射，解析失败按空数据兜底）
- *
  * @param dataJson 数据 JSON 字符串
- * @returns {Object} 表单数据
  */
 export function parseDataJson(dataJson) {
   try {
@@ -61,13 +52,11 @@ export function parseDataJson(dataJson) {
     return {};
   }
 }
-
 /**
- * 格式化单元格展示值（选项翻译、数组拼接、对象序列化、空值占位）
+ * 格式化单元格展示值
  *
  * @param value 字段值
  * @param field 字段元数据（选项类字段翻译 label，未命中原样展示）
- * @returns {string} 展示文本
  */
 export function formatCellValue(value, field) {
   if (value === null || value === undefined || value === "") return "-";

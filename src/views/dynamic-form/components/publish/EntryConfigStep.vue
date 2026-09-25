@@ -126,15 +126,12 @@
 </template>
 
 <script setup>
-import { QuestionFilled } from "@element-plus/icons-vue";
-
-import EntrySection from "./EntrySection.vue";
-
 defineOptions({
   name: "FormPublishEntryConfigStep",
 });
-
-/** 入口配置（向导第②步；数据由容器持有，校验经 expose 供容器保存前调用） */
+/**
+ * 入口配置（向导第②步；数据由容器持有，校验经 expose 供容器保存前调用）
+ */
 const props = defineProps({
   /** 是否展示菜单入口配置块 */
   showMenu: {
@@ -162,15 +159,11 @@ const props = defineProps({
     default: "",
   },
 });
-
 const emit = defineEmits(["copy"]);
-
 const menuForm = defineModel("menuForm", { type: Object, required: true });
 const shareEnabled = defineModel("shareEnabled", { type: Boolean, required: true });
-
 const menuFormRef = ref();
-
-/** 菜单表单校验规则：菜单名称与上级菜单必填 */
+// 菜单表单校验规则：菜单名称与上级菜单必填
 const rules = computed(() =>
   props.showMenu
     ? {
@@ -179,16 +172,16 @@ const rules = computed(() =>
       }
     : {}
 );
-
-/** 角色全选（多选下拉 header 快捷操作） */
+/**
+ * 角色全选（多选下拉 header 快捷操作）
+ */
 function handleSelectAllRoles() {
   menuForm.value.roleIds = props.roleOptions.map((role) => String(role.value));
 }
-
 /**
  * 校验菜单表单（容器保存前调用）
  *
- * @return 未配置菜单入口时恒通过
+ * @returns 未配置菜单入口时恒通过
  */
 function validate() {
   if (!props.showMenu || !menuFormRef.value) {
@@ -199,7 +192,6 @@ function validate() {
     () => false
   );
 }
-
 defineExpose({ validate });
 </script>
 

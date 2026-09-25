@@ -33,29 +33,21 @@
 
 <script setup>
 import FormAPI from "@/api/form";
-import FormRenderer from "./components/FormRenderer.vue";
 import { useFormRenderer } from "./composables/useFormRenderer";
-
 defineOptions({
   name: "FormShare",
   inheritAttrs: false,
 });
-
 const route = useRoute();
-
-/** 表单唯一标识（路由路径段 /f/:formKey） */
+// 表单唯一标识（路由路径段 /f/:formKey）
 const formKey = computed(() => String(route.params.formKey ?? ""));
-
 const renderData = ref();
 const submitting = ref(false);
-
-/** 加载失败兜底文案（错误消息由拦截器统一弹出） */
+// 加载失败兜底文案（错误消息由拦截器统一弹出）
 const loadError = ref("");
-
 const { rule, option, loading, submitted, load, refill } = useFormRenderer(() =>
   FormAPI.getPublicRender(formKey.value)
 );
-
 onMounted(async () => {
   if (!formKey.value) {
     loadError.value = "缺少表单标识参数";
@@ -67,7 +59,6 @@ onMounted(async () => {
     loadError.value = "表单不存在或未开放公开访问";
   }
 });
-
 /**
  * 匿名提交表单数据（校验通过后触发）
  *

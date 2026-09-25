@@ -48,14 +48,12 @@
 
 <script setup>
 import QRCode from "qrcode";
-
-import EntrySection from "./EntrySection.vue";
-
 defineOptions({
   name: "FormPublishResultStep",
 });
-
-/** 发布完成汇总（向导第③步：菜单位置、可见角色、分享二维码与链接） */
+/**
+ * 发布完成汇总（向导第③步：菜单位置、可见角色、分享二维码与链接）
+ */
 const props = defineProps({
   /** 是否展示菜单入口汇总 */
   showMenu: {
@@ -88,12 +86,9 @@ const props = defineProps({
     default: "",
   },
 });
-
 const emit = defineEmits(["goView", "copy"]);
-
-/** 分享二维码画布 */
+// 分享二维码画布
 const qrCanvasRef = ref();
-
 // 仅在第③步渲染（v-else-if 挂载），配置已定，挂载后绘制一次即可
 onMounted(async () => {
   if (!props.shareVisible) return;

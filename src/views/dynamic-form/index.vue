@@ -241,44 +241,34 @@
 <script setup>
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { QuestionFilled, Refresh } from "@element-plus/icons-vue";
-
 import FormAPI from "@/api/form";
 import router from "@/router";
 import { usePageTable, useTableSelection } from "@/composables";
 import { FormStatus } from "@/enums";
-import FormPublishDialog from "./components/PublishDialog.vue";
-
 defineOptions({
   name: "FormDefinition",
   inheritAttrs: false,
 });
-
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
-
 const queryFormRef = ref();
 const formDefinitionFormRef = ref();
-
-/** 状态下拉/标签展示映射 */
+// 状态下拉/标签展示映射
 const statusOptions = {
   [FormStatus.DRAFT]: "草稿",
   [FormStatus.PUBLISHED]: "已发布",
   [FormStatus.DISABLED]: "已停用",
 };
-
-/** 类型下拉/标签展示映射 */
+// 类型下拉/标签展示映射
 const categoryOptions = {
   normal: "普通表单",
   workflow: "工作流表单",
 };
-
-/** 当前编辑表单状态：非草稿（已发布/已停用）时类型作为业务标识不可修改 */
+// 当前编辑表单状态：非草稿（已发布/已停用）时类型作为业务标识不可修改
 const editingStatus = ref(null);
 const categoryDisabled = computed(
   () => editingStatus.value !== null && editingStatus.value !== FormStatus.DRAFT
 );
-
 /**
  * 状态标签样式
  *
@@ -294,8 +284,7 @@ function statusTagType(status) {
       return "info";
   }
 }
-
-/** 分页表格数据管理 */
+// 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
@@ -307,21 +296,16 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: FormAPI.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
-
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
-
 const dialogState = reactive({
   title: "",
   visible: false,
 });
-
-/** 新增表单默认值：类型缺省普通表单 */
+// 新增表单默认值：类型缺省普通表单
 const initialFormData = {
   category: "normal",
 };
-
 const formData = reactive({ ...initialFormData });
-
 const rules = {
   formName: [{ required: true, message: "请输入表单名称", trigger: "blur" }],
   formKey: [
@@ -333,8 +317,9 @@ const rules = {
     },
   ],
 };
-
-// 重置表单数据和校验状态
+/**
+ * 重置表单数据和校验状态
+ */
 function resetForm() {
   formDefinitionFormRef.value?.resetFields();
   formDefinitionFormRef.value?.clearValidate();
@@ -343,18 +328,22 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
-
+/**
+ * 打开表单弹窗
+ */
 function openDialog() {
   dialogState.visible = true;
 }
-
-// 关闭弹窗并重置
+/**
+ * 关闭弹窗并重置
+ */
 function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
-
-// 打开新增弹窗（类型按当前过滤视图预选）
+/**
+ * 打开新增弹窗（类型按当前过滤视图预选）
+ */
 function handleCreateClick() {
   resetForm();
   editingStatus.value = null;
@@ -362,7 +351,6 @@ function handleCreateClick() {
   formData.category = params.category === "workflow" ? "workflow" : "normal";
   openDialog();
 }
-
 /**
  * 打开编辑弹窗并回填数据
  *
@@ -376,15 +364,15 @@ async function handleEditClick(row) {
   Object.assign(formData, data);
   openDialog();
 }
-
-// 校验并提交
+/**
+ * 校验并提交
+ */
 async function handleSubmit() {
   const valid = await formDefinitionFormRef.value?.validate().then(
     () => true,
     () => false
   );
   if (!valid) return;
-
   loading.value = true;
   try {
     const id = formData.id;
@@ -404,8 +392,7 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
-
-/** 发布向导状态（发布/入口管理共用） */
+// 发布向导状态（发布/入口管理共用）
 const publishState = reactive({
   visible: false,
   formId: "",
@@ -415,7 +402,6 @@ const publishState = reactive({
   /** 公开开关回显（分享配置步骤依赖） */
   isPublic: 0,
 });
-
 /**
  * 打开发布向导（已发布表单直达入口配置）
  *
@@ -431,12 +417,12 @@ function openPublishDialog(row) {
     isPublic: row.isPublic ?? 0,
   });
 }
-
-// 发布后刷新列表（状态与版本可能已变更）
+/**
+ * 发布后刷新列表（状态与版本可能已变更）
+ */
 function handlePublishSuccess() {
   fetchData();
 }
-
 /**
  * 跳转到指定表单页面并检查路由是否已注册
  *
@@ -456,7 +442,6 @@ function openFormPage(name, query) {
     ElMessage.error("页面跳转失败，请刷新页面后重试");
   }
 }
-
 /**
  * 跳转到表单数据页
  *
@@ -465,7 +450,6 @@ function openFormPage(name, query) {
 function openDataPage(row) {
   openFormPage("FormData", { formKey: row.formKey, title: `【${row.formName}】数据` });
 }
-
 /**
  * 停用表单（已发出去的访问入口立即失效）
  *
@@ -486,7 +470,6 @@ async function handleDisable(id) {
   ElMessage.success("已停用");
   fetchData();
 }
-
 /**
  * 删除单个或批量表单定义
  *
@@ -498,7 +481,6 @@ async function handleDelete(id) {
     ElMessage.warning("请勾选删除项");
     return;
   }
-
   try {
     await ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
       confirmButtonText: "确定",
@@ -509,7 +491,6 @@ async function handleDelete(id) {
     ElMessage.info("已取消删除");
     return;
   }
-
   loading.value = true;
   try {
     await FormAPI.deleteByIds(formIds);
@@ -519,7 +500,6 @@ async function handleDelete(id) {
     loading.value = false;
   }
 }
-
 /**
  * 跳转到表单设计器页面
  *
@@ -528,7 +508,6 @@ async function handleDelete(id) {
 function openDesigner(row) {
   openFormPage("FormDesigner", { id: row.id, title: `【${row.formName}】表单设计` });
 }
-
 onMounted(() => {
   handleQuery();
 });
@@ -541,12 +520,12 @@ onMounted(() => {
   gap: 6px;
   align-items: center;
   max-width: 100%;
+}
 
-  &__text {
-    flex-shrink: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.form-name__text {
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

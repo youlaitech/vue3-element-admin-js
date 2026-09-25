@@ -1,11 +1,6 @@
-/**
- * 表单规则加载与渲染状态
- *
- * 填写页（render）、公开页（share）、预览页（preview）共用同一渲染管线
- */
-
+// 表单规则加载与渲染状态
+// 填写页（render）、公开页（share）、预览页（preview）共用同一渲染管线
 import { ref, shallowRef } from "vue";
-
 /**
  * 加载表单规则并管理渲染状态
  *
@@ -17,13 +12,11 @@ export function useFormRenderer(loader) {
   const option = shallowRef({ submitBtn: true });
   const loading = ref(false);
   const submitted = ref(false);
-
   /**
    * 加载并解析规则
    *
    * @returns 接口原始数据
-   */
-  async function load() {
+   */ async function load() {
     loading.value = true;
     try {
       const data = await loader();
@@ -36,11 +29,11 @@ export function useFormRenderer(loader) {
       loading.value = false;
     }
   }
-
-  // 回到填写态（已填数据清空由 FormRenderer 处理）
+  /**
+   * 回到填写态（已填数据清空由 FormRenderer 处理）
+   */
   function refill() {
     submitted.value = false;
   }
-
   return { rule, option, loading, submitted, load, refill };
 }
