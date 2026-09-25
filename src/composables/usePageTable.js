@@ -1,5 +1,4 @@
 import { reactive, ref } from "vue";
-
 /**
  * 分页列表页通用状态管理
  *
@@ -7,18 +6,14 @@ import { reactive, ref } from "vue";
  */
 export function usePageTable(options) {
   const { initialParams, request, onBeforeReset } = options;
-
   const loading = ref(false);
   const list = ref([]);
   const total = ref(0);
   const params = reactive({ ...initialParams });
-
   /**
    * 拉取当前查询参数对应的分页数据
-   *
    * 只负责请求和回填，不处理弹窗、路由或消息提示
-   */
-  async function fetchData() {
+   */ async function fetchData() {
     loading.value = true;
     try {
       const data = await request(params);
@@ -28,7 +23,6 @@ export function usePageTable(options) {
       loading.value = false;
     }
   }
-
   /**
    * 回到第一页并查询
    */
@@ -36,25 +30,19 @@ export function usePageTable(options) {
     params.pageNum = 1;
     fetchData();
   }
-
   /**
    * 恢复初始查询参数
-   *
    * 保持响应式引用不变，不触发查询
-   */
-  function resetParams() {
+   */ function resetParams() {
     Object.assign(params, initialParams);
   }
-
   /**
    * 恢复初始查询参数并重新查询
-   */
-  function handleResetQuery() {
+   */ function handleResetQuery() {
     onBeforeReset?.();
     resetParams();
     fetchData();
   }
-
   return {
     loading,
     list,
