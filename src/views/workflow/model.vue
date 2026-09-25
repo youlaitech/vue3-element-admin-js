@@ -216,29 +216,23 @@
 <script setup>
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { QuestionFilled, Refresh } from "@element-plus/icons-vue";
-
 import WorkflowAPI from "@/api/workflow";
 import router from "@/router";
 import { hasPerm } from "@/utils/auth";
 import { usePageTable, useTableSelection } from "@/composables";
-import BpmnViewer from "./components/BpmnViewer.vue";
-
 defineOptions({
   name: "WorkflowModel",
   inheritAttrs: false,
 });
-
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
-
 const queryFormRef = ref();
 const modelFormRef = ref();
-
-/** 启用开关权限（el-switch 不支持 v-hasPerm 指令移除，改 v-if 控制） */
+/**
+ * 启用开关权限（el-switch 不支持 v-hasPerm 指令移除，改 v-if 控制）
+ */
 const hasStatePerm = hasPerm("workflow:definition:update");
-
-/** 分页表格数据管理 */
+// 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
@@ -248,18 +242,13 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: WorkflowAPI.model.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
-
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
-
 const dialogState = reactive({
   title: "",
   visible: false,
 });
-
 const initialFormData = { name: "", key: "" };
-
 const formData = reactive({ ...initialFormData });
-
 const rules = {
   name: [{ required: true, message: "请输入流程名称", trigger: "blur" }],
   key: [
@@ -271,19 +260,18 @@ const rules = {
     },
   ],
 };
-
-/** 流程图弹窗状态 */
+// 流程图弹窗状态
 const diagramState = reactive({
   title: "",
   visible: false,
   loading: false,
   xml: "",
 });
-
-/** 正在切换启用状态的流程 ID（该行开关转圈，其余行禁用防并发） */
+// 正在切换启用状态的流程 ID（该行开关转圈，其余行禁用防并发）
 const switchingId = ref(null);
-
-/** 重置表单数据和验证状态 */
+/**
+ * 重置表单数据和验证状态
+ */
 function resetForm() {
   modelFormRef.value?.resetFields();
   modelFormRef.value?.clearValidate();
@@ -292,20 +280,21 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
-
-/** 关闭模型弹窗并清理临时状态 */
+/**
+ * 关闭模型弹窗并清理临时状态
+ */
 function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
-
-/** 打开新增流程弹窗 */
+/**
+ * 打开新增流程弹窗
+ */
 function handleCreateClick() {
   resetForm();
   dialogState.title = "新增流程";
   dialogState.visible = true;
 }
-
 /**
  * 打开编辑流程弹窗并回填数据（列表名称列点击进入）
  *
@@ -322,15 +311,15 @@ function handleEditClick(row) {
   });
   dialogState.visible = true;
 }
-
-/** 校验并提交模型 */
+/**
+ * 校验并提交模型
+ */
 async function handleSubmit() {
   const valid = await modelFormRef.value?.validate().then(
     () => true,
     () => false
   );
   if (!valid) return;
-
   loading.value = true;
   try {
     if (formData.id) {
@@ -346,7 +335,6 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
-
 /**
  * 发布流程（生成新版本，发布后即可发起）
  *
@@ -367,7 +355,6 @@ async function handleDeploy(modelId) {
   ElMessage.success("发布成功");
   fetchData();
 }
-
 /**
  * 切换流程启用状态（关闭后不可发起新流程，运行中的实例不受影响）
  *
@@ -385,7 +372,6 @@ async function handleToggleState(row) {
     switchingId.value = null;
   }
 }
-
 /**
  * 打开已发布版本的流程图弹窗
  *
@@ -407,8 +393,9 @@ async function openDiagram(row) {
     diagramState.loading = false;
   }
 }
-
-/** 重置工作流数据（清空所有流程含自建的模型/定义/实例/历史与关联表单数据，重建初始演示流程） */
+/**
+ * 重置工作流数据（清空所有流程含自建的模型/定义/实例/历史与关联表单数据，重建初始演示流程）
+ */
 async function handleResetDemo() {
   try {
     await ElMessageBox.confirm(
@@ -429,10 +416,8 @@ async function handleResetDemo() {
     resetting.value = false;
   }
 }
-
-/** 是否正在重置演示流程（重置请求期间按钮转圈并防重复点击） */
+// 是否正在重置演示流程（重置请求期间按钮转圈并防重复点击）
 const resetting = ref(false);
-
 /**
  * 跳转到流程设计器页面
  *
@@ -444,7 +429,6 @@ function openDesigner(row) {
     query: { modelId: row.id, title: `【${row.name}】流程设计` },
   });
 }
-
 /**
  * 删除单个或批量流程（级联删除发布版本、实例与历史，设计草稿一并清除）
  *
@@ -456,7 +440,6 @@ async function handleDelete(id) {
     ElMessage.warning("请勾选删除项");
     return;
   }
-
   try {
     await ElMessageBox.confirm(
       "将删除该流程的设计、已发布版本及全部流程实例数据，不可恢复。确定删除?",
@@ -467,7 +450,6 @@ async function handleDelete(id) {
     ElMessage.info("已取消删除");
     return;
   }
-
   loading.value = true;
   try {
     await WorkflowAPI.model.deleteByIds(modelIds);
@@ -477,7 +459,6 @@ async function handleDelete(id) {
     loading.value = false;
   }
 }
-
 onMounted(() => {
   handleQuery();
 });

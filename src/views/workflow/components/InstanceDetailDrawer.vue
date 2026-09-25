@@ -60,35 +60,25 @@
 
 <script setup>
 import WorkflowAPI from "@/api/workflow";
-import ApprovalFlowTimeline from "./ApprovalFlowTimeline.vue";
-import BpmnViewer from "./BpmnViewer.vue";
-import FormDetail from "./FormDetail.vue";
-
 defineOptions({
   name: "InstanceDetailDrawer",
 });
-
-/** 实例状态展示映射（标签文案 + 标签色） */
+// 实例状态展示映射（标签文案 + 标签色）
 const statusOptions = {
   running: { label: "运行中", tag: "primary" },
   finished: { label: "已完成", tag: "success" },
   terminated: { label: "已终止", tag: "danger" },
 };
-
 const visible = ref(false);
 const loading = ref(false);
-
 const detail = ref();
-
-/** 流程图数据（详情抽屉"流程图"页签） */
+// 流程图数据（详情抽屉"流程图"页签）
 const diagram = ref({
   bpmnXml: "",
   executedActivityIds: [],
   activeActivityIds: [],
 });
-
 const diagramLoading = ref(false);
-
 /**
  * 打开抽屉并加载实例详情与流程图
  *
@@ -110,7 +100,6 @@ async function open(instanceId) {
     diagramLoading.value = false;
   }
 }
-
 defineExpose({ open });
 </script>
 

@@ -25,7 +25,6 @@ defineOptions({
   name: "ApprovalTimeline",
   inheritAttrs: false,
 });
-
 /**
  * 审批记录时间线
  *

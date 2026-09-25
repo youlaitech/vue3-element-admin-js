@@ -25,5 +25,4 @@ const flowableModdleDescriptor = {
     },
   ],
 };
-
 export default flowableModdleDescriptor;

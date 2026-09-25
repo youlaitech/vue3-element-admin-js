@@ -14,7 +14,6 @@
 defineOptions({
   name: "ProcessStages",
 });
-
 defineProps({
   /** 审批环节（按 BPMN 编排顺序） */
   stages: {
@@ -27,7 +26,6 @@ defineProps({
     default: 0,
   },
 });
-
 /**
  * 环节办理人描述：角色（成员账号）；发起人办理环节标注"发起人"；未配置办理人的环节兜底提示
  */

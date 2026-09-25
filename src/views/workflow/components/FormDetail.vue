@@ -7,11 +7,9 @@ defineOptions({
   name: "FormDetail",
   inheritAttrs: false,
 });
-
 /**
  * 表单只读回显
- *
- * @description 按提交时快照规则渲染表单并禁用全部控件，
+ * 按提交时快照规则渲染表单并禁用全部控件，
  * 供审批办理、实例详情等场景回看发起数据
  */
 const props = defineProps({
@@ -31,13 +29,11 @@ const props = defineProps({
     default: "",
   },
 });
-
 const formApi = ref();
 const formData = ref({});
 // shallowRef：避免深代理破坏 Rule 内部的 Creator 结构
 const rule = shallowRef([]);
 const option = ref({ submitBtn: false, resetBtn: false });
-
 watch(
   () => [props.formJson, props.optionsJson, props.dataJson],
   () => {
@@ -49,22 +45,22 @@ watch(
   },
   { immediate: true }
 );
-
 /**
  * 递归禁用规则中的全部控件
- *
  * 同时移除校验规则，只读态不展示必填星号
  *
  * @param rules form-create 规则（JSON 解析值）
  */
 function disableRules(rules) {
+  // 递归遍历节点
   const walk = (nodes) => {
     nodes.forEach((node) => {
       if (!node || typeof node !== "object") return;
-      node.props = { ...node.props, disabled: true };
-      delete node.validate;
-      if (Array.isArray(node.children)) {
-        walk(node.children);
+      const item = node;
+      item.props = { ...item.props, disabled: true };
+      delete item.validate;
+      if (Array.isArray(item.children)) {
+        walk(item.children);
       }
     });
   };
@@ -72,7 +68,6 @@ function disableRules(rules) {
   walk(Array.isArray(cloned) ? cloned : []);
   return cloned;
 }
-
 /**
  * 解析表单数据（解析失败按空数据兜底）
  *

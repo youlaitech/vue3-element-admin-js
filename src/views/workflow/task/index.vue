@@ -26,31 +26,20 @@
 
 <script setup>
 import { useRoute } from "vue-router";
-
-import TodoTab from "./components/TodoTab.vue";
-import DoneTab from "./components/DoneTab.vue";
-import MineTab from "./components/MineTab.vue";
-
 defineOptions({
   name: "WorkflowTask",
 });
-
 const route = useRoute();
-
-/** 当前页签；发起成功跳转携带 ?tab=mine 直达「我发起的」查看进度 */
-const activeTab = ref(String(route.query.tab || "todo"));
-
-/** 待办数量（TodoTab 查询后回传，驱动页签角标） */
+// 当前页签；发起成功跳转携带 ?tab=mine 直达「我发起的」查看进度
+const activeTab = ref(route.query.tab || "todo");
+// 待办数量（TodoTab 查询后回传，驱动页签角标）
 const todoTotal = ref(0);
-
-/** 各页签组件引用（调用其暴露的刷新能力） */
+// 各页签组件引用（调用其暴露的刷新能力）
 const todoTabRef = ref();
 const doneTabRef = ref();
 const mineTabRef = ref();
-
 /**
  * 页签切换刷新对应列表
- *
  * lazy 页签首次激活时 ref 尚未就绪，由子组件 onMounted 自行首查，此处跳过不重复请求；
  * 再次切换时调用子组件刷新，保证办理/发起后切回页签即见最新数据
  */

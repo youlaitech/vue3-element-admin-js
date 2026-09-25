@@ -87,6 +87,18 @@
           <el-descriptions-item label="当前任务">{{ detail.taskName }}</el-descriptions-item>
         </el-descriptions>
 
+        <!-- AI 摘要：按需生成，未开启 AI 时入口不显示；生成失败不影响审批 -->
+        <div v-if="appConfig.aiEnabled" class="todo-approve__ai">
+          <div class="todo-approve__ai-header">
+            <span>AI 摘要</span>
+            <el-button link type="primary" :loading="aiLoading" @click="handleAiSummary">
+              <template #icon><MagicStick /></template>
+              {{ aiSummary ? "重新生成" : "生成摘要" }}
+            </el-button>
+          </div>
+          <el-alert v-if="aiSummary" :closable="false" type="info" :description="aiSummary" />
+        </div>
+
         <el-tabs class="todo-approve__tabs">
           <el-tab-pane label="申请信息">
             <FormDetail
@@ -160,27 +172,19 @@
 <script setup>
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage } from "element-plus";
-import { Refresh } from "@element-plus/icons-vue";
-
 import WorkflowAPI from "@/api/workflow";
 import { usePageTable } from "@/composables";
-import ApprovalTimeline from "../../components/ApprovalTimeline.vue";
-import FormDetail from "../../components/FormDetail.vue";
-import ProcessStages from "../../components/ProcessStages.vue";
-
 defineOptions({
   name: "WorkflowTodoTab",
 });
-
-/** 待办数量回传（驱动审批中心页签角标） */
+/**
+ * 待办数量回传（驱动审批中心页签角标）
+ */
 const emit = defineEmits(["totalChange"]);
-
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
-
 const queryFormRef = ref();
-
-/** 分页表格数据管理 */
+// 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
@@ -190,26 +194,25 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: WorkflowAPI.task.getTodoPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
-
 watch(total, (value) => emit("totalChange", value), { immediate: true });
-
-/** 暴露刷新能力：审批中心页签切换时父组件调用 */
+/**
+ * 暴露刷新能力：审批中心页签切换时父组件调用
+ */
 defineExpose({ fetchData });
-
-/** 办理弹窗状态 */
+// 办理弹窗状态
 const approveState = reactive({
   visible: false,
   loading: false,
   title: "审批办理",
 });
-
-/** 当前任务详情 */
+// 当前任务详情
 const detail = ref();
-
-/** 审批意见（通过/驳回共用） */
+// 审批意见（通过/驳回共用）
 const comment = ref("");
-
-/** 当前任务在流程走向中的位置（节点ID精确匹配，当前环节高亮进行中，之前为已完成；未匹配时不高亮） */
+// AI 摘要与生成状态
+const aiSummary = ref("");
+const aiLoading = ref(false);
+// 当前任务在流程走向中的位置（节点 ID 精确匹配，当前环节高亮进行中，之前为已完成；未匹配时不高亮）
 const currentStageIndex = computed(() => {
   const stages = detail.value?.stages;
   if (!stages?.length || !detail.value?.taskDefinitionKey) {
@@ -217,14 +220,11 @@ const currentStageIndex = computed(() => {
   }
   return stages.findIndex((stage) => stage.nodeId === detail.value?.taskDefinitionKey);
 });
-
-/** 驳回模式状态 */
+// 驳回模式状态
 const rejectMode = ref(false);
 const rejectTargets = ref([]);
 const rejectTargetId = ref("");
-
 const submitting = ref(false);
-
 /**
  * 打开办理弹窗并加载任务详情
  *
@@ -235,6 +235,7 @@ async function openApprove(taskId) {
   approveState.loading = true;
   closeRejectMode();
   comment.value = "";
+  aiSummary.value = "";
   try {
     detail.value = await WorkflowAPI.task.getDetail(taskId);
     approveState.title = `【${detail.value.taskName}】审批办理`;
@@ -242,8 +243,25 @@ async function openApprove(taskId) {
     approveState.loading = false;
   }
 }
-
-/** 切入驳回模式并加载可驳回的历史节点 */
+/**
+ * 生成当前任务的 AI 摘要
+ */
+async function handleAiSummary() {
+  if (!detail.value?.taskId) {
+    return;
+  }
+  aiLoading.value = true;
+  try {
+    aiSummary.value = await WorkflowAPI.task.aiSummary(detail.value.taskId);
+  } catch {
+    ElMessage.error("AI 摘要生成失败，请确认已开启 AI 配置");
+  } finally {
+    aiLoading.value = false;
+  }
+}
+/**
+ * 切入驳回模式并加载可驳回的历史节点
+ */
 async function handleRejectClick() {
   rejectTargets.value = await WorkflowAPI.task.listRejectTargets(detail.value.taskId);
   if (rejectTargets.value.length === 0) {
@@ -253,15 +271,17 @@ async function handleRejectClick() {
   rejectTargetId.value = rejectTargets.value[0].activityId;
   rejectMode.value = true;
 }
-
-/** 退出驳回模式（保留已填意见） */
+/**
+ * 退出驳回模式（保留已填意见）
+ */
 function closeRejectMode() {
   rejectMode.value = false;
   rejectTargets.value = [];
   rejectTargetId.value = "";
 }
-
-/** 审批通过 */
+/**
+ * 审批通过
+ */
 async function handleComplete() {
   submitting.value = true;
   try {
@@ -273,8 +293,9 @@ async function handleComplete() {
     submitting.value = false;
   }
 }
-
-/** 驳回到指定历史节点 */
+/**
+ * 驳回到指定历史节点
+ */
 async function handleReject() {
   submitting.value = true;
   try {
@@ -289,7 +310,6 @@ async function handleReject() {
     submitting.value = false;
   }
 }
-
 onMounted(() => {
   handleQuery();
 });
@@ -300,6 +320,20 @@ onMounted(() => {
   &__tabs {
     margin-top: 16px;
     margin-bottom: 8px;
+  }
+
+  &__ai {
+    margin-top: 12px;
+
+    &-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
   }
 }
 </style>
