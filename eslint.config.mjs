@@ -153,9 +153,9 @@ export default [
     },
   },
 
-  // CURD 组件配置
+  // CRUD 组件配置
   {
-    files: ["**/components/CURD/**/*.{js,vue}"],
+    files: ["**/components/Crud/**/*.{js,vue}"],
     rules: {
       "no-unused-vars": "off",
     },

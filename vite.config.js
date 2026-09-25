@@ -43,17 +43,17 @@ export default defineConfig(({ mode }) => {
       open: true,
       proxy: {
         // 代理 /dev-api 的请求
-        [env.VITE_APP_BASE_API]: {
+        [env.VITE_API_BASE]: {
           changeOrigin: true,
-          // 代理目标地址：https://api.youlai.tech
-          target: env.VITE_APP_API_URL,
-          rewrite: (path) => path.replace(new RegExp("^" + env.VITE_APP_BASE_API), ""),
+          // 代理目标地址（.env 的 VITE_PROXY_TARGET）
+          target: env.VITE_PROXY_TARGET,
+          rewrite: (path) => path.replace(new RegExp("^" + env.VITE_API_BASE), ""),
         },
       },
     },
     plugins: [
       vue(),
-      ...(env.VITE_MOCK_DEV_SERVER === "true" ? [mockDevServerPlugin()] : []),
+      ...(env.VITE_MOCK_ENABLED === "true" ? [mockDevServerPlugin()] : []),
       UnoCSS(),
       // API 自动导入
       AutoImport({
