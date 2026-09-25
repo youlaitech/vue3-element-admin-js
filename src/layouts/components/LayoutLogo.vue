@@ -12,9 +12,6 @@
 </template>
 
 <script setup>
-import { appConfig } from "@/settings";
-import logo from "@/assets/images/logo.png";
-
 defineProps({
   collapse: {
     type: Boolean,

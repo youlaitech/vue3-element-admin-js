@@ -70,21 +70,9 @@
 import { useLayout } from "../composables/useLayout";
 import { useMixMenu } from "../composables/useMixMenu";
 import { useAppStore } from "@/stores";
-import { appConfig } from "@/settings";
-import { translateRouteTitle } from "@/lang/utils";
-import BaseLayout from "../BaseLayout.vue";
-import LayoutLogo from "../components/LayoutLogo.vue";
-import LayoutNavbar from "../components/LayoutNavbar.vue";
-import LayoutTagsView from "../components/LayoutTagsView.vue";
-import LayoutMain from "../components/LayoutMain.vue";
-import LayoutSidebar from "../components/LayoutSidebar.vue";
-import LayoutMenuIcon from "../components/LayoutMenuIcon.vue";
-
 const appStore = useAppStore();
 const { showTagsView, showLogo, isSidebarOpen, toggleSidebar } = useLayout();
-
 const secondaryExpanded = computed(() => appStore.secondarySidebar?.opened ?? true);
-
 const { topMenuItems, activeTopMenuPath, sideMenuRoutes, handleTopMenuSelect } = useMixMenu();
 </script>
 

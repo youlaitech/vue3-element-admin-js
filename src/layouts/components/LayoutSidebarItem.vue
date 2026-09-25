@@ -1,45 +1,35 @@
 <template>
   <div v-if="!item.meta || !item.meta.hidden">
-    <!--【叶子节点】显示叶子节点或唯一子节点且父节点未配置始终显示 -->
-    <template
-      v-if="
-        // 未配置始终显示，使用唯一子节点替换父节点显示为叶子节点
-        (hasOneShowingChild(item.children, item) &&
-          !item.meta?.alwaysShow &&
-          (!onlyOneChild.children || onlyOneChild.noShowingChildren)) ||
-        // 即使配置了始终显示，但无子节点，也显示为叶子节点
-        (item.meta?.alwaysShow && !item.children)
-      "
-    >
+    <template v-if="leafMenu">
       <AppLink
-        v-if="onlyOneChild.meta"
+        v-if="leafMenu.meta"
         :to="{
-          path: resolvePath(onlyOneChild.path),
-          query: onlyOneChild.meta.params,
+          path: resolvePath(leafMenu.path),
+          meta: leafMenu.meta,
+          query: leafMenu.meta.params,
         }"
       >
         <el-menu-item
-          :index="resolvePath(onlyOneChild.path)"
+          :index="resolvePath(leafMenu.path)"
           :class="{ 'submenu-title-noDropdown': !isNest }"
         >
-          <template v-if="onlyOneChild.meta">
-            <LayoutMenuIcon :icon="onlyOneChild.meta.icon || item.meta?.icon" />
+          <template v-if="leafMenu.meta">
+            <LayoutMenuIcon :icon="leafMenu.meta.icon || item.meta?.icon" />
             <span
-              v-if="onlyOneChild.meta.title"
+              v-if="leafMenu.meta.title"
               class="ml-1"
-              :title="translateRouteTitle(onlyOneChild.meta.title)"
+              :title="translateRouteTitle(leafMenu.meta.title)"
             >
-              {{ translateRouteTitle(onlyOneChild.meta.title) }}
+              {{ translateRouteTitle(leafMenu.meta.title) }}
             </span>
-            <span v-if="getBadge(onlyOneChild.meta)" class="menu-badge">
-              {{ getBadge(onlyOneChild.meta) }}
+            <span v-if="getBadge(leafMenu.meta)" class="menu-badge">
+              {{ getBadge(leafMenu.meta) }}
             </span>
           </template>
         </el-menu-item>
       </AppLink>
     </template>
 
-    <!--【非叶子节点】显示含多个子节点的父菜单，或始终显示的单子节点 -->
     <el-sub-menu v-else :index="resolvePath(item.path)" :data-path="item.path" teleported>
       <template #title>
         <template v-if="item.meta">
@@ -67,91 +57,51 @@
 <script setup>
 import path from "path-browserify";
 import { isExternal } from "@/utils";
-import { translateRouteTitle } from "@/lang/utils";
-import LayoutMenuIcon from "./LayoutMenuIcon.vue";
-
 defineOptions({
   name: "LayoutSidebarItem",
   inheritAttrs: false,
 });
-
 const props = defineProps({
-  /**
-   * 当前路由对象
-   */
+  /** 当前路由对象 */
   item: {
     type: Object,
     required: true,
   },
-
-  /**
-   * 父级完整路径
-   */
+  /** 父级完整路径 */
   basePath: {
     type: String,
     required: true,
   },
-
-  /**
-   * 是否为嵌套路由
-   */
+  /** 是否为嵌套路由 */
   isNest: {
     type: Boolean,
     default: false,
   },
 });
-
-// 可见的唯一子节点
-const onlyOneChild = ref();
-
-/**
- * 检查是否仅有一个可见子节点
- *
- * @param children 子路由数组
- * @param parent 父级路由
- * @returns 是否仅有一个可见子节点
- */
-function hasOneShowingChild(children = [], parent) {
-  // 过滤出可见子节点
-  const showingChildren = children.filter((route) => {
-    if (!route.meta?.hidden) {
-      onlyOneChild.value = route;
-      return true;
-    }
-    return false;
-  });
-
-  // 仅有一个节点
-  if (showingChildren.length === 1) {
-    return true;
+// 可见子路由
+const showingChildren = computed(() =>
+  (props.item.children ?? []).filter((route) => !route.meta?.hidden)
+);
+// 叶子菜单渲染目标
+// 无可见子路由时用自身占位（path 置空，点击落在父级路径）；壳层路由（自身无标题）只有唯一子路由时下沉到该子路由，避免多出一层无标题分组
+const leafMenu = computed(() => {
+  if (showingChildren.value.length === 0) {
+    return { ...props.item, path: "" };
   }
-
-  // 无子节点
-  if (showingChildren.length === 0) {
-    // 父节点设置为唯一显示节点，并标记为无子节点
-    onlyOneChild.value = { ...parent, path: "", noShowingChildren: true };
-    return true;
-  }
-  return false;
-}
-
+  return !props.item.meta?.title && showingChildren.value.length === 1
+    ? showingChildren.value[0]
+    : undefined;
+});
 /**
- * 获取完整路径，适配外部链接
- *
- * @param routePath 路由路径
- * @returns 绝对路径
+ * 解析菜单跳转路径
  */
 function resolvePath(routePath) {
   if (isExternal(routePath)) return routePath;
   if (isExternal(props.basePath)) return props.basePath;
-
-  // 拼接父路径和当前路径
   return path.resolve(props.basePath, routePath);
 }
-
 /**
- * 读取菜单角标（如 NEW/HOT）：来自 sys_menu.params 的 {"badge":"NEW"}，
- * 经 meta.params 透传至此；不配置则不渲染，纯数据驱动，无需菜单管理表单支持
+ * 读取菜单角标（如 NEW/HOT）：来自 sys_menu.params 的 {"badge":"NEW"}， 经 meta.params 透传至此；不配置则不渲染，纯数据驱动，无需菜单管理表单支持
  */
 function getBadge(meta) {
   const params = meta?.params;

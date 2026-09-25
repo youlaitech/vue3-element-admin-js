@@ -13,15 +13,10 @@
 
 <script setup>
 import { useAppStore } from "@/stores";
-import Hamburger from "@/components/Hamburger/index.vue";
-import Breadcrumb from "@/components/Breadcrumb/index.vue";
-
 const props = defineProps({
   toggleTarget: { type: String, default: "primary" },
 });
-
 const appStore = useAppStore();
-
 const sidebarState = computed(() =>
   props.toggleTarget === "secondary"
     ? {

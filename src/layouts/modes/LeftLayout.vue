@@ -30,13 +30,6 @@
 <script setup>
 import { useLayout } from "../composables/useLayout";
 import { useAppStore } from "@/stores";
-import BaseLayout from "../BaseLayout.vue";
-import LayoutLogo from "../components/LayoutLogo.vue";
-import LayoutNavbar from "../components/LayoutNavbar.vue";
-import LayoutTagsView from "../components/LayoutTagsView.vue";
-import LayoutMain from "../components/LayoutMain.vue";
-import LayoutSidebar from "../components/LayoutSidebar.vue";
-
 const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
 const appStore = useAppStore();
 </script>

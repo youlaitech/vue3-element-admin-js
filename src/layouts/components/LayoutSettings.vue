@@ -118,16 +118,16 @@
                   <div
                     v-if="item.value === LayoutMode.TOP || item.value === LayoutMode.MIX"
                     class="settings-layout-preview__header"
-                  />
+                  ></div>
                   <div
                     v-if="item.value !== LayoutMode.TOP"
                     class="settings-layout-preview__sidebar"
-                  />
+                  ></div>
                   <div
                     v-if="item.value === LayoutMode.DOUBLE"
                     class="settings-layout-preview__sub-sidebar"
-                  />
-                  <div class="settings-layout-preview__main" />
+                  ></div>
+                  <div class="settings-layout-preview__main"></div>
                 </div>
                 <div class="settings-layout-select__name">{{ item.label }}</div>
                 <div
@@ -196,9 +196,9 @@
                   `settings-tabs-style__preview--${item.value}`,
                 ]"
               >
-                <i />
-                <i />
-                <i />
+                <i></i>
+                <i></i>
+                <i></i>
               </span>
               <span class="settings-tabs-style__label">{{ item.label }}</span>
             </button>
@@ -215,7 +215,7 @@
           <el-select v-model="settingsStore.pageSwitchingAnimation" style="width: 150px">
             <el-option
               v-for="(item, key) in pageSwitchingAnimationOptions"
-              :key="key"
+              :key
               :label="t(`settings.${item.value}`)"
               :value="item.value"
             />
@@ -267,41 +267,27 @@
 </template>
 
 <script setup>
-import { ArrowRight, Check, DocumentCopy, RefreshLeft } from "@element-plus/icons-vue";
-import {
-  LayoutMode,
-  PageSwitchingAnimationOptions,
-  SidebarColor,
-  TagsViewStyle,
-  ThemeMode,
-} from "@/enums";
+import { DocumentCopy, RefreshLeft } from "@element-plus/icons-vue";
+import { LayoutMode, PageSwitchingAnimationOptions, SidebarColor, TagsViewStyle } from "@/enums";
 import { useSettingsStore } from "@/stores";
-import { themeColorNames, themePalettePresets } from "@/settings";
-
+import { themeColorNames } from "@/settings";
 const { t } = useI18n();
-
 const pageSwitchingAnimationOptions = PageSwitchingAnimationOptions;
-
 const copyIcon = markRaw(DocumentCopy);
 const resetIcon = markRaw(RefreshLeft);
-
 const copyLoading = ref(false);
 const resetLoading = ref(false);
-
 const layoutOptions = [
   { value: LayoutMode.LEFT, label: t("settings.leftLayout"), className: "left" },
   { value: LayoutMode.TOP, label: t("settings.topLayout"), className: "top" },
   { value: LayoutMode.MIX, label: t("settings.mixLayout"), className: "mix" },
   { value: LayoutMode.DOUBLE, label: t("settings.doubleLayout"), className: "double" },
 ];
-
 const tagsViewStyleOptions = [
   { value: TagsViewStyle.CARD, label: t("settings.tagsViewStyles.card") },
   { value: TagsViewStyle.LINE, label: t("settings.tagsViewStyles.line") },
 ];
-
 const colorOptions = themeColorNames.map((name) => ({ name }));
-
 const colorPresets = {
   primary: ["#165DFF", "#1677FF", "#409EFF", "#FF7D00", "#14C9C9", "#EB2F96", "#722ED1"],
   success: ["#00B42A", "#23C343", "#67C23A", "#22C55E"],
@@ -309,15 +295,12 @@ const colorPresets = {
   danger: ["#F53F3F", "#F76560", "#F56C6C", "#FF4D4F"],
   info: ["#86909C", "#909399", "#788896", "#6B7785"],
 };
-
 const paletteI18nKeys = {
   arco: "arco",
   "ant-design": "antDesign",
   "element-plus": "elementPlus",
 };
-
 const settingsStore = useSettingsStore();
-
 const isCustomColorsOpen = ref(false);
 const sidebarColor = ref(settingsStore.sidebarColorScheme);
 const themeMode = computed({
@@ -326,55 +309,71 @@ const themeMode = computed({
     settingsStore.theme = value;
   },
 });
-
 const drawerVisible = computed({
   get: () => settingsStore.settingsVisible,
   set: (value) => (settingsStore.settingsVisible = value),
 });
-
+/**
+ * 取调色板的颜色列表
+ */
 function getPaletteColors(colors) {
   return colorOptions.map((item) => colors[item.name]);
 }
-
+/**
+ * 取调色板名称
+ */
 function getPaletteName(palette) {
   const key = paletteI18nKeys[palette.id];
   return key ? t(`settings.themePalettes.${key}.name`) : palette.name;
 }
-
+/**
+ * 取调色板描述
+ */
 function getPaletteDescription(palette) {
   const key = paletteI18nKeys[palette.id];
   return key ? t(`settings.themePalettes.${key}.description`) : palette.description;
 }
-
+/**
+ * 取颜色项的名称
+ */
 function getColorLabel(name) {
   return t(`settings.themeColorNames.${name}`);
 }
-
 const activePaletteName = computed(() =>
   settingsStore.activeThemePalette
     ? getPaletteName(settingsStore.activeThemePalette)
     : t("settings.customPalette")
 );
-
+/**
+ * 展开或收起自定义颜色
+ */
 function toggleCustomColors() {
   isCustomColorsOpen.value = !isCustomColorsOpen.value;
 }
-
+/**
+ * 更新单个主题色
+ */
 function handleThemeColorChange(name, color) {
   if (!color) return;
   settingsStore.updateThemeColor(name, color);
 }
-
+/**
+ * 切换侧边栏配色
+ */
 function setSidebarColor(value) {
   if (value !== SidebarColor.CLASSIC_BLUE && value !== SidebarColor.MINIMAL_WHITE) return;
   settingsStore.sidebarColorScheme = value;
 }
-
+/**
+ * 切换导航布局
+ */
 function handleLayoutChange(layout) {
   if (settingsStore.layout === layout) return;
   settingsStore.layout = layout;
 }
-
+/**
+ * 复制当前 settings 默认配置片段
+ */
 async function copyCurrentSettings() {
   try {
     copyLoading.value = true;
@@ -390,7 +389,9 @@ async function copyCurrentSettings() {
     copyLoading.value = false;
   }
 }
-
+/**
+ * 恢复所有设置为默认值
+ */
 async function resetSettingsToDefault() {
   try {
     await ElMessageBox.confirm(t("settings.confirmReset"), t("settings.resetConfig"), {
@@ -408,7 +409,9 @@ async function resetSettingsToDefault() {
     resetLoading.value = false;
   }
 }
-
+/**
+ * 生成 src/settings.ts 中 defaults 的配置片段
+ */
 function buildDefaultsCode() {
   const themeColorsCode = JSON.stringify(settingsStore.themeColors, null, 4)
     .replace(/"([^"]+)":/g, "$1:")
@@ -429,7 +432,6 @@ function buildDefaultsCode() {
     showSettings: true,
     watermarkContent: "pkg.name",
   };
-
   return `export const defaults = {
   theme: ${settings.theme},
   themePalette: ${settings.themePalette},
@@ -445,9 +447,11 @@ function buildDefaultsCode() {
   pageSwitchingAnimation: ${settings.pageSwitchingAnimation},
   showSettings: ${settings.showSettings},
   watermarkContent: ${settings.watermarkContent},
-};`;
+} as const;`;
 }
-
+/**
+ * 关闭设置抽屉
+ */
 function handleCloseDrawer() {
   settingsStore.settingsVisible = false;
 }
@@ -546,6 +550,7 @@ function handleCloseDrawer() {
     min-height: 0;
     padding-top: 10px;
     padding-bottom: 12px;
+
     border-bottom: 1px solid var(--el-border-color-lighter);
   }
 }

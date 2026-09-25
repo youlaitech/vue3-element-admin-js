@@ -10,7 +10,6 @@
       </template>
     </router-view>
 
-    <!-- 返回顶部按钮 -->
     <el-backtop target=".layout-content">
       <div class="i-svg:backtop w-6 h-6" />
     </el-backtop>
@@ -21,19 +20,16 @@
 import { useSettingsStore, useTagsViewStore } from "@/stores";
 import variables from "@/styles/variables.module.scss";
 import Error404 from "@/views/error/404.vue";
-
 const { cachedViews } = toRefs(useTagsViewStore());
-
 const settingsStore = useSettingsStore();
-
-// 当前组件
 const wrapperMap = new Map();
+/**
+ * 解析当前路由要渲染的组件
+ */
 const currentComponent = (component, route) => {
   if (!component) return;
-
-  const { fullPath: componentName } = route; // 使用路由路径作为组件名称
+  const { fullPath: componentName } = route;
   let wrapper = wrapperMap.get(componentName);
-
   if (!wrapper) {
     wrapper = {
       name: componentName,
@@ -48,18 +44,14 @@ const currentComponent = (component, route) => {
     };
     wrapperMap.set(componentName, wrapper);
   }
-
-  // 添加组件数量限制
   if (wrapperMap.size > 100) {
     const firstKey = wrapperMap.keys().next().value;
     if (firstKey) {
       wrapperMap.delete(firstKey);
     }
   }
-
   return h(wrapper);
 };
-
 const appMainHeight = computed(() => {
   if (settingsStore.showTagsView) {
     return `calc(100vh - ${variables["navbar-height"]} - ${variables["tags-view-height"]})`;
@@ -67,8 +59,6 @@ const appMainHeight = computed(() => {
     return `calc(100vh - ${variables["navbar-height"]})`;
   }
 });
-
-// 页面切换动画名称
 const transitionName = computed(() => {
   return settingsStore.pageSwitchingAnimation ?? "";
 });

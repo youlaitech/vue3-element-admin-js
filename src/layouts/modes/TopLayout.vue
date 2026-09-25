@@ -26,23 +26,13 @@ import { useWindowSize } from "@vueuse/core";
 import { useLayout } from "../composables/useLayout";
 import { useAppStore } from "@/stores";
 import { usePermissionStore } from "@/stores";
-import BaseLayout from "../BaseLayout.vue";
-import LayoutLogo from "../components/LayoutLogo.vue";
-import LayoutSidebar from "../components/LayoutSidebar.vue";
-import LayoutToolbar from "../components/LayoutToolbar.vue";
-import LayoutTagsView from "../components/LayoutTagsView.vue";
-import LayoutMain from "../components/LayoutMain.vue";
-
 const { showTagsView, showLogo } = useLayout();
 const appStore = useAppStore();
 const { width } = useWindowSize();
-
 const permissionStore = usePermissionStore();
-
 const topMenuItems = computed(() => {
   return permissionStore.routes.filter((item) => !item.meta?.hidden);
 });
-
 const isLogoCollapsed = computed(() => width.value < 768);
 </script>
 

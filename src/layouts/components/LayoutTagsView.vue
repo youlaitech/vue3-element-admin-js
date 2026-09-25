@@ -135,34 +135,25 @@
 import { useRoute, useRouter } from "vue-router";
 import { resolve } from "path-browserify";
 import { TagsViewStyle } from "@/enums";
-import { translateRouteTitle } from "@/lang/utils";
 import { useAppStore, usePermissionStore, useSettingsStore, useTagsViewStore } from "@/stores";
 import { isExternal } from "@/utils";
-
 const router = useRouter();
 const route = useRoute();
-
 const appStore = useAppStore();
 const permissionStore = usePermissionStore();
 const settingsStore = useSettingsStore();
 const tagsViewStore = useTagsViewStore();
-
 const { visitedViews } = storeToRefs(tagsViewStore);
-
 const selectedTag = ref(null);
-
 const contextMenu = reactive({
   visible: false,
   x: 0,
   y: 0,
 });
-
 const scrollbarRef = ref();
-
 const currentTag = computed(() => {
   return visitedViews.value.find((tag) => tagsViewStore.isActive(tag)) || null;
 });
-
 const tabsStyleClass = computed(() => {
   switch (settingsStore.tagsViewStyle) {
     case TagsViewStyle.CARD:
@@ -172,33 +163,35 @@ const tabsStyleClass = computed(() => {
       return "layout-tabs--line";
   }
 });
-
+/**
+ * 判断是否是 Element Plus 图标
+ */
 const isEpIcon = (icon) => icon.startsWith("el-icon");
-
+/**
+ * 把 el-icon-xxx 转成图标组件名
+ */
 const toEpIconName = (icon) =>
   icon.replace("el-icon-", "").replace(/(^|-)\w/g, (s) => s.slice(-1).toUpperCase());
-
 const contextMenuStyle = computed(() => {
   const menuWidth = 160;
   const menuHeight = 220;
   const padding = 8;
-
   let x = contextMenu.x;
   let y = contextMenu.y;
-
   if (x + menuWidth > window.innerWidth) {
     x = window.innerWidth - menuWidth - padding;
   }
   if (y + menuHeight > window.innerHeight) {
     y = window.innerHeight - menuHeight - padding;
   }
-
   return {
     left: `${Math.max(padding, x)}px`,
     top: `${Math.max(padding, y)}px`,
   };
 });
-
+/**
+ * 处理页签操作命令：刷新、关闭等
+ */
 const handleActionCommand = (command) => {
   switch (command) {
     case "refresh":
@@ -221,7 +214,6 @@ const handleActionCommand = (command) => {
       break;
   }
 };
-
 const routePathMap = computed(() => {
   const map = new Map();
   visitedViews.value.forEach((tag) => {
@@ -229,7 +221,6 @@ const routePathMap = computed(() => {
   });
   return map;
 });
-
 const isFirstView = computed(() => {
   if (!selectedTag.value) return false;
   return (
@@ -237,19 +228,21 @@ const isFirstView = computed(() => {
     selectedTag.value.fullPath === visitedViews.value[1]?.fullPath
   );
 });
-
 const isLastView = computed(() => {
   if (!selectedTag.value) return false;
   return selectedTag.value.fullPath === visitedViews.value[visitedViews.value.length - 1]?.fullPath;
 });
-
+/**
+ * 从路由表里提取固定页签
+ */
 const extractAffixTags = (routes, basePath = "/") => {
   const affixTags = [];
-
+  /**
+   * 递归遍历路由表
+   */
   const traverse = (routeList, currentBasePath) => {
     routeList.forEach((route) => {
       const fullPath = resolve(currentBasePath, route.path);
-
       if (route.meta?.affix) {
         affixTags.push({
           path: fullPath,
@@ -261,31 +254,31 @@ const extractAffixTags = (routes, basePath = "/") => {
           keepAlive: route.meta.keepAlive || false,
         });
       }
-
       if (route.children?.length) {
         traverse(route.children, fullPath);
       }
     });
   };
-
   traverse(routes, basePath);
   return affixTags;
 };
-
+/**
+ * 初始化固定页签
+ */
 const initAffixTags = () => {
   const affixTags = extractAffixTags(permissionStore.routes);
-
   affixTags.forEach((tag) => {
     if (tag.name) {
       tagsViewStore.addVisitedView(tag);
     }
   });
 };
-
+/**
+ * 把当前路由加入页签列表
+ */
 const addCurrentTag = () => {
   if (!route.meta?.title) return;
   if (isExternal(route.path) || isExternal(route.fullPath)) return;
-
   tagsViewStore.addView({
     name: route.name,
     title: route.meta.title,
@@ -297,23 +290,25 @@ const addCurrentTag = () => {
     query: route.query,
   });
 };
-
+/**
+ * 打开页签，外链走新窗口
+ */
 const openTag = (tag) => {
   if (isExternal(tag.fullPath)) {
     window.open(tag.fullPath, "_blank", "noopener,noreferrer");
     return;
   }
-
   router.push({
     path: tag.fullPath,
     query: tag.query,
   });
 };
-
+/**
+ * 同步当前页签的标题与图标
+ */
 const updateCurrentTag = () => {
   nextTick(() => {
     const currentTag = routePathMap.value.get(route.path);
-
     if (currentTag && currentTag.fullPath !== route.fullPath) {
       tagsViewStore.updateVisitedView({
         name: route.name,
@@ -328,62 +323,70 @@ const updateCurrentTag = () => {
     }
   });
 };
-
+/**
+ * 中键关闭页签
+ */
 const handleMiddleClick = (tag) => {
   if (!tag.affix) {
     closeSelectedTag(tag);
   }
 };
-
+/**
+ * 打开页签右键菜单
+ */
 const openContextMenu = (tag, event) => {
   contextMenu.x = event.clientX;
   contextMenu.y = event.clientY;
   contextMenu.visible = true;
   selectedTag.value = tag;
 };
-
+/**
+ * 关闭页签右键菜单
+ */
 const closeContextMenu = () => {
   contextMenu.visible = false;
 };
-
+/**
+ * 滚动页签条时顺带关掉右键菜单
+ */
 const handleScroll = (event) => {
   closeContextMenu();
-
   const scrollWrapper = scrollbarRef.value?.wrapRef;
   if (!scrollWrapper) return;
-
   const hasHorizontalScroll = scrollWrapper.scrollWidth > scrollWrapper.clientWidth;
   if (!hasHorizontalScroll) return;
-
-  const deltaY = event.deltaY || -(event.wheelDelta ?? 0);
+  const legacyEvent = event;
+  const deltaY = event.deltaY || -(legacyEvent.wheelDelta ?? 0);
   const newScrollLeft = scrollWrapper.scrollLeft + deltaY;
-
   scrollbarRef.value.setScrollLeft(newScrollLeft);
 };
-
+/**
+ * 刷新选中页签：清掉缓存让页面重建
+ */
 const refreshSelectedTag = (tag) => {
   if (!tag) return;
-
   tagsViewStore.delCachedView(tag);
   nextTick(() => {
     router.replace("/redirect" + tag.fullPath);
   });
 };
-
+/**
+ * 关闭选中页签
+ */
 const closeSelectedTag = (tag) => {
   if (!tag) return;
-
   tagsViewStore.delView(tag).then((result) => {
     if (tagsViewStore.isActive(tag)) {
       tagsViewStore.toLastView(result.visitedViews, tag);
     }
   });
 };
-
+/**
+ * 关闭指定方向的标签
+ */
 function closeDirectionalTags(source, batchFn) {
   const tag = source.value;
   if (!tag) return;
-
   batchFn(tag).then(({ visitedViews }) => {
     const stillVisible = visitedViews.some((v) => v.path === route.path);
     if (!stillVisible) {
@@ -391,19 +394,34 @@ function closeDirectionalTags(source, batchFn) {
     }
   });
 }
-
+/**
+ * 关闭当前激活标签之外的其它标签
+ */
 const closeOtherTagsForActive = () => {
   if (!currentTag.value) return;
   tagsViewStore.delOtherViews(currentTag.value).then(() => {
     updateCurrentTag();
   });
 };
-
+/**
+ * 关闭当前页签左侧的页签
+ */
 const closeLeftTagsForActive = () => closeDirectionalTags(currentTag, tagsViewStore.delLeftViews);
+/**
+ * 关闭当前页签右侧的页签
+ */
 const closeRightTagsForActive = () => closeDirectionalTags(currentTag, tagsViewStore.delRightViews);
+/**
+ * 关闭右键选中页签左侧的页签
+ */
 const closeLeftTags = () => closeDirectionalTags(selectedTag, tagsViewStore.delLeftViews);
+/**
+ * 关闭右键选中页签右侧的页签
+ */
 const closeRightTags = () => closeDirectionalTags(selectedTag, tagsViewStore.delRightViews);
-
+/**
+ * 关闭除选中外的其他页签
+ */
 const closeOtherTags = () => {
   if (!selectedTag.value) return;
   router.push(selectedTag.value);
@@ -411,18 +429,24 @@ const closeOtherTags = () => {
     updateCurrentTag();
   });
 };
-
+/**
+ * 关闭全部页签
+ */
 const closeAllTags = (tag) => {
   tagsViewStore.delAllViews().then((result) => {
     tagsViewStore.toLastView(result.visitedViews, tag || undefined);
   });
 };
-
+/**
+ * 右键菜单的显示与点击外部自动关闭
+ */
 const useContextMenuManager = () => {
+  /**
+   * 点击空白处关闭右键菜单
+   */
   const handleOutsideClick = () => {
     closeContextMenu();
   };
-
   watchEffect(() => {
     if (contextMenu.visible) {
       document.addEventListener("click", handleOutsideClick);
@@ -430,12 +454,10 @@ const useContextMenuManager = () => {
       document.removeEventListener("click", handleOutsideClick);
     }
   });
-
   onBeforeUnmount(() => {
     document.removeEventListener("click", handleOutsideClick);
   });
 };
-
 watch(
   route,
   () => {
@@ -444,11 +466,9 @@ watch(
   },
   { immediate: true }
 );
-
 onMounted(() => {
   initAffixTags();
 });
-
 useContextMenuManager();
 </script>
 

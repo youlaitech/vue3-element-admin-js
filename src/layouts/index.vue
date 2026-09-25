@@ -14,17 +14,12 @@ import LeftLayout from "./modes/LeftLayout.vue";
 import TopLayout from "./modes/TopLayout.vue";
 import MixLayout from "./modes/MixLayout.vue";
 import DoubleLayout from "./modes/DoubleLayout.vue";
-import Settings from "./components/LayoutSettings.vue";
-
 const route = useRoute();
 const { currentLayout, showSettings } = useLayout();
-
 useLayoutDevice();
-
 const currentLayoutComponent = computed(() => {
   const override = route.meta?.layout;
   const layout = override ?? currentLayout.value;
-
   switch (layout) {
     case LayoutMode.TOP:
       return TopLayout;
