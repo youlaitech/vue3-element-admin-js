@@ -4,14 +4,11 @@
  */
 export function buildFileTree(data) {
   const root = { label: "前后端代码", key: "root", children: [] };
-
   data.forEach((item) => {
     const normalizedPath = item.path.replace(/\\/g, "/");
     const parts = normalizedPath.split("/").filter(Boolean);
-
     let currentNode = root;
     let currentKey = root.key || "root";
-
     parts.forEach((part) => {
       let node = currentNode.children?.find((child) => child.label === part);
       if (!node) {
@@ -23,7 +20,6 @@ export function buildFileTree(data) {
       }
       currentNode = node;
     });
-
     currentNode.children?.push({
       label: item.fileName,
       key: `${item.scope || ""}:${normalizedPath}/${item.fileName}`,
@@ -32,11 +28,11 @@ export function buildFileTree(data) {
       language: item.language,
     });
   });
-
   return root;
 }
-
-/** 递归查找第一个叶子节点 */
+/**
+ * 递归查找第一个叶子节点
+ */
 export function findFirstLeaf(node) {
   if (!node.children || node.children.length === 0) {
     return node;
@@ -47,8 +43,9 @@ export function findFirstLeaf(node) {
   }
   return null;
 }
-
-/** 根据 key 查找叶子节点 */
+/**
+ * 根据 key 查找叶子节点
+ */
 export function findLeafByKey(nodes, key) {
   for (const node of nodes) {
     if (!node.children || node.children.length === 0) {
@@ -60,8 +57,9 @@ export function findLeafByKey(nodes, key) {
   }
   return null;
 }
-
-/** 根据文件扩展名获取图标名 */
+/**
+ * 根据文件扩展名获取图标名
+ */
 export function getFileIcon(node) {
   const ext = (node.language || node.label.split(".").pop() || "").toLowerCase();
   const iconMap = {
@@ -75,19 +73,23 @@ export function getFileIcon(node) {
   if (["cs", "go", "py", "php", "js"].includes(ext)) return "code";
   return "file";
 }
-
 /**
  * 过滤树节点（基于 scope 和 language）
  * 返回过滤后的新树
  */
 export function filterTree(nodes, scope, types) {
+  /**
+   * 判断节点是否命中当前筛选
+   */
   const match = (node) => {
     if (scope !== "all" && node.scope !== scope) return false;
     if (!types.length) return true;
     const language = node.language || node.label.split(".").pop() || "";
     return types.includes(language);
   };
-
+  /**
+   * 按筛选条件克隆树节点
+   */
   const cloneFilter = (node) => {
     if (!node.children || node.children.length === 0) {
       return match(node) ? { ...node } : null;
@@ -96,6 +98,5 @@ export function filterTree(nodes, scope, types) {
     if (!children.length) return null;
     return { label: node.label, key: node.key, children };
   };
-
   return nodes.map((n) => cloneFilter(n)).filter(Boolean);
 }

@@ -143,10 +143,7 @@
 
 <script setup>
 import "codemirror/mode/javascript/javascript.js";
-import Codemirror from "codemirror-editor-vue3";
 import GeneratorAPI from "@/api/codegen";
-import { getFileIcon } from "../utils/tree-builder";
-
 const props = defineProps({
   genConfigFormData: { type: Object, required: true },
   previewScope: { type: String, required: true },
@@ -157,37 +154,39 @@ const props = defineProps({
   currentFileKey: { type: String, default: "" },
   tableName: { type: String, default: "" },
 });
-
 const emit = defineEmits(["update:previewScope", "update:previewTypes", "file-click", "copy"]);
-
 const cmRef = ref();
 const cmOptions = { mode: "text/javascript" };
 const fileTreeRef = ref();
 const fileTreeWidth = ref(280);
-
 const currentFilePath = computed(() => {
   const key = props.currentFileKey;
   if (!key) return "";
   const idx = key.indexOf(":");
   return idx > -1 ? key.slice(idx + 1) : key;
 });
-
+/**
+ * 切换预览范围
+ */
 function onScopeChange(val) {
   emit("update:previewScope", val);
 }
-
+/**
+ * 切换预览文件类型
+ */
 function onTypesChange(val) {
   emit("update:previewTypes", val);
 }
-
 const currentLanguage = computed(() => {
   if (!props.currentFileKey) return "";
   const parts = currentFilePath.value.split(".");
   return parts.length > 1 ? parts.pop() : "";
 });
-
 const fileCount = computed(() => {
   let count = 0;
+  /**
+   * 递归统计文件数量
+   */
   function walk(nodes) {
     nodes.forEach((n) => {
       if (!n.children || !n.children.length) count++;
@@ -197,25 +196,37 @@ const fileCount = computed(() => {
   walk(props.filteredTreeData);
   return count;
 });
-
+/**
+ * 下载生成的代码
+ */
 function handleDownload() {
   const pageType = props.genConfigFormData.pageType || "classic";
-  GeneratorAPI.download(props.tableName, pageType, "js");
+  GeneratorAPI.download(props.tableName, pageType, "ts");
 }
-
+/**
+ * 刷新代码编辑器布局
+ */
 function refreshEditor() {
   const inst = cmRef.value;
   inst?.cminstance?.refresh?.();
   inst?.cm?.refresh?.();
   inst?.editor?.refresh?.();
 }
-
+/**
+ * 开始拖动文件树宽度
+ */
 function startResize(e) {
   const startX = e.clientX;
   const startWidth = fileTreeWidth.value;
+  /**
+   * 拖动中更新文件树宽度
+   */
   const onMove = (ev) => {
     fileTreeWidth.value = Math.max(200, Math.min(500, startWidth + ev.clientX - startX));
   };
+  /**
+   * 结束拖动并解绑监听
+   */
   const onUp = () => {
     document.removeEventListener("mousemove", onMove);
     document.removeEventListener("mouseup", onUp);
@@ -223,9 +234,7 @@ function startResize(e) {
   document.addEventListener("mousemove", onMove);
   document.addEventListener("mouseup", onUp);
 }
-
 defineExpose({ refreshEditor, fileTreeRef });
-
 onBeforeUnmount(() => {
   cmRef.value?.destroy();
 });
@@ -366,6 +375,7 @@ onBeforeUnmount(() => {
           background: var(--el-color-primary-light-9);
         }
 
+        // 文件夹图标颜色
         .el-tree-node__expand-icon {
           color: var(--el-color-warning);
         }
@@ -429,6 +439,7 @@ onBeforeUnmount(() => {
           transform: scale(1.15);
         }
 
+        // 当前选中的行标签样式调整
         &.is-active .scope-tag {
           color: #fff;
           background: var(--el-color-primary);

@@ -76,21 +76,15 @@
 
 <script setup>
 import { onMounted } from "vue";
-import { MagicStick, Refresh, RefreshLeft, Search } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-
 import GeneratorAPI from "@/api/codegen";
 import { usePageTable } from "@/composables";
-
-/** 表已配置代码生成（1:是;0:否）。 */
+// 表已配置代码生成（1:是;0:否）
 const TABLE_CONFIGURED = 1;
-
 const emit = defineEmits(["generate", "reset-config"]);
-
 const queryFormRef = ref();
-
 // ── 分页表格状态 ────────────────────────────────────────────
-/** 分页表格数据管理 */
+// 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
@@ -99,9 +93,8 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: GeneratorAPI.getTablePage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
-
 /**
- * 重置指定表的代码生成配置。
+ * 重置指定表的代码生成配置
  *
  * @param tableName 表名
  */
@@ -111,15 +104,12 @@ async function handleResetConfig(tableName) {
   } catch {
     return;
   }
-
   await GeneratorAPI.resetGenConfig(tableName);
   ElMessage.success("重置成功");
   handleQuery();
 }
-
 onMounted(() => {
   handleQuery();
 });
-
 defineExpose({ handleQuery, handleResetConfig });
 </script>

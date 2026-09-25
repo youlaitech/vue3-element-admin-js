@@ -1,6 +1,7 @@
 <template>
   <el-dialog v-model="modelValue" title="写入本地项目" width="640px" class="write-local-dialog">
     <div class="dialog-body">
+      <!-- 浏览器不支持提示 -->
       <el-alert
         v-if="!supportsFSAccess"
         title="当前浏览器不支持本地文件写入"
@@ -11,6 +12,7 @@
         class="mb-4"
       />
 
+      <!-- 目录选择 -->
       <div class="dir-section">
         <div class="section-title">
           <el-icon><Folder /></el-icon>
@@ -58,6 +60,7 @@
         </div>
       </div>
 
+      <!-- 写入选项 -->
       <div class="option-section">
         <div class="section-title">
           <el-icon><SetUp /></el-icon>
@@ -100,6 +103,7 @@
         </div>
       </div>
 
+      <!-- 进度条 -->
       <div v-if="writeProgress.total > 0" class="progress-section">
         <div class="progress-header">
           <span class="progress-title">写入进度</span>
@@ -128,7 +132,6 @@
 
 <script setup>
 const modelValue = defineModel({ type: Boolean, required: true });
-
 const props = defineProps({
   supportsFSAccess: { type: Boolean, default: false },
   frontendDirPath: { type: String, default: "" },
@@ -139,7 +142,6 @@ const props = defineProps({
   writeRunning: { type: Boolean, default: false },
   canWriteToLocal: { type: Boolean, default: false },
 });
-
 const emit = defineEmits([
   "update:writeScope",
   "update:overwriteMode",
@@ -147,7 +149,7 @@ const emit = defineEmits([
   "pickBackendDir",
   "confirmWrite",
 ]);
-
+// 根据写入范围检查目录是否都选好了
 const dirReady = computed(() => {
   if (props.writeScope === "all") {
     return !!props.frontendDirPath && !!props.backendDirPath;

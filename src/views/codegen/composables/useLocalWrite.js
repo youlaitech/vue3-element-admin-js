@@ -1,8 +1,9 @@
 import { ElLoading } from "element-plus";
-
+/**
+ * 把生成的代码写入本地目录
+ */
 export function useLocalWrite(genConfigFormData) {
   const supportsFSAccess = typeof window.showDirectoryPicker === "function";
-
   const writeDialog = reactive({ visible: false });
   const frontendDirHandle = ref(null);
   const backendDirHandle = ref(null);
@@ -13,23 +14,29 @@ export function useLocalWrite(genConfigFormData) {
   const writeProgress = reactive({ total: 0, done: 0, percent: 0, current: "" });
   const writeRunning = ref(false);
   const lastPreviewFiles = ref([]);
-
   const needFrontend = computed(() =>
     lastPreviewFiles.value.some((f) => resolveRootForItem(f) === "frontend")
   );
   const needBackend = computed(() =>
     lastPreviewFiles.value.some((f) => resolveRootForItem(f) === "backend")
   );
+  // 只要有预览文件就可以点写入按钮，目录在弹窗里选
   const canWriteToLocal = computed(() => lastPreviewFiles.value.length > 0);
-
+  /**
+   * 打开写入本地弹窗
+   */
   function openWriteDialog() {
     writeDialog.visible = true;
   }
-
+  /**
+   * 暂存预览文件列表
+   */
   function setPreviewFiles(files) {
     lastPreviewFiles.value = files;
   }
-
+  /**
+   * 选择前端项目目录
+   */
   async function pickFrontendDir() {
     try {
       frontendDirHandle.value = await window.showDirectoryPicker();
@@ -39,7 +46,9 @@ export function useLocalWrite(genConfigFormData) {
       // 用户取消
     }
   }
-
+  /**
+   * 选择后端项目目录
+   */
   async function pickBackendDir() {
     try {
       backendDirHandle.value = await window.showDirectoryPicker();
@@ -49,16 +58,24 @@ export function useLocalWrite(genConfigFormData) {
       // 用户取消
     }
   }
-
+  /**
+   * 确认写入本地
+   */
   async function confirmWrite() {
     await writeGeneratedCode();
     writeDialog.visible = false;
   }
+  // ---- 内部工具函数 ----
 
+  /**
+   * 判断生成项写入前端还是后端根目录
+   */
   function resolveRootForItem(item) {
     return item.scope === "backend" ? "backend" : "frontend";
   }
-
+  /**
+   * 去掉路径里的项目根目录前缀
+   */
   function stripProjectRoot(p) {
     const normalized = p.replace(/\\/g, "/");
     const frontApp = genConfigFormData.value.frontendAppName;
@@ -72,7 +89,9 @@ export function useLocalWrite(genConfigFormData) {
     if (normalized.startsWith("src/")) return normalized;
     return normalized;
   }
-
+  /**
+   * 逐级创建/获取目录句柄
+   */
   async function ensureDir(root, path, create = true) {
     let current = root;
     for (const segment of path) {
@@ -80,23 +99,29 @@ export function useLocalWrite(genConfigFormData) {
     }
     return current;
   }
-
+  /**
+   * 把单个文件写入目录
+   */
   async function writeFileToDir(dirHandle, filePath, content) {
     const normalized = filePath.replace(/\\/g, "/");
     const parts = normalized.split("/").filter(Boolean);
     const fileName = parts.pop();
+    if (!fileName) return;
     const targetDir = await ensureDir(dirHandle, parts, true);
     const fileHandle = await targetDir.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
     await writable.write(content ?? "");
     await writable.close();
   }
-
+  /**
+   * 判断目录下的文件是否存在
+   */
   async function pathExists(dirHandle, filePath) {
     try {
       const normalized = filePath.replace(/\\/g, "/");
       const parts = normalized.split("/").filter(Boolean);
       const fileName = parts.pop();
+      if (!fileName) return false;
       const targetDir = await ensureDir(dirHandle, parts, false);
       await targetDir.getFileHandle(fileName, { create: false });
       return true;
@@ -104,12 +129,15 @@ export function useLocalWrite(genConfigFormData) {
       return false;
     }
   }
-
+  /**
+   * 判断文件内容是否与本地一致
+   */
   async function isSameFile(dirHandle, filePath, content) {
     try {
       const normalized = filePath.replace(/\\/g, "/");
       const parts = normalized.split("/").filter(Boolean);
       const fileName = parts.pop();
+      if (!fileName) return false;
       const targetDir = await ensureDir(dirHandle, parts, false);
       const fileHandle = await targetDir.getFileHandle(fileName, { create: false });
       const file = await fileHandle.getFile();
@@ -119,7 +147,9 @@ export function useLocalWrite(genConfigFormData) {
       return false;
     }
   }
-
+  /**
+   * 按选择的目录写入全部生成文件
+   */
   async function writeGeneratedCode() {
     if (!supportsFSAccess) {
       ElMessage.warning("当前浏览器不支持本地写入，请选择下载ZIP");
@@ -136,13 +166,11 @@ export function useLocalWrite(genConfigFormData) {
       ElMessage.warning("请先生成预览");
       return;
     }
-
     const loadingSvc = ElLoading.service({ lock: true, text: "正在写入代码..." });
     writeRunning.value = true;
     let frontCount = 0;
     let backCount = 0;
     const failed = [];
-
     const files = lastPreviewFiles.value.filter(
       (f) => writeScope.value === "all" || resolveRootForItem(f) === writeScope.value
     );
@@ -150,46 +178,47 @@ export function useLocalWrite(genConfigFormData) {
     writeProgress.done = 0;
     writeProgress.percent = 0;
     writeProgress.current = "";
-
     const concurrency = 4;
     const queue = files.slice();
-
+    /**
+     * 并发写入队列的工作函数
+     */
     async function worker() {
       while (queue.length) {
         const item = queue.shift();
+        if (!item) break;
         try {
-          const root = resolveRootForItem(item);
-          const relativePath = stripProjectRoot(`${item.path}/${item.fileName}`);
-          writeProgress.current = relativePath;
-
-          const targetRoot = root === "frontend" ? frontendDirHandle.value : backendDirHandle.value;
-
-          if (overwriteMode.value === "ifChanged") {
-            const same = await isSameFile(targetRoot, relativePath, item.content || "");
-            if (same) return;
-          }
-          if (overwriteMode.value === "skip") {
-            const exists = await pathExists(targetRoot, relativePath);
-            if (exists) return;
-          }
-
-          await writeFileToDir(targetRoot, relativePath, item.content || "");
-          if (root === "frontend") frontCount++;
-          else backCount++;
-        } catch (err) {
-          console.error("写入失败:", item.path, err);
-          failed.push(item.path);
+          await (async () => {
+            const root = resolveRootForItem(item);
+            const relativePath = stripProjectRoot(`${item.path}/${item.fileName}`);
+            writeProgress.current = relativePath;
+            const targetRoot =
+              root === "frontend" ? frontendDirHandle.value : backendDirHandle.value;
+            if (!targetRoot) return;
+            if (overwriteMode.value === "ifChanged") {
+              const same = await isSameFile(targetRoot, relativePath, item.content || "");
+              if (same) return;
+            }
+            if (overwriteMode.value === "skip") {
+              const exists = await pathExists(targetRoot, relativePath);
+              if (exists) return;
+            }
+            await writeFileToDir(targetRoot, relativePath, item.content || "");
+            if (root === "frontend") frontCount++;
+            else backCount++;
+          })().catch((err) => {
+            console.error("写入失败:", item.path, err);
+            failed.push(item.path);
+          });
         } finally {
           writeProgress.done++;
           writeProgress.percent = Math.round((writeProgress.done / writeProgress.total) * 100);
         }
       }
     }
-
     await Promise.all(Array.from({ length: concurrency }, () => worker()));
     loadingSvc.close();
     writeRunning.value = false;
-
     if (failed.length) {
       ElMessage.warning(
         `部分文件写入失败 ${failed.length} 个，成功 前端 ${frontCount} 个，后端 ${backCount} 个`
@@ -198,7 +227,6 @@ export function useLocalWrite(genConfigFormData) {
       ElMessage.success(`写入完成：前端 ${frontCount} 个文件，后端 ${backCount} 个文件`);
     }
   }
-
   return {
     supportsFSAccess,
     writeDialog,

@@ -6,34 +6,34 @@ import {
   findLeafByKey,
   getFileIcon,
 } from "../utils/tree-builder";
-
+/**
+ * 代码预览：拉取生成结果并构造文件树
+ */
 export function useCodePreview(genConfigFormData) {
   const treeData = ref([]);
   const previewScope = ref("all");
   const previewTypeOptions = ref([]);
   const previewTypes = ref([]);
-
   const filteredTreeData = computed(() => {
     if (!treeData.value.length) return [];
     return filterTree(treeData.value, previewScope.value, previewTypes.value);
   });
-
   const code = ref("");
   const currentFileKey = ref("");
   const fileTreeRef = ref();
-
   const { copy, copied } = useClipboard();
-
   watch(copied, () => {
     if (copied.value) ElMessage.success("复制成功");
   });
-
+  /**
+   * 获取预览数据并构建文件树
+   */
   async function handlePreview(tableName) {
     treeData.value = [];
     const pageType = genConfigFormData.value.pageType || "classic";
-    const data = await GeneratorAPI.getPreviewData(tableName, pageType, "js");
+    const data = await GeneratorAPI.getPreviewData(tableName, pageType, "ts");
     const previewList = data || [];
-
+    // 提取语言类型选项
     const typeOptions = Array.from(
       new Set(
         previewList
@@ -43,10 +43,14 @@ export function useCodePreview(genConfigFormData) {
     );
     previewTypeOptions.value = typeOptions;
     previewTypes.value = [...typeOptions];
-
+    /**
+     * 构建树
+     */
     const tree = buildFileTree(previewList);
     treeData.value = tree?.children ? [...tree.children] : [];
-
+    /**
+     * 选中第一个叶子节点
+     */
     const firstLeaf = findFirstLeaf(tree);
     if (firstLeaf) {
       code.value = firstLeaf.content || "";
@@ -54,21 +58,24 @@ export function useCodePreview(genConfigFormData) {
       await nextTick();
       fileTreeRef.value?.setCurrentKey?.(currentFileKey.value);
     }
-
     return previewList;
   }
-
+  /**
+   * 点击文件树节点
+   */
   function handleFileTreeNodeClick(data) {
     if (!data.children || data.children.length === 0) {
       code.value = data.content || "";
       currentFileKey.value = data.key || "";
     }
   }
-
+  /**
+   * 复制代码
+   */
   function handleCopyCode() {
     if (code.value) copy(code.value);
   }
-
+  // 过滤条件变了之后，如果当前选中的文件还在就继续高亮，否则选第一个
   watch(
     () => filteredTreeData.value,
     async (nodes) => {
@@ -95,7 +102,6 @@ export function useCodePreview(genConfigFormData) {
     },
     { immediate: true }
   );
-
   return {
     treeData,
     filteredTreeData,

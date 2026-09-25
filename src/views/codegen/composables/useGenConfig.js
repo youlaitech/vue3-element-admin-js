@@ -1,14 +1,15 @@
 import GeneratorAPI from "@/api/codegen";
 import DictAPI from "@/api/system/dict";
 import MenuAPI from "@/api/system/menu";
-import { QueryTypeEnum } from "@/enums/codegen";
-
+import { FormTypeEnum, QueryTypeEnum } from "@/enums/codegen";
+/**
+ * 代码生成配置表单
+ */
 export function useGenConfig() {
   const genConfigFormData = ref({
     fieldConfigs: [],
     pageType: "classic",
   });
-
   const genConfigFormRules = {
     tableName: [{ required: true, message: "请输入表名", trigger: "blur" }],
     businessName: [{ required: true, message: "请输入业务名", trigger: "blur" }],
@@ -16,10 +17,9 @@ export function useGenConfig() {
     moduleName: [{ required: true, message: "请输入模块名", trigger: "blur" }],
     entityName: [{ required: true, message: "请输入实体名", trigger: "blur" }],
   };
-
   const menuOptions = ref([]);
   const dictOptions = ref([]);
-
+  // 自动根据表前缀推导实体名
   watch(
     () => genConfigFormData.value.removeTablePrefix,
     (prefix) => {
@@ -35,14 +35,16 @@ export function useGenConfig() {
       genConfigFormData.value.entityName = camel;
     }
   );
-
+  // 日期类型字段默认用范围查询，比较符合直觉
   watch(
     () => genConfigFormData.value.fieldConfigs,
     (newVal) => {
       if (!newVal) return;
       newVal.forEach((fieldConfig) => {
         if (
-          fieldConfig.fieldType?.includes("Date") &&
+          (fieldConfig.fieldType?.includes("Date") ||
+            fieldConfig.formType === FormTypeEnum.DATE.value ||
+            fieldConfig.formType === FormTypeEnum.DATE_TIME.value) &&
           fieldConfig.isShowInQuery === 1 &&
           fieldConfig.queryType == null
         ) {
@@ -52,23 +54,38 @@ export function useGenConfig() {
     },
     { deep: true, immediate: true }
   );
-
+  /**
+   * 未保存过的表页面类型为空，统一补成普通表单
+   */
+  function applyDefaults(config) {
+    if (!config.pageType) {
+      config.pageType = "classic";
+    }
+    return config;
+  }
+  /**
+   * 加载配置：并行获取菜单、字典、生成配置
+   */
   async function loadConfig(tableName) {
     const [menuList, dictList, config] = await Promise.all([
-      MenuAPI.getOptions(true),
+      MenuAPI.getParentOptions(),
       DictAPI.getList(),
       GeneratorAPI.getGenConfig(tableName),
     ]);
     menuOptions.value = menuList;
     dictOptions.value = dictList;
-    genConfigFormData.value = config;
+    genConfigFormData.value = applyDefaults(config);
     return config;
   }
-
+  /**
+   * 保存配置
+   */
   async function saveConfig(tableName) {
     await GeneratorAPI.saveGenConfig(tableName, genConfigFormData.value);
   }
-
+  /**
+   * 校验基础配置必填项
+   */
   function validateBasic() {
     const { tableName, packageName, businessName, moduleName, entityName } =
       genConfigFormData.value;
@@ -78,14 +95,15 @@ export function useGenConfig() {
     }
     return true;
   }
-
+  /**
+   * 批量设置字段属性
+   */
   function bulkSet(key, value) {
     const list = genConfigFormData.value?.fieldConfigs || [];
     list.forEach((row) => {
       row[key] = value;
     });
   }
-
   return {
     genConfigFormData,
     genConfigFormRules,
@@ -95,5 +113,6 @@ export function useGenConfig() {
     saveConfig,
     validateBasic,
     bulkSet,
+    applyDefaults,
   };
 }
