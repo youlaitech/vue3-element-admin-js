@@ -1,20 +1,24 @@
 <template>
   <div class="page-container h-full flex flex-1 flex-col">
     <div class="flex-x-between mb-10">
-      <el-link
-        href="https://gitee.com/youlaiorg/vue3-element-admin/blob/master/src/views/demo/curd/index.vue"
-        type="primary"
+      <el-button
+        tag="a"
+        href="https://gitee.com/youlaiorg/vue3-element-admin/blob/master/src/views/demo/table/crud/index.vue"
         target="_blank"
+        link
+        type="info"
+        size="small"
       >
-        示例源码 请点击>>>
-      </el-link>
+        <el-icon class="mr-1"><Link /></el-icon>
+        示例源码
+      </el-button>
       <el-button type="primary" plain round size="small" @click="isA = !isA">切换示例</el-button>
     </div>
 
     <!-- 列表 -->
     <template v-if="isA">
       <!-- 搜索 -->
-      <page-search
+      <crud-search
         ref="searchRef"
         :search-config="searchConfig"
         @query-click="handleQueryClick"
@@ -22,7 +26,7 @@
       />
 
       <!-- 列表 -->
-      <page-content
+      <crud-table
         ref="contentRef"
         :content-config="contentConfig"
         @add-click="handleAddClick"
@@ -33,8 +37,8 @@
         @filter-change="handleFilterChange"
       >
         <template #status="scope">
-          <el-tag :type="scope.row[scope.prop] == 1 ? 'success' : 'info'">
-            {{ scope.row[scope.prop] == 1 ? "启用" : "禁用" }}
+          <el-tag :type="scope.row[scope.prop] === 1 ? 'success' : 'info'">
+            {{ scope.row[scope.prop] === 1 ? "启用" : "禁用" }}
           </el-tag>
         </template>
         <template #gender="scope">
@@ -48,10 +52,10 @@
             :style="{ marginLeft: '2px' }"
           />
         </template>
-      </page-content>
+      </crud-table>
 
       <!-- 新增 -->
-      <page-modal
+      <crud-modal
         ref="addModalRef"
         :modal-config="addModalConfig"
         @submit-click="handleSubmitClick"
@@ -62,17 +66,17 @@
         <template #openModal>
           <el-button type="primary" @click="openSecondModal">打开二级弹窗</el-button>
         </template>
-      </page-modal>
+      </crud-modal>
 
       <!-- 二级弹窗 -->
-      <page-modal ref="addModalRef2" :modal-config="addModalConfig2" @custom-submit="secondSubmit">
+      <crud-modal ref="addModalRef2" :modal-config="addModalConfig2" @custom-submit="secondSubmit">
         <template #gender="scope">
           <DictSelect v-model="scope.formData[scope.prop]" code="gender" v-bind="scope.attrs" />
         </template>
-      </page-modal>
+      </crud-modal>
 
       <!-- 编辑 -->
-      <page-modal
+      <crud-modal
         ref="editModalRef"
         :modal-config="editModalConfig"
         @submit-click="handleSubmitClick"
@@ -80,24 +84,24 @@
         <template #gender="scope">
           <DictSelect v-model="scope.formData[scope.prop]" code="gender" v-bind="scope.attrs" />
         </template>
-      </page-modal>
+      </crud-modal>
     </template>
     <template v-else>
-      <page-search ref="searchRef" :search-config="searchConfig2" @reset-click="handleResetClick" />
+      <crud-search ref="searchRef" :search-config="searchConfig2" @reset-click="handleResetClick" />
 
-      <page-content
+      <crud-table
         ref="contentRef"
         :content-config="contentConfig2"
         @operate-click="handleOperateClick2"
       >
         <template #status="scope">
-          <el-tag :type="scope.row[scope.prop] == 1 ? 'success' : 'info'">
-            {{ scope.row[scope.prop] == 1 ? "启用" : "禁用" }}
+          <el-tag :type="scope.row[scope.prop] === 1 ? 'success' : 'info'">
+            {{ scope.row[scope.prop] === 1 ? "启用" : "禁用" }}
           </el-tag>
         </template>
-      </page-content>
+      </crud-table>
 
-      <page-modal ref="editModalRef" :modal-config="editModalConfig2">
+      <crud-modal ref="editModalRef" :modal-config="editModalConfig2">
         <template #suffix>
           <span style="color: black">%</span>
         </template>
@@ -107,25 +111,16 @@
         <template #gender="scope">
           <DictSelect v-model="scope.formData[scope.prop]" code="gender" v-bind="scope.attrs" />
         </template>
-      </page-modal>
+      </crud-modal>
     </template>
   </div>
 </template>
 
 <script setup>
 import UserAPI from "@/api/system/user";
-import usePage from "@/components/CURD/usePage";
-import addModalConfig from "./config/add";
-import contentConfig from "./config/content";
+import useCrudPage from "@/components/Crud/useCrudPage";
 import editModalConfig from "./config/edit";
-import searchConfig from "./config/search";
 import { initOptions } from "./config/options";
-
-import addModalConfig2 from "./config2/add";
-import contentConfig2 from "./config2/content";
-import editModalConfig2 from "./config2/edit";
-import searchConfig2 from "./config2/search";
-
 const {
   searchRef,
   contentRef,
@@ -140,33 +135,38 @@ const {
   handleExportClick,
   handleSearchClick,
   handleFilterChange,
-} = usePage();
-
-// 其他工具栏
+} = useCrudPage();
+/**
+ * 其他工具
+ */
 function handleToolbarClick(name) {
-  console.log(name);
   if (name === "custom1") {
     ElMessage.success("点击了自定义1按钮");
   }
 }
-// 表格工具
+/**
+ * 表格工具
+ */
 const handleOperateClick = (data) => {
   if (data.name === "detail") {
     editModalConfig.drawer = { ...editModalConfig.drawer, title: "查看" };
     handleViewClick(data.row, async () => {
-      return await UserAPI.getFormData(data.row.id);
+      // 加载下拉数据源，建议在初始化配置项"initFn 中加载，避免多次请求
+      // editModalConfig.formItems[2]!.attrs!.data = await DeptAPI.getOptions();
+      return await UserAPI.getFormData(data.row.id); // 根据 ID 获取详情
     });
   } else if (data.name === "edit") {
     editModalConfig.drawer = { ...editModalConfig.drawer, title: "修改" };
     handleEditClick(data.row, async () => {
-      return await UserAPI.getFormData(data.row.id);
+      return await UserAPI.getFormData(data.row.id); // 根据 ID 获取详情
     });
   } else if (data.name === "reset_pwd") {
     ElMessageBox.prompt("请输入用户名" + data.row.username + "」的新密码", "重置密码", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
-    })
-      .then(({ value }) => {
+    }).then(
+      (result) => {
+        const value = result.value;
         if (!value || value.length < 6) {
           ElMessage.warning("密码至少需6位字符，请重新输入");
           return false;
@@ -174,10 +174,16 @@ const handleOperateClick = (data) => {
         UserAPI.resetPassword(data.row.id, value).then(() => {
           ElMessage.success("密码重置成功，新密码是：" + value);
         });
-      })
-      .catch(() => {});
+      },
+      () => {
+        // 用户取消
+      }
+    );
   }
 };
+/**
+ * 处理操作列点击：查看、编辑等
+ */
 const handleOperateClick2 = (data) => {
   if (data.name === "view") {
     editModalConfig.drawer = { ...editModalConfig.drawer, title: "查看" };
@@ -189,20 +195,21 @@ const handleOperateClick2 = (data) => {
     ElMessage.success("模拟删除成功");
   }
 };
-
-// 打开二级弹窗
 const addModalRef2 = ref();
+/**
+ * 打开二级弹窗
+ */
 const openSecondModal = () => {
   handleAddClick(addModalRef2);
 };
-const secondSubmit = (formData) => {
-  console.log("secondSubmit", formData);
+/**
+ * 提交二级弹窗
+ */
+const secondSubmit = () => {
   ElMessage.success("二级弹窗提交成功");
 };
-
 // 切换示例
 const isA = ref(true);
-
 onMounted(() => {
   initOptions();
 });

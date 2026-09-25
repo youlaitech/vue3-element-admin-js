@@ -7,12 +7,10 @@
 
 <script setup>
 const route = useRoute();
-
 const iframeUrl = computed(() => {
   const url = route.meta.externalUrl;
   return typeof url === "string" ? url : "";
 });
-
 const iframeTitle = computed(() => {
   const title = route.meta.title;
   return typeof title === "string" ? title : "iframe";

@@ -1,5 +1,4 @@
 import { deptArr } from "../config/options";
-
 const modalConfig = {
   colon: true,
   dialog: {
@@ -48,6 +47,5 @@ const modalConfig = {
     },
   ],
 };
-
-// 如果有异步数据会修改配置的，推荐用reactive包裹，而纯静态配置的可以直接导出
+// 如果有异步数据会修改配置的，推荐用 reactive 包裹，而纯静态配置的可以直接导出
 export default reactive(modalConfig);

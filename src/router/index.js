@@ -1,7 +1,8 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-
+/**
+ * 布局组件，供各路由复用（懒加载）
+ */
 export const Layout = () => import("@/layouts/index.vue");
-
 // 静态路由
 export const constantRoutes = [
   {
@@ -15,13 +16,11 @@ export const constantRoutes = [
       },
     ],
   },
-
   {
     path: "/login",
     component: () => import("@/views/login/index.vue"),
     meta: { hidden: true },
   },
-
   // 公开表单分享页（匿名访问，守卫白名单，不套管理端 Layout）
   {
     path: "/f/:formKey",
@@ -29,7 +28,6 @@ export const constantRoutes = [
     component: () => import("@/views/dynamic-form/share.vue"),
     meta: { hidden: true, title: "表单填写" },
   },
-
   {
     path: "/",
     name: "/",
@@ -77,10 +75,15 @@ export const constantRoutes = [
         component: () => import("@/views/demo/route/detail.vue"),
         meta: { title: "详情页缓存", icon: "user", hidden: true, keepAlive: true },
       },
+      {
+        path: "/route-example/edit/:id(\\d+)",
+        name: "RouteExampleEdit",
+        component: () => import("@/views/demo/route/navigate/edit.vue"),
+        meta: { title: "跳转编辑页", icon: "user", hidden: true },
+      },
     ],
   },
 ];
-
 /**
  * 创建路由
  */
@@ -90,10 +93,10 @@ const router = createRouter({
   // 刷新时，滚动条位置还原
   scrollBehavior: () => ({ left: 0, top: 0 }),
 });
-
-// 全局注册 router
+/**
+ * 全局注册 router
+ */
 export function setupRouter(app) {
   app.use(router);
 }
-
 export default router;

@@ -2,7 +2,6 @@ import UserAPI from "@/api/system/user";
 import { DeviceEnum } from "@/enums/settings";
 import { useAppStore } from "@/stores";
 import { deptArr, roleArr } from "./options";
-
 const modalConfig = {
   permPrefix: "sys:user",
   component: "drawer",
@@ -11,9 +10,9 @@ const modalConfig = {
     size: useAppStore().device === DeviceEnum.MOBILE ? "80%" : 500,
   },
   pk: "id",
-  beforeSubmit(data) {
-    console.log("beforeSubmit", data);
-  },
+  /**
+   * 表单提交（新增/编辑保存）
+   */
   formAction(data) {
     return UserAPI.update(data.id, data);
   },
@@ -44,11 +43,15 @@ const modalConfig = {
       type: "tree-select",
       attrs: {
         placeholder: "请选择所属部门",
-        data: deptArr,
+        data: deptArr, // setup，Vue 会自动解包 ref，不需要.value
         filterable: true,
         "check-strictly": true,
         "render-after-expand": false,
       },
+      // async initFn(formItem) {
+      //   // 注意:如果 initFn 函数不是箭头函数,this 会指向此配置项对象,那么也就可以用 this 来替代形参 formItem
+      //   formItem.attrs.data = await DeptAPI.getOptions();
+      // },
     },
     {
       type: "custom",
@@ -68,6 +71,9 @@ const modalConfig = {
       },
       options: roleArr,
       initialValue: [],
+      // async initFn(formItem) {
+      //   formItem.options = await RoleAPI.getOptions();
+      // },
     },
     {
       type: "input",
@@ -115,5 +121,4 @@ const modalConfig = {
     },
   ],
 };
-
 export default reactive(modalConfig);

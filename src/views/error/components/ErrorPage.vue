@@ -59,8 +59,8 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { Lock, Search } from "@element-plus/icons-vue";
-
 const props = defineProps({
   statusCode: { type: String, required: true },
   label: { type: String, required: true },
@@ -68,7 +68,7 @@ const props = defineProps({
   description: { type: String, required: true },
   variant: { type: String, required: true },
 });
-
+// 使用系统色生成异常页视觉，避免固定插画破坏主题一致性
 const visualIcon = computed(() => (props.variant === "locked" ? Lock : Search));
 const visualName = computed(() => (props.variant === "locked" ? "ACCESS CONTROL" : "ROUTE TRACE"));
 const visualMeta = computed(() =>

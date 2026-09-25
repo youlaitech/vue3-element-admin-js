@@ -1,6 +1,5 @@
 import UserAPI from "@/api/system/user";
 import { deptArr, roleArr } from "./options";
-
 const modalConfig = {
   permPrefix: "sys:user",
   dialog: {
@@ -12,9 +11,6 @@ const modalConfig = {
     labelWidth: 100,
   },
   formAction: UserAPI.create,
-  beforeSubmit(data) {
-    console.log("提交之前处理", data);
-  },
   formItems: [
     {
       label: "用户名",
@@ -54,6 +50,10 @@ const modalConfig = {
         "check-strictly": true,
         "render-after-expand": false,
       },
+      // async initFn(formItem) {
+      //   // 注意:如果 initFn 函数不是箭头函数,this 会指向此配置项对象,那么也就可以用 this 来替代形参 formItem
+      //   formItem.attrs.data = await DeptAPI.getOptions();
+      // },
     },
     {
       type: "custom",
@@ -73,6 +73,9 @@ const modalConfig = {
       },
       options: roleArr,
       initialValue: [],
+      // async initFn(formItem) {
+      //   formItem.options = await RoleAPI.getOptions();
+      // },
     },
     {
       type: "input",
@@ -124,6 +127,5 @@ const modalConfig = {
     },
   ],
 };
-
-// 如果有异步数据会修改配置的，推荐用reactive包裹，而纯静态配置的可以直接导出
+// 如果有异步数据会修改配置的，推荐用 reactive 包裹，而纯静态配置的可以直接导出
 export default reactive(modalConfig);

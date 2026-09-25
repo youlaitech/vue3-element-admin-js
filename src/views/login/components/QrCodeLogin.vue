@@ -42,22 +42,15 @@
 </template>
 
 <script setup>
-import { ArrowLeft, CircleClose, Loading, User } from "@element-plus/icons-vue";
 import QRCode from "qrcode";
 import AuthAPI from "@/api/auth";
 import { useUserStore } from "@/stores";
 import router from "@/router";
 import { useRoute } from "vue-router";
 import { onBeforeUnmount, onMounted, ref } from "vue";
-
-// 界面状态机：loading(生成中) → waiting(待扫码) → scanned(已扫码待确认)
-// → done(已登录) / expired(过期或已使用) / canceled(APP 取消)
-
 const emit = defineEmits(["switch"]);
-
 const userStore = useUserStore();
 const route = useRoute();
-
 // 二维码画布元素引用，renderQrCode 把 ticket 绘进它
 const canvasRef = ref();
 // 当前界面状态，驱动模板中遮罩层的显隐
@@ -65,16 +58,15 @@ const state = ref("loading");
 // 扫码用户脱敏昵称与头像，scanned 状态展示
 const nickname = ref("");
 const avatar = ref("");
-
 // 当前票据，轮询与登录换令牌都依赖它
 let ticket = "";
 // 轮询定时器句柄，组件卸载或停止轮询时清空
 let pollTimer = null;
-
 // 轮询间隔（毫秒）
 const QR_POLL_INTERVAL = 2000;
-
-// 申请票据并渲染二维码，开始轮询
+/**
+ * 申请票据并渲染二维码，开始轮询
+ */
 async function start() {
   stopPolling();
   state.value = "loading";
@@ -90,24 +82,32 @@ async function start() {
     state.value = "expired";
   }
 }
-
+/**
+ * 把票据渲染成二维码
+ */
 async function renderQrCode(payload) {
   if (!canvasRef.value) return;
   await QRCode.toCanvas(canvasRef.value, payload, { width: 220, margin: 1 });
 }
-
+/**
+ * 开始轮询扫码状态
+ */
 function startPolling() {
   stopPolling();
   pollTimer = setTimeout(pollOnce, QR_POLL_INTERVAL);
 }
-
+/**
+ * 停止轮询扫码状态
+ */
 function stopPolling() {
   if (pollTimer) {
     clearTimeout(pollTimer);
     pollTimer = null;
   }
 }
-
+/**
+ * 查询一次扫码结果
+ */
 async function pollOnce() {
   if (!ticket) return;
   try {
@@ -117,8 +117,9 @@ async function pollOnce() {
     startPolling();
   }
 }
-
-// 根据后端返回状态推进界面与下一步动作
+/**
+ * 根据后端返回状态推进界面与下一步动作
+ */
 function handleStatus(res) {
   switch (res.status) {
     case "WAITING":
@@ -144,7 +145,9 @@ function handleStatus(res) {
       break;
   }
 }
-
+/**
+ * 扫码成功后完成登录
+ */
 async function doLogin() {
   state.value = "done";
   stopPolling();
@@ -156,7 +159,6 @@ async function doLogin() {
     state.value = "expired";
   }
 }
-
 onMounted(start);
 onBeforeUnmount(stopPolling);
 </script>

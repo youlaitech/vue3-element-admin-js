@@ -1,17 +1,21 @@
 <template>
   <div class="page-container h-full flex flex-1 flex-col">
     <div class="mb-10">
-      <el-link
-        href="https://gitee.com/youlaiorg/vue3-element-admin/blob/master/src/views/demo/curd-demo.vue"
-        type="primary"
+      <el-button
+        tag="a"
+        href="https://gitee.com/youlaiorg/vue3-element-admin/blob/master/src/views/demo/table/crud-single.vue"
         target="_blank"
+        link
+        type="info"
+        size="small"
       >
-        整合版示例源码 请点击 >>>
-      </el-link>
+        <el-icon class="mr-1"><Link /></el-icon>
+        示例源码
+      </el-button>
     </div>
 
     <!-- 搜索 -->
-    <page-search
+    <crud-search
       ref="searchRef"
       :search-config="searchConfig"
       @query-click="handleQueryClick"
@@ -19,7 +23,7 @@
     />
 
     <!-- 列表 -->
-    <page-content
+    <crud-table
       ref="contentRef"
       :content-config="contentConfig"
       @add-click="handleAddClick"
@@ -30,8 +34,8 @@
       @filter-change="handleFilterChange"
     >
       <template #status="scope">
-        <el-tag :type="scope.row[scope.prop] == 1 ? 'success' : 'info'">
-          {{ scope.row[scope.prop] == 1 ? "启用" : "禁用" }}
+        <el-tag :type="scope.row[scope.prop] === 1 ? 'success' : 'info'">
+          {{ scope.row[scope.prop] === 1 ? "启用" : "禁用" }}
         </el-tag>
       </template>
       <template #gender="scope">
@@ -45,25 +49,30 @@
           :style="{ marginLeft: '2px' }"
         />
       </template>
-    </page-content>
+    </crud-table>
 
     <!-- 新增 -->
-    <page-modal ref="addModalRef" :modal-config="addModalConfig" @submit-click="handleSubmitClick">
+    <crud-modal ref="addModalRef" :modal-config="addModalConfig" @submit-click="handleSubmitClick">
       <template #gender="scope">
         <DictSelect v-model="scope.formData[scope.prop]" code="gender" v-bind="scope.attrs" />
       </template>
-    </page-modal>
+    </crud-modal>
 
     <!-- 编辑 -->
-    <page-modal
+    <crud-modal
       ref="editModalRef"
       :modal-config="editModalConfig"
       @submit-click="handleSubmitClick"
     >
       <template #gender="scope">
-        <DictSelect v-model="scope.formData[scope.prop]" code="gender" v-bind="scope.attrs" />
+        <DictSelect
+          v-model="scope.formData[scope.prop]"
+          code="gender"
+          v-bind="scope.attrs"
+          :disabled="editModalConfig.form?.disabled"
+        />
       </template>
-    </page-modal>
+    </crud-modal>
   </div>
 </template>
 
@@ -73,33 +82,27 @@ import DeptAPI from "@/api/system/dept";
 import RoleAPI from "@/api/system/role";
 import { DeviceEnum } from "@/enums/settings";
 import { useAppStore } from "@/stores";
-import usePage from "@/components/CURD/usePage";
-
+import useCrudPage from "@/components/Crud/useCrudPage";
 defineOptions({
-  name: "CurdDemo",
+  name: "CrudDemo",
   inheritAttrs: false,
 });
-
-// ========================= 选项数据管理 =========================
+// 选项数据
 const deptArr = ref([]);
 const roleArr = ref([]);
 const stateArr = ref([
   { label: "启用", value: 1 },
   { label: "禁用", value: 0 },
 ]);
-
-// 初始化选项数据
+/**
+ * 加载表单用到的下拉选项
+ */
 const initOptions = async () => {
-  try {
-    const [dept, roles] = await Promise.all([DeptAPI.getOptions(), RoleAPI.getOptions()]);
-    deptArr.value = dept;
-    roleArr.value = roles;
-  } catch (error) {
-    console.error("初始化选项失败:", error);
-  }
+  const [dept, roles] = await Promise.all([DeptAPI.getOptions(), RoleAPI.getOptions()]);
+  deptArr.value = dept;
+  roleArr.value = roles;
 };
-
-// ========================= 搜索配置 =========================
+// 搜索配置
 const searchConfig = reactive({
   permPrefix: "sys:user",
   formItems: [
@@ -154,8 +157,7 @@ const searchConfig = reactive({
     },
   ],
 });
-
-// ========================= 内容配置 =========================
+// 内容配置
 const contentConfig = reactive({
   permPrefix: "sys:user",
   table: {
@@ -168,22 +170,32 @@ const contentConfig = reactive({
     pageSize: 20,
     pageSizes: [10, 20, 30, 50],
   },
+  /**
+   * 列表数据查询
+   */
   indexAction(params) {
     return UserAPI.getPage(params);
   },
   deleteAction: UserAPI.deleteByIds,
+  /**
+   * 导入文件处理
+   */
   importAction(file) {
     return UserAPI.import(file);
   },
   exportAction: UserAPI.export,
   importTemplate: UserAPI.downloadTemplate,
-  importsAction(data) {
-    console.log("importsAction", data);
+  /**
+   * 导入完成后的处理（示例为空实现）
+   */
+  importsAction() {
     return Promise.resolve();
   },
+  /**
+   * 导出数据（示例取全量列表）
+   */
   async exportsAction(params) {
     const data = await UserAPI.getPage(params);
-    console.log("exportsAction", data.list);
     return data.list;
   },
   pk: "id",
@@ -276,8 +288,7 @@ const contentConfig = reactive({
     },
   ],
 });
-
-// ========================= 新增配置 =========================
+// 新增配置
 const addModalConfig = reactive({
   permPrefix: "sys:user",
   dialog: {
@@ -285,27 +296,36 @@ const addModalConfig = reactive({
     width: 800,
     draggable: true,
   },
-  form: { labelWidth: 100 },
-  formAction: UserAPI.create,
-  beforeSubmit(data) {
-    console.log("提交之前处理", data);
+  form: {
+    labelWidth: 100,
   },
+  formAction: UserAPI.create,
   formItems: [
     {
       label: "用户名",
       prop: "username",
       rules: [{ required: true, message: "用户名不能为空", trigger: "blur" }],
       type: "input",
-      attrs: { placeholder: "请输入用户名" },
-      col: { xs: 24, sm: 12 },
+      attrs: {
+        placeholder: "请输入用户名",
+      },
+      col: {
+        xs: 24,
+        sm: 12,
+      },
     },
     {
       label: "用户昵称",
       prop: "nickname",
       rules: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
       type: "input",
-      attrs: { placeholder: "请输入用户昵称" },
-      col: { xs: 24, sm: 12 },
+      attrs: {
+        placeholder: "请输入用户昵称",
+      },
+      col: {
+        xs: 24,
+        sm: 12,
+      },
     },
     {
       label: "所属部门",
@@ -332,7 +352,10 @@ const addModalConfig = reactive({
       prop: "roleIds",
       rules: [{ required: true, message: "用户角色不能为空", trigger: "change" }],
       type: "select",
-      attrs: { placeholder: "请选择", multiple: true },
+      attrs: {
+        placeholder: "请选择",
+        multiple: true,
+      },
       options: roleArr,
       initialValue: [],
     },
@@ -347,7 +370,10 @@ const addModalConfig = reactive({
           trigger: "blur",
         },
       ],
-      attrs: { placeholder: "请输入手机号码", maxlength: 11 },
+      attrs: {
+        placeholder: "请输入手机号码",
+        maxlength: 11,
+      },
     },
     {
       label: "邮箱",
@@ -360,7 +386,10 @@ const addModalConfig = reactive({
         },
       ],
       type: "input",
-      attrs: { placeholder: "请输入邮箱", maxlength: 50 },
+      attrs: {
+        placeholder: "请输入邮箱",
+        maxlength: 50,
+      },
     },
     {
       label: "状态",
@@ -374,8 +403,7 @@ const addModalConfig = reactive({
     },
   ],
 });
-
-// ========================= 编辑配置 =========================
+// 编辑配置
 const editModalConfig = reactive({
   permPrefix: "sys:user",
   component: "drawer",
@@ -384,9 +412,9 @@ const editModalConfig = reactive({
     size: useAppStore().device === DeviceEnum.MOBILE ? "80%" : 500,
   },
   pk: "id",
-  beforeSubmit(data) {
-    console.log("beforeSubmit", data);
-  },
+  /**
+   * 表单提交（新增/编辑保存）
+   */
   formAction(data) {
     return UserAPI.update(data.id, data);
   },
@@ -396,14 +424,19 @@ const editModalConfig = reactive({
       prop: "username",
       rules: [{ required: true, message: "用户名不能为空", trigger: "blur" }],
       type: "input",
-      attrs: { placeholder: "请输入用户名", readonly: true },
+      attrs: {
+        placeholder: "请输入用户名",
+        readonly: true,
+      },
     },
     {
       label: "用户昵称",
       prop: "nickname",
       rules: [{ required: true, message: "用户昵称不能为空", trigger: "blur" }],
       type: "input",
-      attrs: { placeholder: "请输入用户昵称" },
+      attrs: {
+        placeholder: "请输入用户昵称",
+      },
     },
     {
       label: "所属部门",
@@ -430,7 +463,10 @@ const editModalConfig = reactive({
       prop: "roleIds",
       rules: [{ required: true, message: "用户角色不能为空", trigger: "blur" }],
       type: "select",
-      attrs: { placeholder: "请选择", multiple: true },
+      attrs: {
+        placeholder: "请选择",
+        multiple: true,
+      },
       options: roleArr,
       initialValue: [],
     },
@@ -445,7 +481,10 @@ const editModalConfig = reactive({
           trigger: "blur",
         },
       ],
-      attrs: { placeholder: "请输入手机号码", maxlength: 11 },
+      attrs: {
+        placeholder: "请输入手机号码",
+        maxlength: 11,
+      },
     },
     {
       label: "邮箱",
@@ -458,7 +497,10 @@ const editModalConfig = reactive({
         },
       ],
       type: "input",
-      attrs: { placeholder: "请输入邮箱", maxlength: 50 },
+      attrs: {
+        placeholder: "请输入邮箱",
+        maxlength: 50,
+      },
     },
     {
       label: "状态",
@@ -474,8 +516,7 @@ const editModalConfig = reactive({
     },
   ],
 });
-
-// ========================= 页面逻辑 =========================
+// 页面逻辑
 const {
   searchRef,
   contentRef,
@@ -490,17 +531,18 @@ const {
   handleExportClick,
   handleSearchClick,
   handleFilterChange,
-} = usePage();
-
-// 其他工具
+} = useCrudPage();
+/**
+ * 处理工具栏按钮点击
+ */
 function handleToolbarClick(name) {
-  console.log(name);
   if (name === "custom1") {
     ElMessage.success("点击了自定义1按钮");
   }
 }
-
-// 表格工具
+/**
+ * 处理操作列点击：详情、编辑等
+ */
 const handleOperateClick = (data) => {
   if (data.name === "detail") {
     editModalConfig.drawer = { ...editModalConfig.drawer, title: "查看" };
@@ -516,8 +558,8 @@ const handleOperateClick = (data) => {
     ElMessageBox.prompt("请输入用户名" + data.row.username + "」的新密码", "重置密码", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
-    })
-      .then(({ value }) => {
+    }).then(
+      ({ value }) => {
         if (!value || value.length < 6) {
           ElMessage.warning("密码至少需6位字符，请重新输入");
           return false;
@@ -525,11 +567,13 @@ const handleOperateClick = (data) => {
         UserAPI.resetPassword(data.row.id, value).then(() => {
           ElMessage.success("密码重置成功，新密码是：" + value);
         });
-      })
-      .catch(() => {});
+      },
+      () => {
+        // 用户取消
+      }
+    );
   }
 };
-
 // 初始化
 onMounted(() => {
   initOptions();

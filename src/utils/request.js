@@ -1,115 +1,70 @@
 import axios from "axios";
 import qs from "qs";
 import { ApiCodeEnum } from "@/enums/api";
-import { useUserStoreHook } from "@/stores/user";
 import { usePermissionStoreHook } from "@/stores/permission";
-import { AuthStorage, redirectToLogin } from "@/utils/auth";
-import { ElMessage } from "element-plus";
-
-// 记录已重试的请求，防止无限循环
-const retriedConfigs = new WeakSet();
-
-// HTTP 请求实例
+import { AuthStorage } from "@/utils/auth";
+import { installTokenRefresh } from "@/utils/token-refresh";
 const http = axios.create({
-  baseURL: import.meta.env.VITE_APP_BASE_API,
+  baseURL: import.meta.env.VITE_API_BASE,
   timeout: 50000,
   headers: { "Content-Type": "application/json;charset=utf-8" },
+  // 数组参数序列化为 ids=1&ids=2，而非 ids[]=1&ids=2
   paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
 });
-
-// 请求拦截器
+// 注入访问令牌
 http.interceptors.request.use(
   (config) => {
-    const token = AuthStorage.getAccessToken();
-
-    if (config.headers.Authorization === "no-auth") {
-      delete config.headers.Authorization;
-    } else if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (!config.anonymous) {
+      const token = AuthStorage.getAccessToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
-
     return config;
   },
   (error) => Promise.reject(error)
 );
-
-// 响应拦截器
+// 令牌续期拦截器：响应拦截器按注册顺序执行，先于业务拦截器接管 401，业务拦截器只负责业务错误的提示
+installTokenRefresh(http);
+// 解包业务数据
 http.interceptors.response.use(
   (response) => {
     const { responseType } = response.config;
-
-    // 二进制数据直接返回
+    // 二进制数据直接透传
     if (responseType === "blob" || responseType === "arraybuffer") {
       return response;
     }
-
     const { code, data, msg } = response.data;
-
     if (code === ApiCodeEnum.SUCCESS) {
       return data;
     }
-
-    // 需要选择租户（特殊业务码，传递给调用方处理）
-    if (code === ApiCodeEnum.CHOOSE_TENANT) {
-      return Promise.reject({ code, data, msg });
-    }
-
     ElMessage.error(msg || "系统出错");
     return Promise.reject(new Error(msg || "系统出错"));
   },
-
   async (error) => {
-    const { config, response } = error;
-
+    // 令牌续期拦截器已终结的错误（Token Invalid 等）不再提示
+    if (!axios.isAxiosError(error)) {
+      return Promise.reject(error);
+    }
+    const { response } = error;
     if (!response) {
       ElMessage.error("网络连接失败");
       return Promise.reject(error);
     }
-
     const { code, msg } = response.data;
-
-    // Token 过期：尝试刷新 token 后自动重试一次
-    if (code === ApiCodeEnum.ACCESS_TOKEN_INVALID) {
-      // 已重试过，直接跳登录
-      if (retriedConfigs.has(config)) {
-        await redirectToLogin("登录已过期，请重新登录", false);
-      }
-
-      retriedConfigs.add(config);
-
-      try {
-        const userStore = useUserStoreHook();
-        await userStore.refreshTokenOnce();
-
-        const token = AuthStorage.getAccessToken();
-        if (token) {
-          config.headers.set("Authorization", `Bearer ${token}`);
-        }
-
-        return http(config);
-      } catch {
-        await redirectToLogin("登录已过期，请重新登录");
-        return Promise.reject(new Error("Token refresh failed"));
-      }
+    // 令牌失效：透传原始响应给续期拦截器处理，不在此提示
+    if (code === ApiCodeEnum.ACCESS_TOKEN_INVALID || code === ApiCodeEnum.REFRESH_TOKEN_INVALID) {
+      return Promise.reject(error);
     }
-
-    // Refresh token 失效：无法续期，跳转登录
-    if (code === ApiCodeEnum.REFRESH_TOKEN_INVALID) {
-      await redirectToLogin("登录已过期，请重新登录", false);
-      return Promise.reject(new Error(msg || "Token Invalid"));
-    }
-
-    // 权限不足
+    // 权限不足：刷新权限后再提示
     if (code === ApiCodeEnum.PERMISSION_DENIED) {
       const permissionStore = usePermissionStoreHook();
       await permissionStore.refreshPermissions();
       ElMessage.error(msg || "权限不足");
       return Promise.reject(new Error(msg || "权限不足"));
     }
-
     ElMessage.error(msg || "请求失败");
     return Promise.reject(new Error(msg || "请求失败"));
   }
 );
-
 export default http;

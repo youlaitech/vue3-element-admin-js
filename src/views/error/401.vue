@@ -14,13 +14,11 @@
 </template>
 
 <script setup>
-import { Back, House } from "@element-plus/icons-vue";
-import ErrorPage from "./components/ErrorPage.vue";
-
 defineOptions({ name: "Page401" });
-
 const router = useRouter();
-
+/**
+ * 回到首页，避免继续停留在无权限路由
+ */
 function goHome() {
   router.push("/");
 }

@@ -23,6 +23,7 @@
             @change="handleFileChange"
           />
         </div>
+
         <div class="profile-hero__info">
           <div class="profile-hero__title">
             <h2 class="profile-hero__name">{{ displayName }}</h2>
@@ -43,6 +44,7 @@
           </div>
         </div>
       </div>
+
       <div class="profile-hero__actions">
         <el-button :icon="Edit" @click="handleOpenDialog(DialogType.ACCOUNT)">编辑资料</el-button>
         <el-button type="primary" :icon="Lock" @click="handleOpenDialog(DialogType.PASSWORD)">
@@ -58,6 +60,7 @@
             <h3 class="profile-card__title">个人资料</h3>
             <el-tag size="small" effect="plain">{{ genderText }}</el-tag>
           </header>
+
           <dl class="profile-info">
             <div v-for="item in profileInfoItems" :key="item.label" class="profile-info__item">
               <dt class="profile-info__label">
@@ -70,10 +73,12 @@
             </div>
           </dl>
         </section>
+
         <section class="profile-card">
           <header class="profile-card__header">
             <h3 class="profile-card__title">账号概览</h3>
           </header>
+
           <div class="profile-stats">
             <div v-for="item in profileStats" :key="item.label" class="profile-stats__item">
               <span :class="['profile-icon', 'profile-icon--' + item.tone]">
@@ -89,11 +94,13 @@
             </div>
           </div>
         </section>
+
         <section class="profile-card">
           <header class="profile-card__header">
             <h3 class="profile-card__title">角色权限</h3>
             <span class="profile-card__extra">{{ permissionCount }} 个权限</span>
           </header>
+
           <div class="profile-tags">
             <el-tag v-for="role in roleList" :key="role" class="m-0" size="small" effect="light">
               {{ role }}
@@ -114,6 +121,7 @@
               安全等级 {{ securityLevel.label }}
             </el-tag>
           </header>
+
           <div class="profile-security">
             <div v-for="item in securityItems" :key="item.key" class="profile-security__item">
               <span :class="['profile-icon', 'profile-icon--large', 'profile-icon--' + item.tone]">
@@ -142,12 +150,14 @@
             </div>
           </div>
         </section>
+
         <div class="profile-page__grid">
           <section class="profile-card">
             <header class="profile-card__header">
               <h3 class="profile-card__title">近期登录</h3>
               <span class="profile-card__extra">最近 3 条</span>
             </header>
+
             <div class="profile-login">
               <div
                 v-for="record in recentLoginRecords"
@@ -165,11 +175,13 @@
               </div>
             </div>
           </section>
+
           <section class="profile-card">
             <header class="profile-card__header">
               <h3 class="profile-card__title">账号状态</h3>
               <span class="profile-card__extra">完善度 {{ profileCompletion }}%</span>
             </header>
+
             <div class="profile-status">
               <div
                 v-for="item in accountStatusItems"
@@ -208,6 +220,7 @@
           <DictSelect v-model="userProfileForm.gender" code="gender" />
         </el-form-item>
       </el-form>
+
       <el-form
         v-else-if="dialogState.type === DialogType.PASSWORD"
         ref="passwordChangeFormRef"
@@ -226,6 +239,7 @@
           <el-input v-model="passwordChangeForm.confirmPassword" type="password" show-password />
         </el-form-item>
       </el-form>
+
       <el-form
         v-else-if="dialogState.type === DialogType.MOBILE"
         ref="mobileBindingFormRef"
@@ -250,6 +264,7 @@
           <el-input v-model="mobileUpdateForm.password" type="password" show-password />
         </el-form-item>
       </el-form>
+
       <el-form
         v-else-if="dialogState.type === DialogType.EMAIL"
         ref="emailBindingFormRef"
@@ -274,6 +289,7 @@
           <el-input v-model="emailUpdateForm.password" type="password" show-password />
         </el-form-item>
       </el-form>
+
       <template #footer>
         <span class="inline-flex gap-2">
           <el-button @click="handleCancel">取消</el-button>
@@ -285,38 +301,38 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import UserAPI from "@/api/system/user";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import FileAPI from "@/api/file";
 import { useUserStoreHook } from "@/stores";
-import { redirectToLogin } from "@/utils/auth";
 import {
-  Calendar,
-  Camera,
   CircleCheck,
   DataLine,
-  Edit,
   Female,
   Iphone,
   Key,
-  Location,
   Lock,
   Male,
   Message,
-  Monitor,
   OfficeBuilding,
   Timer,
   User,
   UserFilled,
-  Warning,
 } from "@element-plus/icons-vue";
-
 const userStore = useUserStoreHook();
 const userProfile = ref({});
-const fileInput = ref(null);
-
-const DialogType = { ACCOUNT: "account", PASSWORD: "password", MOBILE: "mobile", EMAIL: "email" };
-const dialogState = reactive({ visible: false, title: "", type: "" });
+let DialogType;
+(function (DialogType) {
+  DialogType["ACCOUNT"] = "account";
+  DialogType["PASSWORD"] = "password";
+  DialogType["MOBILE"] = "mobile";
+  DialogType["EMAIL"] = "email";
+})(DialogType || (DialogType = {}));
+const dialogState = reactive({
+  visible: false,
+  title: "",
+  type: "",
+});
 const userProfileFormRef = ref();
 const passwordChangeFormRef = ref();
 const mobileBindingFormRef = ref();
@@ -329,14 +345,29 @@ const mobileCountdown = ref(0);
 const mobileTimer = ref();
 const emailCountdown = ref(0);
 const emailTimer = ref();
-
 const recentLoginRecords = [
-  { device: "Chrome / Windows", location: "上海", ip: "192.168.1.26", time: "2026-06-20 09:32" },
-  { device: "Edge / Windows", location: "杭州", ip: "192.168.1.18", time: "2026-06-19 18:46" },
-  { device: "Safari / iOS", location: "深圳", ip: "192.168.1.12", time: "2026-06-18 14:08" },
+  {
+    device: "Chrome / Windows",
+    location: "上海",
+    ip: "192.168.1.26",
+    time: "2026-06-20 09:32",
+  },
+  {
+    device: "Edge / Windows",
+    location: "杭州",
+    ip: "192.168.1.18",
+    time: "2026-06-19 18:46",
+  },
+  {
+    device: "Safari / iOS",
+    location: "深圳",
+    ip: "192.168.1.12",
+    time: "2026-06-18 14:08",
+  },
 ];
-
-const userProfileRules = { nickname: [{ required: true, message: "请输入昵称", trigger: "blur" }] };
+const userProfileRules = {
+  nickname: [{ required: true, message: "请输入昵称", trigger: "blur" }],
+};
 const passwordChangeRules = {
   oldPassword: [{ required: true, message: "请输入原密码", trigger: "blur" }],
   newPassword: [{ required: true, message: "请输入新密码", trigger: "blur" }],
@@ -354,14 +385,20 @@ const passwordChangeRules = {
     },
   ],
 };
+// 手机号校验规则
 const mobileBindingRules = {
   mobile: [
     { required: true, message: "请输入手机号", trigger: "blur" },
-    { pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur" },
+    {
+      pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
+      message: "请输入正确的手机号码",
+      trigger: "blur",
+    },
   ],
   code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
   password: [{ required: true, message: "请输入当前密码", trigger: "blur" }],
 };
+// 邮箱校验规则
 const emailBindingRules = {
   email: [
     { required: true, message: "请输入邮箱", trigger: "blur" },
@@ -374,22 +411,22 @@ const emailBindingRules = {
   code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
   password: [{ required: true, message: "请输入当前密码", trigger: "blur" }],
 };
-
 const displayAvatar = computed(() => userProfile.value.avatar || userStore.userInfo.avatar || "");
-const displayName = computed(
-  () =>
+const displayName = computed(() => {
+  return (
     userProfile.value.nickname ||
     userStore.userInfo.nickname ||
     userProfile.value.username ||
     userStore.userInfo.username ||
     "未命名用户"
-);
-const roleList = computed(() =>
-  (userProfile.value.roleNames || "")
+  );
+});
+const roleList = computed(() => {
+  return (userProfile.value.roleNames || "")
     .split(/[,，]/)
     .map((role) => role.trim())
-    .filter(Boolean)
-);
+    .filter(Boolean);
+});
 const primaryRole = computed(() => roleList.value[0] || "普通用户");
 const permissionCount = computed(() => userStore.userInfo.perms?.length || 0);
 const genderText = computed(() => {
@@ -397,9 +434,9 @@ const genderText = computed(() => {
   if (userProfile.value.gender === 2) return "女";
   return "未设置";
 });
-const boundCount = computed(
-  () => [userProfile.value.mobile, userProfile.value.email].filter(Boolean).length
-);
+const boundCount = computed(() => {
+  return [userProfile.value.mobile, userProfile.value.email].filter(Boolean).length;
+});
 const profileCompletion = computed(() => {
   const fields = [
     userProfile.value.username,
@@ -415,11 +452,14 @@ const profileCompletion = computed(() => {
 });
 const securityLevel = computed(() => {
   const score = 60 + boundCount.value * 20;
-  if (score >= 100) return { score, label: "高", type: "success" };
-  if (score >= 80) return { score, label: "中", type: "warning" };
+  if (score >= 100) {
+    return { score, label: "高", type: "success" };
+  }
+  if (score >= 80) {
+    return { score, label: "中", type: "warning" };
+  }
   return { score, label: "低", type: "info" };
 });
-
 const profileInfoItems = computed(() => [
   {
     label: "用户名",
@@ -452,8 +492,20 @@ const profileInfoItems = computed(() => [
   },
 ]);
 const profileStats = computed(() => [
-  { label: "安全评分", value: securityLevel.value.score, suffix: "分", icon: Key, tone: "primary" },
-  { label: "绑定项目", value: boundCount.value, suffix: "/2", icon: CircleCheck, tone: "success" },
+  {
+    label: "安全评分",
+    value: securityLevel.value.score,
+    suffix: "分",
+    icon: Key,
+    tone: "primary",
+  },
+  {
+    label: "绑定项目",
+    value: boundCount.value,
+    suffix: "/2",
+    icon: CircleCheck,
+    tone: "success",
+  },
   {
     label: "角色数量",
     value: roleList.value.length,
@@ -461,7 +513,13 @@ const profileStats = computed(() => [
     icon: UserFilled,
     tone: "warning",
   },
-  { label: "权限标识", value: permissionCount.value, suffix: "个", icon: DataLine, tone: "info" },
+  {
+    label: "权限标识",
+    value: permissionCount.value,
+    suffix: "个",
+    icon: DataLine,
+    tone: "info",
+  },
 ]);
 const accountStatusItems = computed(() => [
   {
@@ -479,39 +537,12 @@ const accountStatusItems = computed(() => [
     value: userProfile.value.email ? "已绑定" : "未绑定",
     done: !!userProfile.value.email,
   },
-  { label: "资料完善", value: `${profileCompletion.value}%`, done: profileCompletion.value >= 80 },
+  {
+    label: "资料完善",
+    value: `${profileCompletion.value}%`,
+    done: profileCompletion.value >= 80,
+  },
 ]);
-
-function formatValue(value) {
-  return value ? String(value) : "-";
-}
-function getPromptValue(result) {
-  if (result && typeof result === "object" && "value" in result) return String(result.value || "");
-  return "";
-}
-function maskMobile(mobile) {
-  if (!mobile) return "";
-  return mobile.replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2");
-}
-function maskEmail(email) {
-  if (!email) return "";
-  const [name, domain] = email.split("@");
-  if (!domain) return email;
-  if (name.length <= 2) return `${name[0] || ""}***@${domain}`;
-  return `${name.slice(0, 2)}***@${domain}`;
-}
-
-const mobileSecurityDesc = computed(() =>
-  userProfile.value.mobile
-    ? `已绑定：${maskMobile(userProfile.value.mobile)}`
-    : "未绑定手机号，建议立即绑定"
-);
-const emailSecurityDesc = computed(() =>
-  userProfile.value.email
-    ? `已绑定：${maskEmail(userProfile.value.email)}`
-    : "未绑定邮箱，建议立即绑定"
-);
-
 const securityItems = computed(() => [
   {
     key: "password",
@@ -522,7 +553,11 @@ const securityItems = computed(() => [
     icon: Lock,
     tone: "primary",
     actions: [
-      { label: "修改", type: "primary", onClick: () => handleOpenDialog(DialogType.PASSWORD) },
+      {
+        label: "修改",
+        type: "primary",
+        onClick: () => handleOpenDialog(DialogType.PASSWORD),
+      },
     ],
   },
   {
@@ -535,10 +570,24 @@ const securityItems = computed(() => [
     tone: "success",
     actions: userProfile.value.mobile
       ? [
-          { label: "更换", type: "primary", onClick: () => handleOpenDialog(DialogType.MOBILE) },
-          { label: "解绑", type: "danger", onClick: handleUnbindMobile },
+          {
+            label: "更换",
+            type: "primary",
+            onClick: () => handleOpenDialog(DialogType.MOBILE),
+          },
+          {
+            label: "解绑",
+            type: "danger",
+            onClick: handleUnbindMobile,
+          },
         ]
-      : [{ label: "绑定", type: "primary", onClick: () => handleOpenDialog(DialogType.MOBILE) }],
+      : [
+          {
+            label: "绑定",
+            type: "primary",
+            onClick: () => handleOpenDialog(DialogType.MOBILE),
+          },
+        ],
   },
   {
     key: "email",
@@ -550,14 +599,72 @@ const securityItems = computed(() => [
     tone: "warning",
     actions: userProfile.value.email
       ? [
-          { label: "更换", type: "primary", onClick: () => handleOpenDialog(DialogType.EMAIL) },
-          { label: "解绑", type: "danger", onClick: handleUnbindEmail },
+          {
+            label: "更换",
+            type: "primary",
+            onClick: () => handleOpenDialog(DialogType.EMAIL),
+          },
+          {
+            label: "解绑",
+            type: "danger",
+            onClick: handleUnbindEmail,
+          },
         ]
-      : [{ label: "绑定", type: "primary", onClick: () => handleOpenDialog(DialogType.EMAIL) }],
+      : [
+          {
+            label: "绑定",
+            type: "primary",
+            onClick: () => handleOpenDialog(DialogType.EMAIL),
+          },
+        ],
   },
 ]);
-
-function handleOpenDialog(type) {
+/**
+ * 空值统一显示占位符
+ */
+function formatValue(value) {
+  return value ? String(value) : "-";
+}
+/**
+ * 从弹窗结果里取出输入值
+ */
+function getPromptValue(result) {
+  if (result && typeof result === "object" && "value" in result) {
+    return String(result.value || "");
+  }
+  return "";
+}
+/**
+ * 手机号中间四位打码
+ */
+function maskMobile(mobile) {
+  if (!mobile) return "";
+  return mobile.replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2");
+}
+/**
+ * 邮箱名打码
+ */
+function maskEmail(email) {
+  if (!email) return "";
+  const [name, domain] = email.split("@");
+  if (!domain) return email;
+  if (name.length <= 2) return `${name[0] || ""}***@${domain}`;
+  return `${name.slice(0, 2)}***@${domain}`;
+}
+const mobileSecurityDesc = computed(() => {
+  return userProfile.value.mobile
+    ? `已绑定：${maskMobile(userProfile.value.mobile)}`
+    : "未绑定手机号，建议立即绑定";
+});
+const emailSecurityDesc = computed(() => {
+  return userProfile.value.email
+    ? `已绑定：${maskEmail(userProfile.value.email)}`
+    : "未绑定邮箱，建议立即绑定";
+});
+/**
+ * 打开账号/手机/邮箱修改弹窗
+ */
+const handleOpenDialog = (type) => {
   dialogState.type = type;
   dialogState.visible = true;
   switch (type) {
@@ -583,8 +690,10 @@ function handleOpenDialog(type) {
       emailUpdateForm.password = "";
       break;
   }
-}
-
+};
+/**
+ * 解绑手机号
+ */
 async function handleUnbindMobile() {
   if (!userProfile.value.mobile) return;
   try {
@@ -601,10 +710,12 @@ async function handleUnbindMobile() {
     ElMessage.success("手机号解绑成功");
     await loadUserProfile();
   } catch {
-    /* 取消 */
+    // ignore
   }
 }
-
+/**
+ * 解绑邮箱
+ */
 async function handleUnbindEmail() {
   if (!userProfile.value.email) return;
   try {
@@ -621,16 +732,19 @@ async function handleUnbindEmail() {
     ElMessage.success("邮箱解绑成功");
     await loadUserProfile();
   } catch {
-    /* 取消 */
+    // ignore
   }
 }
-
+/**
+ * 发送手机验证码
+ */
 function handleSendMobileCode() {
   if (!mobileUpdateForm.mobile) {
     ElMessage.error("请输入手机号");
     return;
   }
-  if (!/^1[3-9]\d{9}$/.test(mobileUpdateForm.mobile)) {
+  const reg = /^1[3-9]\d{9}$/;
+  if (!reg.test(mobileUpdateForm.mobile)) {
     ElMessage.error("手机号格式不正确");
     return;
   }
@@ -638,18 +752,24 @@ function handleSendMobileCode() {
     ElMessage.success("验证码发送成功");
     mobileCountdown.value = 60;
     mobileTimer.value = setInterval(() => {
-      if (mobileCountdown.value > 0) mobileCountdown.value -= 1;
-      else clearInterval(mobileTimer.value);
+      if (mobileCountdown.value > 0) {
+        mobileCountdown.value -= 1;
+      } else {
+        clearInterval(mobileTimer.value);
+      }
     }, 1000);
   });
 }
-
+/**
+ * 发送邮箱验证码
+ */
 function handleSendEmailCode() {
   if (!emailUpdateForm.email) {
     ElMessage.error("请输入邮箱");
     return;
   }
-  if (!/\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/.test(emailUpdateForm.email)) {
+  const reg = /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/;
+  if (!reg.test(emailUpdateForm.email)) {
     ElMessage.error("邮箱格式不正确");
     return;
   }
@@ -657,13 +777,18 @@ function handleSendEmailCode() {
     ElMessage.success("验证码发送成功");
     emailCountdown.value = 60;
     emailTimer.value = setInterval(() => {
-      if (emailCountdown.value > 0) emailCountdown.value -= 1;
-      else clearInterval(emailTimer.value);
+      if (emailCountdown.value > 0) {
+        emailCountdown.value -= 1;
+      } else {
+        clearInterval(emailTimer.value);
+      }
     }, 1000);
   });
 }
-
-async function handleSubmit() {
+/**
+ * 提交弹窗表单
+ */
+const handleSubmit = async () => {
   try {
     if (dialogState.type === DialogType.ACCOUNT) {
       const valid = await userProfileFormRef.value?.validate();
@@ -671,14 +796,16 @@ async function handleSubmit() {
       await UserAPI.updateProfile(userProfileForm);
       ElMessage.success("账号资料修改成功");
       dialogState.visible = false;
-      if (userProfileForm.nickname) userStore.userInfo.nickname = userProfileForm.nickname;
+      if (userProfileForm.nickname) {
+        userStore.userInfo.nickname = userProfileForm.nickname;
+      }
       await loadUserProfile();
     } else if (dialogState.type === DialogType.PASSWORD) {
       const valid = await passwordChangeFormRef.value?.validate();
       if (!valid) return;
       await UserAPI.changePassword(passwordChangeForm);
       dialogState.visible = false;
-      await redirectToLogin("密码已修改，请重新登录");
+      await userStore.redirectToLogin("password-changed");
     } else if (dialogState.type === DialogType.MOBILE) {
       const valid = await mobileBindingFormRef.value?.validate();
       if (!valid) return;
@@ -695,47 +822,71 @@ async function handleSubmit() {
       await loadUserProfile();
     }
   } catch {
-    /* 取消 */
+    // ignore
   }
-}
-
-function handleCancel() {
+};
+/**
+ * 关闭弹窗并重置表单
+ */
+const handleCancel = () => {
   dialogState.visible = false;
-  if (dialogState.type === DialogType.ACCOUNT) userProfileFormRef.value?.resetFields();
-  else if (dialogState.type === DialogType.PASSWORD) passwordChangeFormRef.value?.resetFields();
-  else if (dialogState.type === DialogType.MOBILE) mobileBindingFormRef.value?.resetFields();
-  else if (dialogState.type === DialogType.EMAIL) emailBindingFormRef.value?.resetFields();
-}
-
-function triggerFileUpload() {
+  if (dialogState.type === DialogType.ACCOUNT) {
+    userProfileFormRef.value?.resetFields();
+  } else if (dialogState.type === DialogType.PASSWORD) {
+    passwordChangeFormRef.value?.resetFields();
+  } else if (dialogState.type === DialogType.MOBILE) {
+    mobileBindingFormRef.value?.resetFields();
+  } else if (dialogState.type === DialogType.EMAIL) {
+    emailBindingFormRef.value?.resetFields();
+  }
+};
+const fileInput = ref(null);
+/**
+ * 触发头像文件选择
+ */
+const triggerFileUpload = () => {
   fileInput.value?.click();
-}
-async function handleFileChange(event) {
+};
+/**
+ * 选择头像后上传
+ */
+const handleFileChange = async (event) => {
   const target = event.target;
   const file = target.files ? target.files[0] : null;
   if (file) {
     const data = await FileAPI.uploadFile(file);
-    await UserAPI.updateProfile({ avatar: data.url });
+    await UserAPI.updateProfile({
+      avatar: data.url,
+    });
     userProfile.value.avatar = data.url;
     userStore.userInfo.avatar = data.url;
     ElMessage.success("头像更新成功");
   }
   target.value = "";
-}
-
-async function loadUserProfile() {
+};
+/**
+ * 加载个人中心用户信息
+ */
+const loadUserProfile = async () => {
   const data = await UserAPI.getProfile();
   userProfile.value = data;
-}
-
+};
 onMounted(async () => {
-  if (mobileTimer.value) clearInterval(mobileTimer.value);
-  if (emailTimer.value) clearInterval(emailTimer.value);
+  if (mobileTimer.value) {
+    clearInterval(mobileTimer.value);
+  }
+  if (emailTimer.value) {
+    clearInterval(emailTimer.value);
+  }
   await loadUserProfile();
 });
 onBeforeUnmount(() => {
-  if (mobileTimer.value) clearInterval(mobileTimer.value);
-  if (emailTimer.value) clearInterval(emailTimer.value);
+  if (mobileTimer.value) {
+    clearInterval(mobileTimer.value);
+  }
+  if (emailTimer.value) {
+    clearInterval(emailTimer.value);
+  }
 });
 </script>
 
@@ -747,6 +898,7 @@ onBeforeUnmount(() => {
   min-height: 100%;
   padding: 16px;
 }
+
 .profile-hero,
 .profile-card {
   background: var(--content-bg);
@@ -754,6 +906,7 @@ onBeforeUnmount(() => {
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
 }
+
 .profile-hero {
   display: flex;
   gap: 16px;
@@ -761,6 +914,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   padding: 20px 24px;
 }
+
 .profile-hero__body,
 .profile-hero__title,
 .profile-hero__meta,
@@ -769,17 +923,21 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
 }
+
 .profile-hero__body {
   gap: 16px;
   min-width: 0;
 }
+
 .profile-hero__info {
   min-width: 0;
 }
+
 .profile-hero__title {
   flex-wrap: wrap;
   gap: 10px;
 }
+
 .profile-hero__name {
   margin: 0;
   font-size: 22px;
@@ -787,11 +945,13 @@ onBeforeUnmount(() => {
   line-height: 30px;
   color: var(--el-text-color-primary);
 }
+
 .profile-hero__desc {
   margin: 4px 0 0;
   font-size: 13px;
   color: var(--el-text-color-secondary);
 }
+
 .profile-hero__meta {
   flex-wrap: wrap;
   gap: 12px;
@@ -799,46 +959,56 @@ onBeforeUnmount(() => {
   font-size: 12px;
   color: var(--el-text-color-secondary);
 }
+
 .profile-hero__meta-item {
   gap: 4px;
 }
+
 .profile-hero__actions {
   flex-shrink: 0;
   gap: 8px;
 }
+
 .profile-avatar {
   position: relative;
   flex-shrink: 0;
 }
+
 .profile-avatar__action {
   position: absolute;
   right: -2px;
   bottom: -2px;
   border: 2px solid var(--content-bg);
 }
+
 .profile-avatar__input {
   display: none;
 }
+
 .profile-page__layout {
   display: grid;
   grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
+
 .profile-page__side,
 .profile-page__main {
   display: grid;
   gap: 16px;
   min-width: 0;
 }
+
 .profile-page__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
   gap: 16px;
 }
+
 .profile-card {
   padding: 18px 20px;
 }
+
 .profile-card__header {
   display: flex;
   gap: 12px;
@@ -846,6 +1016,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   margin-bottom: 14px;
 }
+
 .profile-card__title {
   margin: 0;
   font-size: 15px;
@@ -853,21 +1024,25 @@ onBeforeUnmount(() => {
   line-height: 22px;
   color: var(--el-text-color-primary);
 }
+
 .profile-card__desc {
   margin: 3px 0 0;
   font-size: 12px;
   color: var(--el-text-color-secondary);
 }
+
 .profile-card__extra,
 .profile-empty {
   font-size: 12px;
   color: var(--el-text-color-placeholder);
 }
+
 .profile-info {
   display: grid;
   gap: 10px;
   margin: 0;
 }
+
 .profile-info__item {
   display: grid;
   grid-template-columns: 92px minmax(0, 1fr);
@@ -877,10 +1052,12 @@ onBeforeUnmount(() => {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--el-border-color-extra-light);
 }
+
 .profile-info__item:last-child {
   padding-bottom: 0;
   border-bottom: 0;
 }
+
 .profile-info__label {
   display: flex;
   gap: 6px;
@@ -888,6 +1065,7 @@ onBeforeUnmount(() => {
   font-size: 13px;
   color: var(--el-text-color-secondary);
 }
+
 .profile-info__value {
   min-width: 0;
   margin: 0;
@@ -897,11 +1075,13 @@ onBeforeUnmount(() => {
   color: var(--el-text-color-primary);
   white-space: nowrap;
 }
+
 .profile-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
+
 .profile-stats__item {
   display: flex;
   gap: 10px;
@@ -912,23 +1092,28 @@ onBeforeUnmount(() => {
   border: 1px solid var(--el-border-color-extra-light);
   border-radius: 8px;
 }
+
 .profile-stats__body {
   min-width: 0;
 }
+
 .profile-stats__label,
 .profile-stats__value {
   display: block;
 }
+
 .profile-stats__label {
   margin-bottom: 2px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
 }
+
 .profile-stats__value {
   font-size: 20px;
   line-height: 24px;
   color: var(--el-text-color-primary);
 }
+
 .profile-stats__value em {
   display: inline;
   margin-left: 2px;
@@ -937,6 +1122,7 @@ onBeforeUnmount(() => {
   font-weight: 400;
   color: var(--el-text-color-secondary);
 }
+
 .profile-icon {
   display: flex;
   flex: 0 0 36px;
@@ -949,35 +1135,42 @@ onBeforeUnmount(() => {
   background: var(--el-color-primary-light-9);
   border-radius: 8px;
 }
+
 .profile-icon--large {
   flex-basis: 40px;
   width: 40px;
   height: 40px;
   font-size: 20px;
 }
+
 .profile-icon--success {
   color: var(--el-color-success);
   background: var(--el-color-success-light-9);
 }
+
 .profile-icon--warning {
   color: var(--el-color-warning);
   background: var(--el-color-warning-light-9);
 }
+
 .profile-icon--info {
   color: var(--el-color-info);
   background: var(--el-fill-color-light);
 }
+
 .profile-security,
 .profile-login,
 .profile-status {
   display: grid;
   gap: 12px;
 }
+
 .profile-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
+
 .profile-security__item {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto;
@@ -987,11 +1180,13 @@ onBeforeUnmount(() => {
   border: 1px solid var(--el-border-color-extra-light);
   border-radius: 8px;
 }
+
 .profile-security__body,
 .profile-login__body,
 .profile-status__body {
   min-width: 0;
 }
+
 .profile-security__title {
   display: flex;
   flex-wrap: wrap;
@@ -1001,6 +1196,7 @@ onBeforeUnmount(() => {
   font-weight: 600;
   color: var(--el-text-color-primary);
 }
+
 .profile-security__desc {
   margin: 4px 0 0;
   overflow: hidden;
@@ -1009,14 +1205,17 @@ onBeforeUnmount(() => {
   color: var(--el-text-color-secondary);
   white-space: nowrap;
 }
+
 .profile-security__actions {
   display: flex;
   gap: 8px;
   align-items: center;
 }
+
 .profile-security__actions .el-button + .el-button {
   margin-left: 0;
 }
+
 .profile-login__item {
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr) auto;
@@ -1024,6 +1223,7 @@ onBeforeUnmount(() => {
   align-items: center;
   min-height: 44px;
 }
+
 .profile-login__device,
 .profile-login__meta,
 .profile-login__time,
@@ -1034,17 +1234,20 @@ onBeforeUnmount(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .profile-login__device,
 .profile-status__title {
   font-size: 13px;
   color: var(--el-text-color-primary);
 }
+
 .profile-login__meta,
 .profile-login__time,
 .profile-status__desc {
   font-size: 12px;
   color: var(--el-text-color-secondary);
 }
+
 .profile-status__item {
   display: grid;
   grid-template-columns: 18px minmax(0, 1fr);
@@ -1053,56 +1256,69 @@ onBeforeUnmount(() => {
   min-height: 38px;
   color: var(--el-color-success);
 }
+
 .profile-status__item.is-warning {
   color: var(--el-color-warning);
 }
+
 .profile-status__title {
   margin-bottom: 2px;
 }
+
 .is-muted {
   color: var(--el-text-color-placeholder);
 }
+
 @media (width <= 1200px) {
   .profile-page__layout,
   .profile-page__grid {
     grid-template-columns: 1fr;
   }
 }
+
 @media (width <= 768px) {
   .profile-page {
     padding: 12px;
   }
+
   .profile-hero {
     align-items: flex-start;
   }
+
   .profile-hero,
   .profile-hero__body,
   .profile-hero__actions {
     flex-direction: column;
   }
+
   .profile-hero__actions {
     align-items: stretch;
     width: 100%;
   }
+
   .profile-hero__actions .el-button {
     width: 100%;
     margin-left: 0;
   }
+
   .profile-security__item,
   .profile-login__item {
     grid-template-columns: 40px minmax(0, 1fr);
   }
+
   .profile-security__actions,
   .profile-login__time {
     grid-column: 2;
     justify-self: start;
   }
 }
+
 @media (width <= 520px) {
   .profile-stats,
   .profile-info__item {
     grid-template-columns: 1fr;
   }
+
   .profile-info__item {
     gap: 4px;
   }

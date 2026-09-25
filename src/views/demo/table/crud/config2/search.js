@@ -1,5 +1,4 @@
 import { deptArr, stateArr } from "../config/options";
-
 const searchConfig = {
   grid: "right",
   colon: true,
@@ -14,9 +13,8 @@ const searchConfig = {
       prop: "testInput",
       attrs: { placeholder: "请输入", clearable: true },
       events: {
-        change: (e) => {
-          console.log("输入框的值: ", e);
-          // 级联操作示例，需要使用reactive提前定义数组
+        change: () => {
+          // 级联操作示例，需要使用 reactive 提前定义数组
           // selectOptions.push({ label: e, value: e });
         },
       },
@@ -34,9 +32,10 @@ const searchConfig = {
       attrs: { placeholder: "全部", clearable: true },
       options: stateArr,
       events: {
-        change(e) {
-          console.log("选中的值: ", e);
-        },
+        /**
+         * 选择变更事件（示例为空实现）
+         */
+        change() {},
       },
     },
     {
@@ -52,7 +51,7 @@ const searchConfig = {
         clearable: true,
       },
       // async initFn(formItem) {
-      //   // 注意:如果initFn函数不是箭头函数,this会指向此配置项对象,那么也就可以用this来替代形参formItem
+      //   // 注意:如果 initFn 函数不是箭头函数,this 会指向此配置项对象,那么也就可以用 this 来替代形参 formItem
       //   formItem.attrs.data = await DeptAPI.getOptions();
       // },
     },
@@ -147,5 +146,4 @@ const searchConfig = {
     },
   ],
 };
-
 export default searchConfig;

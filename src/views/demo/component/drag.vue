@@ -59,8 +59,6 @@
 </template>
 
 <script setup>
-import { VueDraggable } from "vue-draggable-plus";
-
 const userList = ref([
   { name: "路飞", roles: "船长·格斗家" },
   { name: "索隆", roles: "剑豪·战斗员·三刀流" },

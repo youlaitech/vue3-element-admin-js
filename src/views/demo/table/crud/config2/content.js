@@ -5,9 +5,11 @@ const contentConfig = {
   },
   pagePosition: "right",
   toolbar: [],
+  /**
+   * 列表数据查询（示例返回模拟数据）
+   */
   indexAction(params) {
     // 模拟发起网络请求获取列表数据
-    console.log("indexAction:", params);
     const list = [
       {
         id: 1,
@@ -38,24 +40,20 @@ const contentConfig = {
         createTime: 1715648977426,
       },
     ];
-
     const pageNum = Number(params?.pageNum ?? 1) || 1;
     const pageSize = Number(params?.pageSize ?? list.length) || list.length;
     const start = (pageNum - 1) * pageSize;
     const end = start + pageSize;
-
     return Promise.resolve({
-      data: list.slice(start, end),
-      page: {
-        pageNum,
-        pageSize,
-        total: list.length,
-      },
+      list: list.slice(start, end),
+      total: list.length,
     });
   },
+  /**
+   * 修改字段（示例不发请求，直接提示）
+   */
   modifyAction(data) {
     // 模拟发起网络请求修改字段
-    // console.log("modifyAction:", data);
     ElMessage.success(JSON.stringify(data));
     return Promise.resolve(null);
   },
@@ -132,6 +130,9 @@ const contentConfig = {
           text: "展示删除",
           perm: "delete",
           attrs: { icon: "delete", type: "danger" },
+          /**
+           * 按行条件控制按钮显隐
+           */
           render(row) {
             // 根据条件，显示或隐藏
             return row.id !== 1;
@@ -141,5 +142,4 @@ const contentConfig = {
     },
   ],
 };
-
 export default contentConfig;

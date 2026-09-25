@@ -1,15 +1,7 @@
 /**
- * 应用常量定义
- *
- * @description
- * 包含应用中所有的常量定义，包括角色、存储键名等
- */
-
-/**
  * 应用存储前缀
  */
 export const APP_PREFIX = "vea";
-
 /**
  * 超级管理员角色标识
  *
@@ -17,15 +9,13 @@ export const APP_PREFIX = "vea";
  * 拥有系统最高权限，可以访问所有资源
  */
 export const ROLE_ROOT = "ROOT";
-
 /**
- * 平台租户ID
+ * 平台租户 ID
  *
  * @description
  * 用于前端识别平台租户（不参与套餐/菜单配置）
  */
 export const PLATFORM_TENANT_ID = 0;
-
 /**
  * 存储键名常量
  *
@@ -34,20 +24,18 @@ export const PLATFORM_TENANT_ID = 0;
  * 命名规则：{APP_PREFIX}:{分类}:{具体名称}
  */
 export const STORAGE_KEYS = {
-  // ===== 认证相关 =====
+  // 认证
   ACCESS_TOKEN: `${APP_PREFIX}:auth:access_token`,
   REFRESH_TOKEN: `${APP_PREFIX}:auth:refresh_token`,
   REMEMBER_ME: `${APP_PREFIX}:auth:remember_me`,
-
-  // ===== 租户相关 =====
+  // 租户
   TENANT_ID: `${APP_PREFIX}:tenant:id`,
   TENANT_INFO: `${APP_PREFIX}:tenant:info`,
-
-  // ===== 系统相关 =====
+  // 系统
   DICT_CACHE: `${APP_PREFIX}:system:dict_cache`,
-
-  // ===== UI 设置 =====
+  // UI
   SHOW_TAGS_VIEW: `${APP_PREFIX}:ui:show_tags_view`,
+  TAGS_VIEW_STYLE: `${APP_PREFIX}:ui:tags_view_style`,
   SHOW_APP_LOGO: `${APP_PREFIX}:ui:show_app_logo`,
   SHOW_WATERMARK: `${APP_PREFIX}:ui:show_watermark`,
   PAGE_SWITCHING_ANIMATION: `${APP_PREFIX}:ui:page_switching_animation`,
@@ -56,11 +44,9 @@ export const STORAGE_KEYS = {
   THEME: `${APP_PREFIX}:ui:theme`,
   THEME_PALETTE: `${APP_PREFIX}:ui:theme_palette`,
   THEME_COLORS: `${APP_PREFIX}:ui:theme_colors`,
-  TAGS_VIEW_STYLE: `${APP_PREFIX}:ui:tags_view_style`,
   GRAY_MODE: `${APP_PREFIX}:ui:gray_mode`,
   COLOR_WEAK: `${APP_PREFIX}:ui:color_weak`,
-
-  // ===== 应用状态 =====
+  // 应用
   DEVICE: `${APP_PREFIX}:app:device`,
   SIZE: `${APP_PREFIX}:app:size`,
   LANGUAGE: `${APP_PREFIX}:app:language`,

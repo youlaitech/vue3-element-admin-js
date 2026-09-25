@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <h3 text-center m-0 mb-20px>{{ t("login.resetPassword") }}</h3>
     <el-form ref="formRef" :model="model" :rules="rules" size="large">
@@ -24,15 +24,16 @@
   </div>
 </template>
 <script setup>
+import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-
 const emit = defineEmits(["update:modelValue"]);
+/**
+ * 切回登录表单
+ */
 const toLogin = () => emit("update:modelValue", "login");
-
 const model = ref({
   username: "",
 });
-
 const rules = computed(() => {
   return {
     username: [
@@ -44,9 +45,10 @@ const rules = computed(() => {
     ],
   };
 });
-
 const formRef = ref();
-
+/**
+ * 提交重置密码表单
+ */
 const submit = async () => {
   await formRef.value?.validate();
   ElMessage.warning("开发中 ...");

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <h3 text-center m-0 mb-20px>{{ t("login.reg") }}</h3>
     <el-form ref="formRef" :model="model" :rules="rules" size="large">
@@ -99,22 +99,20 @@
   </div>
 </template>
 <script setup>
-import { Lock } from "@element-plus/icons-vue";
+import { useI18n } from "vue-i18n";
 import AuthAPI from "@/api/auth";
-
 const { t } = useI18n();
-
 const emit = defineEmits(["update:modelValue"]);
+/**
+ * 切回登录表单
+ */
 const toLogin = () => emit("update:modelValue", "login");
-
 onMounted(() => getCaptcha());
-
 const formRef = ref();
 const loading = ref(false); // 按钮 loading 状态
 const isCapsLock = ref(false); // 是否大写锁定
-const captchaBase64 = ref(); // 验证码图片Base64字符串
+const captchaBase64 = ref(); // 验证码图片 Base64 字符串
 const isRead = ref(false);
-
 const model = ref({
   username: "admin",
   password: "123456",
@@ -123,7 +121,6 @@ const model = ref({
   captchaCode: "",
   rememberMe: false,
 });
-
 const rules = computed(() => {
   return {
     username: [
@@ -173,9 +170,11 @@ const rules = computed(() => {
     ],
   };
 });
-
 // 获取验证码
 const codeLoading = ref(false);
+/**
+ * 刷新验证码
+ */
 function getCaptcha() {
   codeLoading.value = true;
   AuthAPI.getCaptcha()
@@ -185,15 +184,18 @@ function getCaptcha() {
     })
     .finally(() => (codeLoading.value = false));
 }
-
-// 检查输入大小写
+/**
+ * 检查输入大小写
+ */
 function checkCapsLock(event) {
   // 防止浏览器密码自动填充时报错
   if (event instanceof KeyboardEvent) {
     isCapsLock.value = event.getModifierState("CapsLock");
   }
 }
-
+/**
+ * 提交注册表单
+ */
 const submit = async () => {
   await formRef.value?.validate();
   ElMessage.warning("开发中 ...");

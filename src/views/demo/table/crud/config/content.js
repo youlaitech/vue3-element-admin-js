@@ -1,6 +1,5 @@
 import UserAPI from "@/api/system/user";
 import RoleAPI from "@/api/system/role";
-
 const contentConfig = {
   permPrefix: "sys:user", // 不写不进行按钮权限校验
   table: {
@@ -13,24 +12,34 @@ const contentConfig = {
     pageSize: 20,
     pageSizes: [10, 20, 30, 50],
   },
+  /**
+   * 列表数据查询
+   */
   indexAction(params) {
     return UserAPI.getPage(params);
   },
   deleteAction: UserAPI.deleteByIds,
+  /**
+   * 导入文件处理
+   */
   importAction(file) {
     return UserAPI.import(file);
   },
   exportAction: UserAPI.export,
   importTemplate: UserAPI.downloadTemplate,
-  importsAction(data) {
+  /**
+   * 导入完成后的处理（示例为空实现）
+   */
+  importsAction() {
     // 模拟导入数据
-    console.log("importsAction", data);
     return Promise.resolve();
   },
+  /**
+   * 导出数据（示例取全量列表）
+   */
   async exportsAction(params) {
     // 模拟获取到的是全量数据
     const data = await UserAPI.getPage(params);
-    console.log("exportsAction", data.list);
     return data.list;
   },
   pk: "id",
@@ -112,6 +121,7 @@ const contentConfig = {
           // perm: "password-reset",
           attrs: {
             icon: "refresh-left",
+            // color: "#626AEF", // 使用 text 属性，颜色不生效
             style: {
               "--el-button-text-color": "#626AEF",
               "--el-button-hover-link-text-color": "#9197f4",
@@ -124,5 +134,4 @@ const contentConfig = {
     },
   ],
 };
-
 export default contentConfig;

@@ -1,6 +1,5 @@
 import { DeviceEnum } from "@/enums/settings";
 import { useAppStore } from "@/stores";
-
 const modalConfig = {
   permPrefix: "sys:user",
   component: "drawer",
@@ -11,11 +10,11 @@ const modalConfig = {
     size: useAppStore().device === DeviceEnum.MOBILE ? "80%" : 500,
   },
   form: { labelPosition: "right", labelWidth: "auto" },
-  beforeSubmit(data) {
-    console.log("beforeSubmit", data);
-  },
+  /**
+   * 表单提交（示例不发请求，直接提示）
+   */
   formAction(data) {
-    // return UserAPI.update(data.id, data);
+    // return UserAPI.update(data.id as string, data);
     // 模拟发起网络请求修改字段
     ElMessage.success(JSON.stringify(data));
     return Promise.resolve(null);
@@ -100,5 +99,4 @@ const modalConfig = {
     },
   ],
 };
-
 export default reactive(modalConfig);

@@ -3,23 +3,18 @@ import router from "@/router";
 import { usePermissionStore, useUserStore } from "@/stores";
 import { useTenantStoreHook } from "@/stores/tenant";
 import { isTenantEnabled } from "@/utils/tenant";
-import { addRecentMenu } from "@/composables/useRecentMenus";
-
 /**
- * 路由权限守卫
+ * 路由守卫
  *
- * 处理登录验证、动态路由生成、404检测等
+ * 处理登录验证、动态路由生成、404 检测、页面标题与进度条
  */
 export function setupPermissionGuard() {
   // 白名单支持前缀匹配：/f 命中所有公开表单分享页 /f/:formKey
   const whiteList = ["/login", "/f"];
-
   router.beforeEach(async (to, _from) => {
     NProgress.start();
-
     try {
       const isLoggedIn = useUserStore().isLoggedIn();
-
       // 未登录处理
       if (!isLoggedIn) {
         const isWhiteListed = whiteList.some(
@@ -31,32 +26,25 @@ export function setupPermissionGuard() {
         NProgress.done();
         return `/login?redirect=${encodeURIComponent(to.fullPath)}`;
       }
-
       // 已登录访问登录页，重定向到首页
       if (to.path === "/login") {
         return { path: "/" };
       }
-
       const permissionStore = usePermissionStore();
       const userStore = useUserStore();
-
       // 动态路由生成
       if (!permissionStore.isRouteGenerated) {
         if (!userStore.userInfo?.roles?.length) {
           await userStore.getUserInfo();
         }
-
-        // 加载用户租户列表（VITE_APP_TENANT_ENABLED=true 时生效）
+        // 加载用户租户列表（VITE_TENANT_ENABLED=true 时生效）
         await initTenantContext();
-
         const dynamicRoutes = await permissionStore.generateRoutes();
         dynamicRoutes.forEach((route) => {
           router.addRoute(route);
         });
-
         return { ...to, replace: true };
       }
-
       // 路由 404 检查
       if (to.matched.length === 0) {
         // 从登录页跳转且目标路径无效，回退首页（避免不同用户权限不同导致的 404）
@@ -65,7 +53,6 @@ export function setupPermissionGuard() {
         }
         return "/404";
       }
-
       // 动态标题
       const title = to.params.title || to.query.title;
       if (title) {
@@ -78,27 +65,15 @@ export function setupPermissionGuard() {
       return "/login";
     }
   });
-
-  router.afterEach((to) => {
+  router.afterEach(() => {
     NProgress.done();
-
-    // 记录最近访问
-    if (to.meta?.title && to.path) {
-      const icon = typeof to.meta.icon === "string" ? to.meta.icon : undefined;
-      addRecentMenu(to.path, to.meta.title, icon);
-    }
   });
 }
-
-// ============================================
-// 多租户支持（可选）
-// ============================================
-
-/** 初始化多租户上下文，未启用或失败时静默跳过 */
+/**
+ * 初始化多租户上下文，未启用或失败时静默跳过
+ */
 async function initTenantContext() {
-  // 多租户关闭时不初始化租户上下文
   if (!isTenantEnabled()) return;
-
   try {
     await useTenantStoreHook().loadTenant();
   } catch {

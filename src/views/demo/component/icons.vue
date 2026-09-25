@@ -37,7 +37,6 @@
 
 <script setup>
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
-
 defineOptions({
   name: "Icons",
   inheritAttrs: false,
@@ -84,11 +83,15 @@ const svg_icons = [
   "verify-code",
 ];
 const icons = ref(ElementPlusIconsVue);
-
+/**
+ * 生成 svg 图标的使用代码
+ */
 function generateIconCode(symbol) {
   return `<div class="i-svg:${symbol}" />`;
 }
-
+/**
+ * 生成 Element Plus 图标的使用代码
+ */
 function generateElementIconCode(symbol) {
   return `<el-icon><${symbol} /></el-icon>`;
 }

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <el-card class="page-search" shadow="never">
       <el-form ref="queryFormRef" :model="params" :inline="true">
@@ -82,50 +82,22 @@
       />
     </el-card>
 
-    <el-dialog
-      v-model="noticeDialogVisible"
-      :title="noticeDetail?.title ?? '通知详情'"
-      width="800px"
-      custom-class="notice-detail"
-    >
-      <div v-if="noticeDetail" class="notice-detail__wrapper">
-        <div class="notice-detail__meta">
-          <span>
-            <el-icon><User /></el-icon>
-            {{ noticeDetail.publisherName }}
-          </span>
-          <span class="ml-2">
-            <el-icon><Timer /></el-icon>
-            {{ noticeDetail.publishTime }}
-          </span>
-        </div>
-
-        <div class="notice-detail__content">
-          <div v-html="noticeDetail.content"></div>
-        </div>
-      </div>
-    </el-dialog>
+    <NoticeDetailDialog v-model="noticeDialogVisible" :detail="noticeDetail" />
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { Refresh, Search, Timer, User } from "@element-plus/icons-vue";
-
 import NoticeAPI from "@/api/system/notice";
 import { usePageTable } from "@/composables";
-
 defineOptions({
   name: "MyNotice",
   inheritAttrs: false,
 });
-
-/** 通知已读标记（1:已读;0:未读）。 */
+// 通知已读标记（1:已读;0:未读）
 const NOTICE_READ = 1;
-
 const queryFormRef = ref();
-
-/** 分页表格数据管理 */
+// 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
@@ -134,12 +106,10 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: NoticeAPI.getMyNoticePage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
-
 const noticeDialogVisible = ref(false);
 const noticeDetail = ref(null);
-
 /**
- * 查看通知详情。
+ * 查看通知详情
  *
  * @param id 通知 ID
  */
@@ -148,48 +118,7 @@ async function handleReadNotice(id) {
   noticeDetail.value = data;
   noticeDialogVisible.value = true;
 }
-
 onMounted(() => {
   handleQuery();
 });
 </script>
-
-<style lang="scss" scoped>
-:deep(.el-dialog__header) {
-  text-align: center;
-}
-
-.notice-detail {
-  &__wrapper {
-    padding: 0 20px;
-  }
-
-  &__meta {
-    display: flex;
-    align-items: center;
-    margin-bottom: 16px;
-    font-size: 13px;
-    color: var(--el-text-color-secondary);
-  }
-
-  &__publisher {
-    margin-right: 24px;
-
-    i {
-      margin-right: 4px;
-    }
-  }
-
-  &__content {
-    max-height: 60vh;
-    padding-top: 16px;
-    margin-bottom: 24px;
-    overflow-y: auto;
-    border-top: 1px solid var(--el-border-color);
-
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-  }
-}
-</style>

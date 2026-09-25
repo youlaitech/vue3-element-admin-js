@@ -1,38 +1,42 @@
 <!-- 字典组件示例 -->
 <template>
   <div class="page-container">
-    <el-link
-      href="https://gitee.com/youlaiorg/vue3-element-admin/blob/master/src/views/demo/dictionary.vue"
-      type="primary"
-      target="_blank"
+    <el-button
       class="mb-[20px]"
+      tag="a"
+      href="https://gitee.com/youlaiorg/vue3-element-admin/blob/master/src/views/demo/component/dictionary.vue"
+      target="_blank"
+      link
+      type="info"
+      size="small"
     >
-      示例源码 请点击>>>
-    </el-link>
+      <el-icon class="mr-1"><Link /></el-icon>
+      示例源码
+    </el-button>
     <el-form>
       <el-form-item label="性别">
-        <dict v-model="stringValue" code="gender" />
+        <DictSelect v-model="stringValue" code="gender" />
         <el-link underline="never" type="primary" class="ml-5">
           值为String: const value = ref("1");
         </el-link>
       </el-form-item>
 
       <el-form-item label="性别">
-        <dict v-model="numberValue" code="gender" />
+        <DictSelect v-model="numberValue" code="gender" />
         <el-link underline="never" type="success" class="ml-5">
           值为Number: const value = ref(1);
         </el-link>
       </el-form-item>
 
       <el-form-item label="单选框字典">
-        <dict v-model="numberValue" type="radio" code="gender" />
+        <DictSelect v-model="numberValue" type="radio" code="gender" />
         <el-link underline="never" type="success" class="ml-5">
           值为Number: const value = ref(1);
         </el-link>
       </el-form-item>
 
       <el-form-item label="复选框字典">
-        <dict v-model="arrayValue" type="checkbox" code="gender" />
+        <DictSelect v-model="arrayValue" type="checkbox" code="gender" />
         <el-link underline="never" type="success" class="ml-5">
           值为Array: const value = ref(["1", "2"]);
         </el-link>
@@ -42,7 +46,7 @@
 </template>
 
 <script setup>
-const stringValue = ref("1"); // 性别(值为String)
-const numberValue = ref(1); // 性别(值为Number)
-const arrayValue = ref(["1", "2"]); // 性别(值为Array)
+const stringValue = ref("1"); // 性别(值为 String)
+const numberValue = ref(1); // 性别(值为 Number)
+const arrayValue = ref(["1", "2"]); // 性别(值为 Array)
 </script>

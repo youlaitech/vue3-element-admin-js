@@ -1,5 +1,4 @@
 import { deptArr, stateArr } from "./options";
-
 const searchConfig = {
   permPrefix: "sys:user",
   formItems: [
@@ -27,6 +26,10 @@ const searchConfig = {
         clearable: true,
         style: { width: "200px" },
       },
+      // async initFn(formItem) {
+      //   // 注意:如果 initFn 函数不是箭头函数,this 会指向此配置项对象,那么也就可以用 this 来替代形参 formItem
+      //   formItem.attrs.data = await DeptAPI.getOptions();
+      // },
     },
     {
       type: "select",
@@ -54,5 +57,4 @@ const searchConfig = {
     },
   ],
 };
-
 export default searchConfig;
