@@ -1,5 +1,4 @@
 import { defineMock } from "./base";
-
 export default defineMock([
   {
     url: "roles/options",
@@ -17,7 +16,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   {
     url: "roles",
     method: ["GET"],
@@ -91,7 +89,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   // 新增角色
   {
     url: "roles",
@@ -104,7 +101,6 @@ export default defineMock([
       };
     },
   },
-
   // 获取角色表单数据
   {
     url: "roles/:id/form",
@@ -129,7 +125,6 @@ export default defineMock([
       };
     },
   },
-
   // 删除角色
   {
     url: "roles/:id",
@@ -168,7 +163,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   // 获取角色部门ID列表(自定义数据权限)
   {
     url: "roles/:id/dept-ids",
@@ -183,7 +177,6 @@ export default defineMock([
     },
   },
 ]);
-
 // 角色映射表数据
 const roleMap = {
   2: {

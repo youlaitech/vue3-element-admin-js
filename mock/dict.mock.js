@@ -1,5 +1,4 @@
 import { defineMock } from "./base";
-
 export default defineMock([
   {
     url: "dicts",
@@ -14,13 +13,24 @@ export default defineMock([
             dictCode: "gender",
             status: 1,
           },
+          {
+            id: "2",
+            name: "通知类型",
+            dictCode: "notice_type",
+            status: 1,
+          },
+          {
+            id: "3",
+            name: "通知级别",
+            dictCode: "notice_level",
+            status: 1,
+          },
         ],
-        total: 1,
+        total: 3,
       },
       msg: "一切ok",
     },
   },
-
   /**
    * 字典列表
    */
@@ -34,11 +44,18 @@ export default defineMock([
           value: "gender",
           label: "性别",
         },
+        {
+          value: "notice_type",
+          label: "通知类型",
+        },
+        {
+          value: "notice_level",
+          label: "通知级别",
+        },
       ],
       msg: "一切ok",
     },
   },
-
   // 新增字典
   {
     url: "dicts",
@@ -51,7 +68,6 @@ export default defineMock([
       };
     },
   },
-
   // 获取字典表单数据
   {
     url: "dicts/:id/form",
@@ -64,7 +80,6 @@ export default defineMock([
       };
     },
   },
-
   // 修改字典
   {
     url: "dicts/:id",
@@ -77,7 +92,6 @@ export default defineMock([
       };
     },
   },
-
   // 删除字典
   {
     url: "dicts/:ids",
@@ -90,49 +104,23 @@ export default defineMock([
       };
     },
   },
-
   //---------------------------------------------------
   // 字典项相关接口
   //---------------------------------------------------
-
   // 字典项分页列表
   {
     url: "dicts/:dictCode/items",
     method: ["GET"],
-    body: {
-      code: "00000",
-      data: [
-        {
-          id: "1",
-          dictCode: "gender",
-          label: "男",
-          value: "1",
-          sort: 1,
-          status: 1,
+    body: ({ params }) => {
+      const list = dictItemList[params.dictCode] ?? [];
+      return {
+        code: "00000",
+        data: {
+          list,
+          total: list.length,
         },
-        {
-          id: "2",
-          dictCode: "gender",
-          label: "女",
-          value: "2",
-          sort: 2,
-          status: 1,
-        },
-        {
-          id: "3",
-          dictCode: "gender",
-          label: "保密",
-          value: "0",
-          sort: 3,
-          status: 1,
-        },
-      ],
-      page: {
-        pageNum: 1,
-        pageSize: 10,
-        total: 3,
-      },
-      msg: "一切ok",
+        msg: "一切ok",
+      };
     },
   },
   // 字典项列表
@@ -141,10 +129,8 @@ export default defineMock([
     method: ["GET"],
     body: ({ params }) => {
       const dictCode = params.dictCode;
-
       let list = null;
-
-      if (dictCode == "gender") {
+      if (dictCode === "gender") {
         list = [
           {
             value: "1",
@@ -159,59 +145,58 @@ export default defineMock([
             label: "保密",
           },
         ];
-      } else if (dictCode == "notice_level") {
+      } else if (dictCode === "notice_level") {
         list = [
           {
             value: "L",
             label: "低",
-            tag: "info",
+            tagType: "I",
           },
           {
             value: "M",
             label: "中",
-            tag: "warning",
+            tagType: "W",
           },
           {
             value: "H",
             label: "高",
-            tag: "danger",
+            tagType: "D",
           },
         ];
-      } else if (dictCode == "notice_type") {
+      } else if (dictCode === "notice_type") {
         list = [
           {
             value: "1",
             label: "系统升级",
-            tag: "success",
+            tagType: "S",
           },
           {
             value: "2",
             label: "系统维护",
-            tag: "primary",
+            tagType: "P",
           },
           {
             value: "3",
             label: "安全警告",
-            tag: "danger",
+            tagType: "D",
           },
           {
             value: "4",
             label: "假期通知",
-            tag: "success",
+            tagType: "S",
           },
           {
             value: "5",
             label: "公司新闻",
-            tag: "primary",
+            tagType: "P",
           },
           {
             value: "99",
             label: "其他",
-            tag: "info",
+            tagType: "I",
           },
         ];
       }
-
       return {
         code: "00000",
         data: list,
@@ -227,11 +212,10 @@ export default defineMock([
       return {
         code: "00000",
         data: null,
-        msg: "新增字典" + body.name + "成功",
+        msg: "新增字典项" + body.label + "成功",
       };
     },
   },
-
   // 字典项表单数据
   {
     url: "dicts/:dictCode/items/:itemId/form",
@@ -244,7 +228,6 @@ export default defineMock([
       };
     },
   },
-
   // 修改字典项
   {
     url: "dicts/:dictCode/items/:itemId",
@@ -253,11 +236,10 @@ export default defineMock([
       return {
         code: "00000",
         data: null,
-        msg: "修改字典项" + body.name + "成功",
+        msg: "修改字典项" + body.label + "成功",
       };
     },
   },
-
   // 删除字典
   {
     url: "dicts/:dictCode/items/:itemId",
@@ -271,7 +253,6 @@ export default defineMock([
     },
   },
 ]);
-
 // 字典映射表数据
 const dictMap = {
   1: {
@@ -280,32 +261,121 @@ const dictMap = {
     dictCode: "gender",
     status: 1,
   },
-};
-
-// 字典项映射表数据
-const dictItemMap = {
-  1: {
-    id: "1",
-    value: "1",
-    label: "男",
-    sort: 1,
-    status: 1,
-    tagType: "primary",
-  },
   2: {
     id: "2",
-    value: "2",
-    label: "女",
-    sort: 2,
+    name: "通知类型",
+    dictCode: "notice_type",
     status: 1,
-    tagType: "danger",
   },
   3: {
     id: "3",
-    value: "0",
-    label: "保密",
-    sort: 3,
+    name: "通知级别",
+    dictCode: "notice_level",
     status: 1,
-    tagType: "info",
   },
 };
+// 字典项数据：tagType 用全称，与 sql/youlai-admin.sql 种子数据保持一致
+const dictItemList = {
+  gender: [
+    {
+      id: "1",
+      dictCode: "gender",
+      label: "男",
+      value: "1",
+      sort: 1,
+      status: 1,
+      tagType: "primary",
+    },
+    { id: "2", dictCode: "gender", label: "女", value: "2", sort: 2, status: 1, tagType: "danger" },
+    { id: "3", dictCode: "gender", label: "保密", value: "0", sort: 3, status: 1, tagType: "info" },
+  ],
+  notice_type: [
+    {
+      id: "4",
+      dictCode: "notice_type",
+      label: "系统升级",
+      value: "1",
+      sort: 1,
+      status: 1,
+      tagType: "success",
+    },
+    {
+      id: "5",
+      dictCode: "notice_type",
+      label: "系统维护",
+      value: "2",
+      sort: 2,
+      status: 1,
+      tagType: "primary",
+    },
+    {
+      id: "6",
+      dictCode: "notice_type",
+      label: "安全警告",
+      value: "3",
+      sort: 3,
+      status: 1,
+      tagType: "danger",
+    },
+    {
+      id: "7",
+      dictCode: "notice_type",
+      label: "假期通知",
+      value: "4",
+      sort: 4,
+      status: 1,
+      tagType: "success",
+    },
+    {
+      id: "8",
+      dictCode: "notice_type",
+      label: "公司新闻",
+      value: "5",
+      sort: 5,
+      status: 1,
+      tagType: "primary",
+    },
+    {
+      id: "9",
+      dictCode: "notice_type",
+      label: "其他",
+      value: "99",
+      sort: 99,
+      status: 1,
+      tagType: "info",
+    },
+  ],
+  notice_level: [
+    {
+      id: "10",
+      dictCode: "notice_level",
+      label: "低",
+      value: "L",
+      sort: 1,
+      status: 1,
+      tagType: "info",
+    },
+    {
+      id: "11",
+      dictCode: "notice_level",
+      label: "中",
+      value: "M",
+      sort: 2,
+      status: 1,
+      tagType: "warning",
+    },
+    {
+      id: "12",
+      dictCode: "notice_level",
+      label: "高",
+      value: "H",
+      sort: 3,
+      status: 1,
+      tagType: "danger",
+    },
+  ],
+};
+// 字典项映射表数据（按 id 取单条，供编辑回显）
+const dictItemMap = Object.values(dictItemList)
+  .flat()
+  .reduce((map, item) => ({ ...map, [item.id]: item }), {});

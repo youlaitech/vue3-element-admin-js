@@ -1,5 +1,4 @@
 import { defineMock } from "./base";
-
 export default defineMock([
   {
     url: "notices",
@@ -144,7 +143,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   // 新增通知
   {
     url: "notices",
@@ -157,7 +155,6 @@ export default defineMock([
       };
     },
   },
-
   // 获取通知表单数据
   {
     url: "notices/:id/form",
@@ -170,16 +167,33 @@ export default defineMock([
       };
     },
   },
-
   // 获取通知详情
   {
     url: "notices/:id/detail",
     method: ["GET"],
     body: ({ params }) => {
+      const myNotice = myNoticeList.find((item) => item.id === params.id);
+      if (myNotice) myNotice.isRead = 1;
+      if (noticeMap[params.id]) noticeMap[params.id].isRead = 1;
       return {
         code: "00000",
         data: noticeMap[params.id],
         msg: "一切ok",
+      };
+    },
+  },
+  // 全部已读
+  {
+    url: "notices/read-all",
+    method: ["PUT"],
+    body() {
+      myNoticeList.forEach((item) => {
+        item.isRead = 1;
+      });
+      return {
+        code: "00000",
+        data: null,
+        msg: "全部已读成功",
       };
     },
   },
@@ -195,7 +209,6 @@ export default defineMock([
       };
     },
   },
-
   // 删除通知
   {
     url: "notices/:id",
@@ -208,68 +221,76 @@ export default defineMock([
       };
     },
   },
-
   // 我的通知分页列表
   {
     url: "notices/my",
     method: ["GET"],
-    body: {
-      code: "00000",
-      data: {
-        list: [
-          {
-            id: "10",
-            title: "v2.16.1 版本修复了 WebSocket 重复连接导致的后台线程阻塞问题，优化了通知公告。",
-            type: 1,
-            level: "L",
-            publisherName: "系统管理员",
-            publishTime: "2024-09-30 17:30",
-            isRead: 0,
-          },
-          {
-            id: "9",
-            title: "公司将在 10 月 15 日举办新产品发布会，敬请期待。",
-            type: 5,
-            level: "L",
-            publisherName: "系统管理员",
-            publishTime: "2024-09-30 17:29",
-            isRead: 0,
-          },
-          {
-            id: "8",
-            title: "国庆假期从 10 月 1 日至 10 月 7 日放假，共 7 天。",
-            type: 4,
-            level: "L",
-            publisherName: "系统管理员",
-            publishTime: "2024-09-30 17:28",
-            isRead: 0,
-          },
-          {
-            id: "7",
-            title: "最近发现一些钓鱼邮件，请大家提高警惕，不要点击陌生链接。",
-            type: 3,
-            level: "L",
-            publisherName: "系统管理员",
-            publishTime: "2024-09-30 17:27",
-            isRead: 0,
-          },
-          {
-            id: "6",
-            title: "系统将于本周六凌晨 2 点进行维护，预计维护时间为 2 小时。",
-            type: 2,
-            level: "L",
-            publisherName: "系统管理员",
-            publishTime: "2024-09-30 17:26",
-            isRead: 0,
-          },
-        ],
-        total: 10,
-      },
-      msg: "一切ok",
+    body({ query }) {
+      const pageNum = Number(query?.pageNum || 1);
+      const pageSize = Number(query?.pageSize || 10);
+      const isRead =
+        query?.isRead == null || query.isRead === "" ? undefined : Number(query.isRead);
+      const filtered =
+        isRead == null ? myNoticeList : myNoticeList.filter((item) => item.isRead === isRead);
+      const start = (pageNum - 1) * pageSize;
+      return {
+        code: "00000",
+        data: {
+          list: filtered.slice(start, start + pageSize),
+          total: filtered.length,
+        },
+        msg: "一切ok",
+      };
     },
   },
 ]);
-
+const myNoticeList = [
+  {
+    id: "10",
+    title: "v2.16.1 版本修复了 WebSocket 重复连接导致的后台线程阻塞问题，优化了通知公告。",
+    type: 1,
+    level: "L",
+    publisherName: "系统管理员",
+    publishTime: "2024-09-30 17:30",
+    isRead: 0,
+  },
+  {
+    id: "9",
+    title: "公司将在 10 月 15 日举办新产品发布会，敬请期待。",
+    type: 5,
+    level: "L",
+    publisherName: "系统管理员",
+    publishTime: "2024-09-30 17:29",
+    isRead: 0,
+  },
+  {
+    id: "8",
+    title: "国庆假期从 10 月 1 日至 10 月 7 日放假，共 7 天。",
+    type: 4,
+    level: "L",
+    publisherName: "系统管理员",
+    publishTime: "2024-09-30 17:28",
+    isRead: 0,
+  },
+  {
+    id: "7",
+    title: "最近发现一些钓鱼邮件，请大家提高警惕，不要点击陌生链接。",
+    type: 3,
+    level: "L",
+    publisherName: "系统管理员",
+    publishTime: "2024-09-30 17:27",
+    isRead: 1,
+  },
+  {
+    id: "6",
+    title: "系统将于本周六凌晨 2 点进行维护，预计维护时间为 2 小时。",
+    type: 2,
+    level: "L",
+    publisherName: "系统管理员",
+    publishTime: "2024-09-30 17:26",
+    isRead: 1,
+  },
+];
 // 通知映射表数据
 const noticeMap = {
   1: {
@@ -328,7 +349,6 @@ const noticeMap = {
     createTime: "2024-09-28 11:21",
     revokeTime: "2024-09-30 17:21",
   },
-
   5: {
     id: "5",
     title: "v2.16.0 通知公告、字典翻译组件。",

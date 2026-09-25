@@ -1,5 +1,4 @@
 import { defineMock } from "./base";
-
 export default defineMock([
   {
     url: "depts/options",
@@ -25,7 +24,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   {
     url: "depts",
     method: ["GET"],
@@ -70,7 +68,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   // 新增部门
   {
     url: "depts",
@@ -83,7 +80,6 @@ export default defineMock([
       };
     },
   },
-
   // 获取部门表单数据
   {
     url: "depts/:id/form",
@@ -96,7 +92,6 @@ export default defineMock([
       };
     },
   },
-
   // 修改部门
   {
     url: "depts/:id",
@@ -109,7 +104,6 @@ export default defineMock([
       };
     },
   },
-
   // 删除部门
   {
     url: "depts/:id",
@@ -123,7 +117,6 @@ export default defineMock([
     },
   },
 ]);
-
 // 部门映射表数据
 const deptMap = {
   1: {

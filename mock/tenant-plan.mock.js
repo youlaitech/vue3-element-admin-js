@@ -1,5 +1,4 @@
 import { defineMock } from "./base";
-
 export default defineMock([
   {
     url: "tenant-plans",
@@ -69,7 +68,6 @@ export default defineMock([
               sort: 1,
               remark: "",
             };
-
       return {
         code: "00000",
         data: form,

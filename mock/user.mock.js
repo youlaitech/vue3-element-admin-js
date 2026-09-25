@@ -1,5 +1,4 @@
 import { defineMock } from "./base";
-
 export default defineMock([
   {
     url: "users/me",
@@ -20,39 +19,32 @@ export default defineMock([
           "sys:user:import",
           "sys:user:export",
           "sys:user:reset-password",
-
           "sys:role:list",
           "sys:role:create",
           "sys:role:update",
           "sys:role:delete",
-
           "sys:dept:list",
           "sys:dept:create",
           "sys:dept:update",
           "sys:dept:delete",
-
           "sys:menu:list",
           "sys:menu:create",
           "sys:menu:update",
           "sys:menu:delete",
-
           "sys:dict:list",
           "sys:dict:create",
           "sys:dict:update",
           "sys:dict:delete",
-
           "sys:dict-item:list",
           "sys:dict-item:create",
           "sys:dict-item:update",
           "sys:dict-item:delete",
-
           "sys:notice:list",
           "sys:notice:create",
           "sys:notice:update",
           "sys:notice:delete",
           "sys:notice:revoke",
           "sys:notice:publish",
-
           "sys:config:list",
           "sys:config:create",
           "sys:config:update",
@@ -63,7 +55,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   {
     url: "users",
     method: ["GET"],
@@ -101,7 +92,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   // 新增用户
   {
     url: "users",
@@ -114,7 +104,6 @@ export default defineMock([
       };
     },
   },
-
   // 获取用户表单数据
   {
     url: "users/:userId/form",
@@ -139,7 +128,6 @@ export default defineMock([
       };
     },
   },
-
   // 删除用户
   {
     url: "users/:userId",
@@ -152,7 +140,6 @@ export default defineMock([
       };
     },
   },
-
   // 重置密码
   {
     url: "users/:userId/password/reset",
@@ -165,7 +152,6 @@ export default defineMock([
       };
     },
   },
-
   // 导出Excel
   {
     url: "users/export",
@@ -175,7 +161,6 @@ export default defineMock([
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     },
   },
-
   {
     url: "users/profile",
     method: ["GET"],
@@ -195,7 +180,6 @@ export default defineMock([
       },
     },
   },
-
   {
     url: "users/profile",
     method: ["PUT"],
@@ -207,7 +191,6 @@ export default defineMock([
       };
     },
   },
-
   {
     url: "users/password",
     method: ["PUT"],
@@ -220,7 +203,6 @@ export default defineMock([
     },
   },
 ]);
-
 // 用户映射表数据
 const userMap = {
   2: {

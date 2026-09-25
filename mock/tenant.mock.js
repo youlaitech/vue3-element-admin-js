@@ -1,5 +1,4 @@
 import { defineMock } from "./base";
-
 export default defineMock([
   {
     url: "tenants/options",
@@ -144,7 +143,6 @@ export default defineMock([
               remark: "",
               expireTime: null,
             };
-
       return {
         code: "00000",
         data: form,
@@ -218,7 +216,6 @@ export default defineMock([
     method: ["POST"],
     body({ params }) {
       const tenantId = Number(params.tenantId);
-
       const allTenants = [
         {
           id: "1",
@@ -251,9 +248,7 @@ export default defineMock([
           isDefault: false,
         },
       ];
-
-      const tenant = allTenants.find((t) => t.id === tenantId) || null;
-
+      const tenant = allTenants.find((t) => t.id === String(tenantId)) || null;
       return {
         code: tenant ? "00000" : "A0400",
         data: tenant,

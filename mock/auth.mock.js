@@ -1,5 +1,4 @@
 import { defineMock } from "./base";
-
 export default defineMock([
   {
     url: "auth/captcha",
@@ -14,7 +13,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   {
     url: "auth/login",
     method: ["POST"],
@@ -31,7 +29,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   {
     url: "auth/refresh-token",
     method: ["POST"],
@@ -48,7 +45,6 @@ export default defineMock([
       msg: "一切ok",
     },
   },
-
   {
     url: "auth/logout",
     method: ["DELETE"],
