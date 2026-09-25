@@ -137,31 +137,23 @@
 
 <script setup>
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Refresh, FullScreen } from "@element-plus/icons-vue";
-
 import ConfigAPI from "@/api/system/config";
 import { usePageTable } from "@/composables";
-
 defineOptions({
   name: "Config",
   inheritAttrs: false,
 });
-
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
-
 const queryFormRef = ref();
 const dataFormRef = ref();
-
-/** 分页表格数据管理 */
+// 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: { pageNum: 1, pageSize: 10, keywords: "" },
   request: ConfigAPI.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
-
 const dialogState = reactive({ title: "", visible: false });
-
 const formData = reactive({
   id: undefined,
   configName: "",
@@ -169,17 +161,17 @@ const formData = reactive({
   configValue: "",
   remark: "",
 });
-
 const rules = {
   configName: [{ required: true, message: "请输入系统配置名称", trigger: "blur" }],
   configKey: [{ required: true, message: "请输入系统配置编码", trigger: "blur" }],
   configValue: [{ required: true, message: "请输入系统配置值", trigger: "blur" }],
 };
-
+/**
+ * 记录表格勾选项
+ */
 function handleSelectionChange(selection) {
   void selection;
 }
-
 /**
  * 打开新增/编辑系统配置弹窗
  */
@@ -194,20 +186,17 @@ async function openDialog(id) {
     formData.id = undefined;
   }
 }
-
-// 刷新缓存。
+// 刷新缓存
 const refreshCache = useDebounceFn(async () => {
   await ConfigAPI.refreshCache();
   ElMessage.success("刷新成功");
 }, 1000);
-
 /**
  * 校验并提交系统配置表单
  */
 async function handleSubmit() {
   const valid = await dataFormRef.value?.validate().catch(() => false);
   if (!valid) return;
-
   loading.value = true;
   try {
     const id = formData.id;
@@ -224,7 +213,6 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
-
 /**
  * 关闭弹窗并重置表单
  */
@@ -234,7 +222,6 @@ function closeDialog() {
   dataFormRef.value?.clearValidate();
   formData.id = undefined;
 }
-
 /**
  * 删除系统配置
  */
@@ -253,7 +240,6 @@ async function handleDelete(id) {
     loading.value = false;
   }
 }
-
 onMounted(() => {
   handleQuery();
 });

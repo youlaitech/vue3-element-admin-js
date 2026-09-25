@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <el-card class="page-search" shadow="never">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
@@ -41,6 +41,13 @@
           </el-button>
         </div>
         <div class="page-toolbar__right">
+          <el-tooltip :content="expandAll ? '折叠全部' : '展开全部'" placement="top">
+            <el-button class="page-icon-btn" @click="toggleExpandAll">
+              <span v-if="expandAll" class="i-svg:checkbox-indeterminate" />
+              <span v-else class="i-svg:add-box" />
+            </el-button>
+          </el-tooltip>
+          <el-divider class="page-toolbar__divider" direction="vertical" />
           <el-tooltip content="刷新" placement="top">
             <el-button class="page-icon-btn" @click="handleQuery">
               <el-icon><Refresh /></el-icon>
@@ -56,11 +63,12 @@
 
       <div class="page-table-wrapper">
         <el-table
+          ref="tableRef"
           v-loading="loading"
           :data="list"
           class="page-table"
           row-key="id"
-          default-expand-all
+          :default-expand-all="expandAll"
           border
           height="100%"
           :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
@@ -164,54 +172,44 @@
 
 <script setup>
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Refresh, FullScreen } from "@element-plus/icons-vue";
-
 import DeptAPI from "@/api/system/dept";
 import { useTableSelection } from "@/composables";
 import { CommonStatus } from "@/enums";
-
 defineOptions({
   name: "Dept",
   inheritAttrs: false,
 });
-
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
-
 const queryFormRef = ref();
 const deptFormRef = ref();
-
+const tableRef = ref();
+// 是否展开全部部门层级，默认展开
+const expandAll = ref(true);
 const loading = ref(false);
 const list = ref([]);
 const queryParams = reactive({
   keywords: "",
   status: undefined,
 });
-
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
-
 const dialogState = reactive({
   title: "",
   visible: false,
 });
-
 const deptOptions = ref([]);
-
 const initialFormData = {
   status: CommonStatus.ENABLED,
   parentId: "0",
   sort: 1,
 };
-
 const formData = reactive({ ...initialFormData });
-
 const rules = {
   parentId: [{ required: true, message: "上级部门不能为空", trigger: "change" }],
   name: [{ required: true, message: "部门名称不能为空", trigger: "blur" }],
   code: [{ required: true, message: "部门编号不能为空", trigger: "blur" }],
   sort: [{ required: true, message: "显示排序不能为空", trigger: "blur" }],
 };
-
 /**
  * 拉取部门列表数据（一次性返回全量树）
  */
@@ -223,14 +221,35 @@ async function fetchData() {
     loading.value = false;
   }
 }
-
 /**
- * 按当前筛选条件重新查询。
+ * 展开/折叠全部部门层级
+ */
+function toggleExpandAll() {
+  expandAll.value = !expandAll.value;
+  applyExpansion();
+}
+/**
+ * 按当前开关应用展开状态，逐级下发到所有部门节点
+ */
+function applyExpansion() {
+  /**
+   * 递归展开树节点
+   */
+  const walk = (rows) => {
+    rows.forEach((row) => {
+      if (!row.children?.length) return;
+      tableRef.value?.toggleRowExpansion(row, expandAll.value);
+      walk(row.children);
+    });
+  };
+  walk(list.value);
+}
+/**
+ * 按当前筛选条件重新查询
  */
 function handleQuery() {
   fetchData();
 }
-
 /**
  * 重置搜索表单后重新查询
  */
@@ -238,7 +257,6 @@ function handleResetQuery() {
   queryFormRef.value?.resetFields();
   fetchData();
 }
-
 /**
  * 重置表单数据和验证状态
  */
@@ -250,9 +268,8 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
-
 /**
- * 打开新增/编辑部门弹窗。
+ * 打开新增/编辑部门弹窗
  *
  * @param parentId 父部门 ID（新增子部门时传入）
  * @param deptId 部门 ID（编辑时传入）
@@ -266,7 +283,6 @@ async function openDialog(parentId, deptId) {
       children: data,
     },
   ];
-
   dialogState.visible = true;
   if (deptId) {
     dialogState.title = "修改部门";
@@ -277,9 +293,8 @@ async function openDialog(parentId, deptId) {
     formData.parentId = parentId || "0";
   }
 }
-
 /**
- * 校验并提交部门表单。
+ * 校验并提交部门表单
  */
 async function handleSubmit() {
   const valid = await deptFormRef.value?.validate().then(
@@ -287,7 +302,6 @@ async function handleSubmit() {
     () => false
   );
   if (!valid) return;
-
   loading.value = true;
   try {
     const deptId = formData.id;
@@ -304,9 +318,8 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
-
 /**
- * 删除单个或批量部门。
+ * 删除单个或批量部门
  *
  * @param deptId 指定时删除单个部门；不指定时删除表格勾选项
  */
@@ -316,7 +329,6 @@ async function handleDelete(deptId) {
     ElMessage.warning("请勾选删除项");
     return;
   }
-
   try {
     await ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
       confirmButtonText: "确定",
@@ -327,7 +339,6 @@ async function handleDelete(deptId) {
     ElMessage.info("已取消删除");
     return;
   }
-
   loading.value = true;
   try {
     await DeptAPI.deleteByIds(deptIds);
@@ -337,7 +348,6 @@ async function handleDelete(deptId) {
     loading.value = false;
   }
 }
-
 /**
  * 关闭弹窗并重置表单
  */
@@ -345,7 +355,6 @@ function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
-
 onMounted(() => {
   fetchData();
 });

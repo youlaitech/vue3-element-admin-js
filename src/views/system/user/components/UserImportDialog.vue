@@ -92,36 +92,31 @@ import { ElMessage } from "element-plus";
 import UserAPI from "@/api/system/user";
 import { ApiCodeEnum } from "@/enums/api";
 import { downloadFile } from "@/utils/download";
-
 const emit = defineEmits(["import-success"]);
-
-// 弹窗可见状态
+/**
+ * 弹窗可见状态
+ */
 const visible = defineModel("modelValue", {
   type: Boolean,
   required: true,
   default: false,
 });
-
 // 结果弹窗状态
 const resultVisible = ref(false);
 const resultData = ref([]);
 const invalidCount = ref(0);
 const validCount = ref(0);
-
 // 表单引用
 const importFormRef = ref(null);
 const uploadRef = ref(null);
-
 // 表单数据
 const importFormData = reactive({
   files: [],
 });
-
 // 验证规则
 const importFormRules = {
   files: [{ required: true, message: "文件不能为空", trigger: "blur" }],
 };
-
 watch(visible, (newValue) => {
   if (newValue) {
     resultData.value = [];
@@ -130,14 +125,12 @@ watch(visible, (newValue) => {
     validCount.value = 0;
   }
 });
-
 /**
  * 文件超出个数限制
  */
 function handleFileExceed() {
   ElMessage.warning("只能上传一个文件");
 }
-
 /**
  * 下载导入模板
  */
@@ -146,7 +139,6 @@ function downloadTemplate() {
     downloadFile(response);
   });
 }
-
 /**
  * 上传文件
  */
@@ -155,7 +147,6 @@ async function handleUpload() {
     ElMessage.warning("请选择文件");
     return;
   }
-
   const result = await UserAPI.import(importFormData.files[0].raw);
   if (result.code === ApiCodeEnum.SUCCESS && result.invalidCount === 0) {
     ElMessage.success("导入成功，导入数据：" + result.validCount + "条");
@@ -169,21 +160,18 @@ async function handleUpload() {
     validCount.value = result.validCount;
   }
 }
-
 /**
  * 显示错误信息
  */
 function showResult() {
   resultVisible.value = true;
 }
-
 /**
  * 关闭错误信息弹窗
  */
 function closeResultDialog() {
   resultVisible.value = false;
 }
-
 /**
  * 关闭弹窗
  */

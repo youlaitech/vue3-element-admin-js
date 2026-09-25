@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <el-card ref="tableWrapperRef" class="page-search" shadow="never">
       <el-form ref="queryFormRef" :model="params" :inline="true">
@@ -221,29 +221,22 @@
 </template>
 
 <script setup>
-import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { FullScreen, QuestionFilled, Refresh, Search, Switch } from "@element-plus/icons-vue";
-
 import MenuAPI from "@/api/system/menu";
 import TenantPlanAPI from "@/api/system/tenant-plan";
 import { usePageTable } from "@/composables";
 import { CommonStatus } from "@/enums";
 import { MenuScopeEnum } from "@/enums/business";
-
 defineOptions({
   name: "TenantPlan",
   inheritAttrs: false,
 });
-
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
-
 const queryFormRef = ref();
 const planFormRef = ref();
 const menuTreeRef = ref();
-
-/** 分页表格数据管理 */
+// 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
     pageNum: 1,
@@ -253,12 +246,10 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: (query) => TenantPlanAPI.getPage(query),
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
-
 const dialogState = reactive({
   title: "",
   visible: false,
 });
-
 const initialFormData = {
   name: "",
   code: "",
@@ -266,22 +257,18 @@ const initialFormData = {
   sort: 1,
   remark: "",
 };
-
 const formData = reactive({ ...initialFormData });
-
 const rules = {
   name: [{ required: true, message: "请输入套餐名称", trigger: "blur" }],
   code: [{ required: true, message: "请输入套餐编码", trigger: "blur" }],
   status: [{ required: true, message: "请选择状态", trigger: "change" }],
 };
-
 const planMenuDialogVisible = ref(false);
 const checkedPlan = ref({});
 const menuPermOptions = ref([]);
 const menuKeywords = ref("");
 const menuExpanded = ref(true);
 const menuParentChildLinked = ref(true);
-
 /**
  * 重置表单数据和验证状态
  */
@@ -293,14 +280,12 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
-
 /**
  * 打开表单弹窗
  */
 function openDialog() {
   dialogState.visible = true;
 }
-
 /**
  * 关闭表单弹窗并清理临时状态
  */
@@ -308,7 +293,6 @@ function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
-
 /**
  * 打开新增套餐弹窗
  */
@@ -316,7 +300,6 @@ function handleCreateClick() {
   dialogState.title = "新增套餐";
   openDialog();
 }
-
 /**
  * 打开编辑套餐弹窗并回填数据
  *
@@ -335,15 +318,13 @@ async function handleEditClick(planId) {
   }
   openDialog();
 }
-
-/** 校验并提交套餐表单 */
+// 校验并提交套餐表单
 const handleSubmit = useDebounceFn(async () => {
   const valid = await planFormRef.value?.validate().then(
     () => true,
     () => false
   );
   if (!valid) return;
-
   loading.value = true;
   try {
     if (formData.id) {
@@ -359,7 +340,6 @@ const handleSubmit = useDebounceFn(async () => {
     loading.value = false;
   }
 }, 300);
-
 /**
  * 删除套餐
  *
@@ -367,7 +347,6 @@ const handleSubmit = useDebounceFn(async () => {
  */
 async function handleDelete(planId) {
   if (!planId) return;
-
   try {
     await ElMessageBox.confirm("确认删除该租户套餐吗？", "警告", {
       confirmButtonText: "确定",
@@ -377,7 +356,6 @@ async function handleDelete(planId) {
   } catch {
     return;
   }
-
   loading.value = true;
   try {
     await TenantPlanAPI.deleteByIds(String(planId));
@@ -387,7 +365,6 @@ async function handleDelete(planId) {
     loading.value = false;
   }
 }
-
 /**
  * 打开菜单配置抽屉并回显已分配菜单
  *
@@ -395,27 +372,22 @@ async function handleDelete(planId) {
  */
 async function handleAssignMenuClick(row) {
   if (!row.id) return;
-
   planMenuDialogVisible.value = true;
   checkedPlan.value = { id: row.id, name: row.name };
-
   loading.value = true;
   try {
     const [menuOptions, menuIds] = await Promise.all([
-      MenuAPI.getOptions(false, MenuScopeEnum.TENANT),
+      MenuAPI.getOptions({ scope: MenuScopeEnum.TENANT }),
       TenantPlanAPI.getPlanMenuIds(row.id),
     ]);
-
     menuPermOptions.value = menuOptions;
     await nextTick();
-
     menuTreeRef.value?.setCheckedKeys([], false);
     menuIds.forEach((menuId) => menuTreeRef.value?.setChecked(menuId, true, false));
   } finally {
     loading.value = false;
   }
 }
-
 /**
  * 关闭菜单配置抽屉并清理临时状态
  */
@@ -426,23 +398,21 @@ function closePlanMenuDialog() {
   menuParentChildLinked.value = true;
   menuTreeRef.value?.setCheckedKeys([], false);
 }
-
 /**
  * 展开或收起菜单树全部节点
  */
 function toggleMenuTree() {
   menuExpanded.value = !menuExpanded.value;
   if (!menuTreeRef.value) return;
-
   Object.values(menuTreeRef.value.store.nodesMap).forEach((node) => {
+    const treeNode = node;
     if (menuExpanded.value) {
-      node.expand();
+      treeNode.expand();
     } else {
-      node.collapse();
+      treeNode.collapse();
     }
   });
 }
-
 /**
  * 父子联动开关变化处理
  *
@@ -451,7 +421,6 @@ function toggleMenuTree() {
 function handleMenuLinkChange(val) {
   menuParentChildLinked.value = Boolean(val);
 }
-
 /**
  * 菜单树过滤函数
  *
@@ -462,18 +431,15 @@ function handleMenuFilter(value, data) {
   if (!value) return true;
   return String(data.label ?? "").includes(value);
 }
-
 /**
  * 提交当前套餐的菜单权限配置
  */
 async function handlePlanMenuSubmit() {
   const planId = checkedPlan.value.id;
   if (!planId) return;
-
   const checkedMenuIds = (menuTreeRef.value?.getCheckedNodes(false, true) ?? [])
     .map((node) => Number(node.value))
     .filter((value) => !Number.isNaN(value));
-
   loading.value = true;
   try {
     await TenantPlanAPI.updatePlanMenus(planId, checkedMenuIds);
@@ -483,11 +449,9 @@ async function handlePlanMenuSubmit() {
     loading.value = false;
   }
 }
-
 watch(menuKeywords, (val) => {
   menuTreeRef.value?.filter(val);
 });
-
 onMounted(() => {
   fetchData();
 });
