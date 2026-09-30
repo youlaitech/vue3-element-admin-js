@@ -39,8 +39,19 @@
               {{ label }}
             </el-radio-button>
           </el-radio-group>
-          <el-button type="primary" @click="handleCreateClick()">新增</el-button>
-          <el-button type="danger" :disabled="!hasSelection" @click="handleDelete()">
+          <el-button
+            v-hasPerm="['form:definition:create']"
+            type="primary"
+            @click="handleCreateClick()"
+          >
+            新增
+          </el-button>
+          <el-button
+            v-hasPerm="['form:definition:delete']"
+            type="danger"
+            :disabled="!hasSelection"
+            @click="handleDelete()"
+          >
             删除
           </el-button>
         </div>
@@ -101,11 +112,18 @@
           <el-table-column label="创建时间" prop="createTime" width="170" align="center" />
           <el-table-column fixed="right" label="操作" align="center" width="330">
             <template #default="scope">
-              <el-button type="primary" link size="small" @click.stop="openDesigner(scope.row)">
+              <el-button
+                v-hasPerm="['form:definition:update']"
+                type="primary"
+                link
+                size="small"
+                @click.stop="openDesigner(scope.row)"
+              >
                 设计
               </el-button>
               <el-button
                 v-if="scope.row.status === FormStatus.PUBLISHED"
+                v-hasPerm="['form:data:list']"
                 type="primary"
                 link
                 size="small"
@@ -114,6 +132,7 @@
                 数据
               </el-button>
               <el-button
+                v-hasPerm="['form:definition:update']"
                 type="success"
                 link
                 size="small"
@@ -123,6 +142,7 @@
               </el-button>
               <el-button
                 v-if="scope.row.status === FormStatus.PUBLISHED"
+                v-hasPerm="['form:definition:update']"
                 type="warning"
                 link
                 size="small"
@@ -130,10 +150,22 @@
               >
                 停用
               </el-button>
-              <el-button type="primary" link size="small" @click.stop="handleEditClick(scope.row)">
+              <el-button
+                v-hasPerm="['form:definition:update']"
+                type="primary"
+                link
+                size="small"
+                @click.stop="handleEditClick(scope.row)"
+              >
                 编辑
               </el-button>
-              <el-button type="danger" link size="small" @click.stop="handleDelete(scope.row.id)">
+              <el-button
+                v-hasPerm="['form:definition:delete']"
+                type="danger"
+                link
+                size="small"
+                @click.stop="handleDelete(scope.row.id)"
+              >
                 删除
               </el-button>
             </template>

@@ -10,6 +10,9 @@ defineOptions({
   name: "AppLink",
   inheritAttrs: false,
 });
+/**
+ * 应用内链接：按菜单路径跳转
+ */
 const props = defineProps({
   to: {
     type: Object,

@@ -3,6 +3,17 @@ import { createRouter, createWebHashHistory } from "vue-router";
  * 布局组件，供各路由复用（懒加载）
  */
 export const Layout = () => import("@/layouts/index.vue");
+/**
+ * 布局外大屏路由：不套后台 Layout，整页铺满视口，菜单以站内外链形式新标签页打开
+ */
+export const screenRoutes = [
+  {
+    path: "/data-screen",
+    name: "DataScreen",
+    component: () => import("@/views/data-screen/index.vue"),
+    meta: { hidden: true, title: "数据大屏" },
+  },
+];
 // 静态路由
 export const constantRoutes = [
   {
@@ -28,6 +39,8 @@ export const constantRoutes = [
     component: () => import("@/views/dynamic-form/share.vue"),
     meta: { hidden: true, title: "表单填写" },
   },
+  // 大屏演示页（独立成页，不经后台框架）
+  ...screenRoutes,
   {
     path: "/",
     name: "/",

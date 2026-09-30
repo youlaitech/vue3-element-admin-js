@@ -144,6 +144,10 @@
 <script setup>
 import "codemirror/mode/javascript/javascript.js";
 import GeneratorAPI from "@/api/codegen";
+import { getFileIcon } from "../utils/tree-builder";
+/**
+ * 代码预览步骤
+ */
 const props = defineProps({
   genConfigFormData: { type: Object, required: true },
   previewScope: { type: String, required: true },
@@ -154,6 +158,9 @@ const props = defineProps({
   currentFileKey: { type: String, default: "" },
   tableName: { type: String, default: "" },
 });
+/**
+ * 上抛预览范围变化与文件点击
+ */
 const emit = defineEmits(["update:previewScope", "update:previewTypes", "file-click", "copy"]);
 const cmRef = ref();
 const cmOptions = { mode: "text/javascript" };
@@ -234,6 +241,9 @@ function startResize(e) {
   document.addEventListener("mousemove", onMove);
   document.addEventListener("mouseup", onUp);
 }
+/**
+ * 暴露编辑器刷新与文件树引用
+ */
 defineExpose({ refreshEditor, fileTreeRef });
 onBeforeUnmount(() => {
   cmRef.value?.destroy();

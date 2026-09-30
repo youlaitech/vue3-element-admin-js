@@ -111,6 +111,9 @@ const props = defineProps({
     default: 0,
   },
 });
+/**
+ * 发布成功后通知父组件刷新
+ */
 const emit = defineEmits(["success"]);
 const visible = defineModel("modelValue", {
   type: Boolean,

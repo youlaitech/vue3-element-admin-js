@@ -70,6 +70,9 @@
 import { useLayout } from "../composables/useLayout";
 import { useMixMenu } from "../composables/useMixMenu";
 import { useAppStore } from "@/stores";
+import { translateRouteTitle } from "@/lang/utils";
+import BaseLayout from "../BaseLayout.vue";
+import { appConfig } from "@/settings";
 const appStore = useAppStore();
 const { showTagsView, showLogo, isSidebarOpen, toggleSidebar } = useLayout();
 const secondaryExpanded = computed(() => appStore.secondarySidebar?.opened ?? true);

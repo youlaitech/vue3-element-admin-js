@@ -48,6 +48,9 @@ import { useUserStore } from "@/stores";
 import router from "@/router";
 import { useRoute } from "vue-router";
 import { onBeforeUnmount, onMounted, ref } from "vue";
+/**
+ * 切换登录方式
+ */
 const emit = defineEmits(["switch"]);
 const userStore = useUserStore();
 const route = useRoute();

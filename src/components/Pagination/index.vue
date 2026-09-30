@@ -45,6 +45,9 @@ const props = defineProps({
     default: false,
   },
 });
+/**
+ * 页码或每页条数变化时回传
+ */
 const emit = defineEmits(["pagination"]);
 /**
  * 当前页码，双向绑定到父组件的 page

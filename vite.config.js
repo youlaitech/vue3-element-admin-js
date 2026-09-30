@@ -8,8 +8,9 @@ import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
 
 import UnoCSS from "unocss/vite";
-import { resolve } from "path";
-import { name, version } from "./package.json";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { join, resolve } from "path";
+import { name, version } from "./package.json" with { type: "json" };
 
 // 平台名称、版本信息
 const __APP_INFO__ = {
@@ -85,6 +86,20 @@ export default defineConfig(({ mode }) => {
         dts: false,
         //dts: "types/components.d.ts",
       }),
+      // 生成版本号文件
+      {
+        name: "dist-version",
+        closeBundle() {
+          const distDir = resolve(import.meta.dirname, "dist");
+          if (!existsSync(distDir)) {
+            mkdirSync(distDir, { recursive: true });
+          }
+          writeFileSync(
+            join(distDir, "version.json"),
+            JSON.stringify({ version: __APP_INFO__.buildTimestamp })
+          );
+        },
+      },
     ],
     // 预加载项目必需的依赖
     optimizeDeps: {

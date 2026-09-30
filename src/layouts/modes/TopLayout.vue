@@ -26,6 +26,7 @@ import { useWindowSize } from "@vueuse/core";
 import { useLayout } from "../composables/useLayout";
 import { useAppStore } from "@/stores";
 import { usePermissionStore } from "@/stores";
+import BaseLayout from "../BaseLayout.vue";
 const { showTagsView, showLogo } = useLayout();
 const appStore = useAppStore();
 const { width } = useWindowSize();

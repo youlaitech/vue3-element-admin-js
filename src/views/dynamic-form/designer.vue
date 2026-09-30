@@ -44,6 +44,7 @@
 import { ElMessage } from "element-plus";
 import FormAPI from "@/api/form";
 import router from "@/router";
+import { appConfig } from "@/settings";
 defineOptions({
   name: "FormDesigner",
   inheritAttrs: false,

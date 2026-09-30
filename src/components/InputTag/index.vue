@@ -36,6 +36,9 @@ const tags = defineModel({
   type: Array,
   default: () => [],
 });
+/**
+ * 标签输入框：回车新增标签
+ */
 defineProps({
   config: {
     type: Object,

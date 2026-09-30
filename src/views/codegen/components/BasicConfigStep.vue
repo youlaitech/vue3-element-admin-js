@@ -160,6 +160,9 @@
 
 <script setup>
 const formData = defineModel({ type: Object, required: true });
+/**
+ * 代码生成基础配置步骤
+ */
 defineProps({
   menuOptions: {
     type: Array,
@@ -185,6 +188,9 @@ async function validate() {
     return false;
   }
 }
+/**
+ * 暴露 validate 供容器保存前校验
+ */
 defineExpose({ validate });
 </script>
 

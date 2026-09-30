@@ -197,6 +197,7 @@ import { useGenConfig } from "../composables/useGenConfig";
 import { useCodePreview } from "../composables/useCodePreview";
 import { useLocalWrite } from "../composables/useLocalWrite";
 import { useAiFillDiff } from "../composables/useAiFillDiff";
+import { appConfig } from "@/settings";
 const STEP = { BASIC_CONFIG: 0, FIELD_CONFIG: 1, PREVIEW: 2 };
 const STEPS = [
   {
@@ -225,7 +226,13 @@ const STEPS = [
   },
 ];
 const visible = defineModel("visible", { type: Boolean, required: true });
+/**
+ * 代码生成抽屉：承载三步向导
+ */
 defineProps({ title: { type: String, default: "" } });
+/**
+ * 生成成功或重置配置时上抛
+ */
 defineEmits(["success"]);
 const currentStep = ref(STEP.BASIC_CONFIG);
 const currentTableName = ref("");
@@ -468,6 +475,9 @@ function handleClose() {
   visible.value = false;
   fieldConfigRef.value?.destroySort();
 }
+/**
+ * 暴露 open 供列表页打开抽屉
+ */
 defineExpose({ open });
 </script>
 

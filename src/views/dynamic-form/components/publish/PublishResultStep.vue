@@ -86,6 +86,9 @@ const props = defineProps({
     default: "",
   },
 });
+/**
+ * 上抛前往查看与复制链接操作
+ */
 const emit = defineEmits(["goView", "copy"]);
 // 分享二维码画布
 const qrCanvasRef = ref();

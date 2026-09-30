@@ -14,6 +14,9 @@
 defineOptions({
   name: "ProcessStages",
 });
+/**
+ * 流程阶段进度：展示各环节办理状态
+ */
 defineProps({
   /** 审批环节（按 BPMN 编排顺序） */
   stages: {

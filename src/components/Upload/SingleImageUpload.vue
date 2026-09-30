@@ -33,6 +33,9 @@
 
 <script setup>
 import FileAPI from "@/api/file";
+/**
+ * 单图上传：仅保留一张图片
+ */
 const props = defineProps({
   /** 请求携带的额外参数 */
   data: {
@@ -99,7 +102,7 @@ function handleBeforeUpload(file) {
   }
   return true;
 }
-/*
+/**
  * 上传图片
  */
 function handleUpload(options) {

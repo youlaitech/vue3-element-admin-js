@@ -135,6 +135,7 @@
 import { useRoute, useRouter } from "vue-router";
 import { resolve } from "path-browserify";
 import { TagsViewStyle } from "@/enums";
+import { translateRouteTitle } from "@/lang/utils";
 import { useAppStore, usePermissionStore, useSettingsStore, useTagsViewStore } from "@/stores";
 import { isExternal } from "@/utils";
 const router = useRouter();

@@ -40,6 +40,9 @@
 </template>
 <script setup>
 import FileAPI from "@/api/file";
+/**
+ * 多图上传：图片卡片列表与预览
+ */
 const props = defineProps({
   /** 请求携带的额外参数 */
   data: {
@@ -117,7 +120,7 @@ function handleBeforeUpload(file) {
   }
   return true;
 }
-/*
+/**
  * 上传文件
  */
 function handleUpload(options) {

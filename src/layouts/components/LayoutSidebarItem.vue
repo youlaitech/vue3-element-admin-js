@@ -57,10 +57,14 @@
 <script setup>
 import path from "path-browserify";
 import { isExternal } from "@/utils";
+import { translateRouteTitle } from "@/lang/utils";
 defineOptions({
   name: "LayoutSidebarItem",
   inheritAttrs: false,
 });
+/**
+ * 侧边栏菜单项
+ */
 const props = defineProps({
   /** 当前路由对象 */
   item: {

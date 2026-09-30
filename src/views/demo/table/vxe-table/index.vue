@@ -75,20 +75,20 @@
 </template>
 
 <script setup>
-import "vxe-table/lib/style.css";
 import { ref, reactive, onMounted } from "vue";
+import { configureVxeUI } from "@/plugins/vxe-table";
+import { VxeGrid } from "vxe-table";
 import {
-  VXETable,
+  VxeUI,
   VxeButton,
   VxeButtonGroup,
   VxeForm,
-  VxeGrid,
   VxeInput,
   VxeModal,
   VxeSelect,
-} from "vxe-table";
-import { configureVxeTable } from "@/plugins/vxe-table";
+} from "vxe-pc-ui";
 defineOptions({
+  name: "VxeTable",
   components: {
     VxeButton,
     VxeButtonGroup,
@@ -99,7 +99,7 @@ defineOptions({
     VxeSelect,
   },
 });
-configureVxeTable();
+configureVxeUI();
 const options = [
   { label: "管理", value: "admin" },
   { label: "用户", value: "user" },
@@ -604,7 +604,7 @@ const crud = {
   },
   /** 确定并保存 */
   onSubmitForm: () => {
-    VXETable.modal.message({
+    VxeUI.modal.message({
       content: "提交成功",
       status: "success",
     });
@@ -615,7 +615,7 @@ const crud = {
       // 获取当前已选中的行数据
       const selected = xGrid.value?.getCheckboxRecords();
       if (!selected || selected.length === 0) {
-        VXETable.modal.message({
+        VxeUI.modal.message({
           content: "请至少选择一条数据",
           status: "warning",
         });
@@ -625,10 +625,10 @@ const crud = {
     } else {
       ids = [row.id];
     }
-    VXETable.modal.confirm("确定要删除吗？").then((type) => {
+    VxeUI.modal.confirm("确定要删除吗？").then((type) => {
       if (type === "confirm") {
         // 执行删除操作
-        VXETable.modal.message({
+        VxeUI.modal.message({
           content: `已删除 ${ids.length} 条数据`,
           status: "success",
         });

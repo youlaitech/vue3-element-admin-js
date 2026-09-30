@@ -1,11 +1,5 @@
 <template>
   <div class="page-container">
-    <RouteInfoPanel
-      class="mb-4"
-      title="三级菜单 B：与三级菜单 A 同层"
-      description="A 与 B 是同一层的两个兄弟页面，路由匹配链长度相同，只有最末一段路径和渲染的组件不同。"
-    />
-
     <el-card class="page-content" shadow="never">
       <template #header>三级结构逐层拆解</template>
 

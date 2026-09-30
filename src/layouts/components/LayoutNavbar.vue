@@ -13,6 +13,9 @@
 
 <script setup>
 import { useAppStore } from "@/stores";
+/**
+ * 顶部导航栏
+ */
 const props = defineProps({
   toggleTarget: { type: String, default: "primary" },
 });

@@ -117,10 +117,21 @@
 </template>
 
 <script setup>
+defineOptions({
+  name: "Crud",
+});
+
 import UserAPI from "@/api/system/user";
 import useCrudPage from "@/components/Crud/useCrudPage";
 import editModalConfig from "./config/edit";
 import { initOptions } from "./config/options";
+import addModalConfig from "./config/add";
+import contentConfig from "./config/content";
+import searchConfig from "./config/search";
+import addModalConfig2 from "./config2/add";
+import contentConfig2 from "./config2/content";
+import editModalConfig2 from "./config2/edit";
+import searchConfig2 from "./config2/search";
 const {
   searchRef,
   contentRef,

@@ -28,6 +28,9 @@
 <script setup>
 import { computed } from "vue";
 import { useTenantStoreHook } from "@/stores/tenant";
+/**
+ * 切换租户时回传租户 ID
+ */
 const emit = defineEmits(["change"]);
 const tenantStore = useTenantStoreHook();
 const tenantList = computed(() => tenantStore.tenantList);

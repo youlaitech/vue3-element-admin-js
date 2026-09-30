@@ -144,6 +144,9 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import { useResizeObserver } from "@vueuse/core";
+/**
+ * 表格选择器：弹窗表格选数据回填
+ */
 const props = defineProps({
   selectConfig: {
     type: Object,

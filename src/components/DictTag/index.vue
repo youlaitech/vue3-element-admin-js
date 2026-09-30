@@ -9,6 +9,9 @@
 
 <script setup>
 import { useDictStore } from "@/stores";
+/**
+ * 字典标签：按字典值回显文本
+ */
 const props = defineProps({
   code: String, // 字典编码
   modelValue: [String, Number], // 字典项的值

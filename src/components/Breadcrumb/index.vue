@@ -18,6 +18,7 @@
 <script setup>
 import { compile } from "path-to-regexp";
 import router from "@/router";
+import { translateRouteTitle } from "@/lang/utils";
 const currentRoute = useRoute();
 /**
  * 面包屑取 matched 链，不拼首页（首页与一级菜单平级，非父级）

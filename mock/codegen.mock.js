@@ -215,15 +215,15 @@ function buildPreviewFiles(tableName, tableComment) {
   return [
     {
       path: "src/api/system/",
-      fileName: `${bizName}.ts`,
-      content: `import request from "@/utils/request";\n\n/** ${tableComment}相关接口 */\nexport const ${bizName}Api = {\n  getPage(params: unknown) {\n    return request({ url: "/api/v1/${tableName}s", method: "get", params });\n  },\n};\n`,
+      fileName: `${bizName}.js`,
+      content: `import request from "@/utils/request";\n\n/** ${tableComment}相关接口 */\nexport const ${bizName}Api = {\n  getPage(params) {\n    return request({ url: "/api/v1/${tableName}s", method: "get", params });\n  },\n};\n`,
       scope: "frontend",
-      language: "ts",
+      language: "js",
     },
     {
       path: "src/views/system/",
       fileName: `${bizName}.vue`,
-      content: `<template>\n  <div class="page-container">${tableComment}管理</div>\n</template>\n\n<script setup lang="ts">\ndefineOptions({ name: "${entityName}" });\n</script>\n`,
+      content: `<template>\n  <div class="page-container">${tableComment}管理</div>\n</template>\n\n<script setup>\ndefineOptions({ name: "${entityName}" });\n</script>\n`,
       scope: "frontend",
       language: "vue",
     },

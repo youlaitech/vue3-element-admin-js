@@ -12,6 +12,9 @@ defineOptions({
   name: "CopyButton",
   inheritAttrs: false,
 });
+/**
+ * 复制按钮：点击复制指定文本
+ */
 const props = defineProps({
   text: {
     type: String,

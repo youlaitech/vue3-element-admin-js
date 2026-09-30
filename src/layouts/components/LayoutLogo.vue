@@ -1,3 +1,4 @@
+import { appConfig } from "@/settings"; import logo from "@/assets/images/logo.png";
 <template>
   <div class="layout-logo">
     <transition enter-active-class="animate__animated animate__fadeInLeft">
@@ -12,6 +13,9 @@
 </template>
 
 <script setup>
+/**
+ * 侧边栏 Logo
+ */
 defineProps({
   collapse: {
     type: Boolean,

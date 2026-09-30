@@ -137,6 +137,10 @@ import { useThrottleFn } from "@vueuse/core";
 import cloneDeep from "lodash-es/cloneDeep";
 import InputTag from "@/components/InputTag/index.vue";
 import IconSelect from "@/components/IconSelect/index.vue";
+
+/**
+ * 声明透传插槽：父组件可传入任意具名插槽
+ */
 defineSlots();
 /**
  * 定义接收的属性

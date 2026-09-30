@@ -179,6 +179,8 @@ import AuthAPI from "@/api/auth";
 import router from "@/router";
 import { useUserStore } from "@/stores";
 import { AuthStorage } from "@/utils/auth";
+import { appConfig } from "@/settings";
+import logo from "@/assets/images/logo.png";
 const userStore = useUserStore();
 const route = useRoute();
 const component = ref("login");

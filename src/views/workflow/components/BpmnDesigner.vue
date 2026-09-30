@@ -182,6 +182,9 @@ const props = defineProps({
     required: true,
   },
 });
+/**
+ * 保存时抛出当前画布的 BPMN XML
+ */
 const emit = defineEmits(["save"]);
 const canvasRef = ref(null);
 const modeler = shallowRef();
@@ -337,6 +340,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   modeler.value?.destroy();
 });
+/**
+ * 暴露保存动作供承载页调用
+ */
 defineExpose({
   /** 供承载页触发的保存动作（与工具栏保存共用一套导出逻辑） */
   save: handleSave,

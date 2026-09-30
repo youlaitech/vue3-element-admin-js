@@ -62,6 +62,9 @@ defineProps({
     default: false,
   },
 });
+/**
+ * 上抛发布方式切换
+ */
 const emit = defineEmits(["toggle"]);
 </script>
 

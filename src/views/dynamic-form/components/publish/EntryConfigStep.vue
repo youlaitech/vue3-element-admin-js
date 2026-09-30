@@ -159,6 +159,9 @@ const props = defineProps({
     default: "",
   },
 });
+/**
+ * 上抛复制分享链接操作
+ */
 const emit = defineEmits(["copy"]);
 const menuForm = defineModel("menuForm", { type: Object, required: true });
 const shareEnabled = defineModel("shareEnabled", { type: Boolean, required: true });
@@ -192,6 +195,9 @@ function validate() {
     () => false
   );
 }
+/**
+ * 暴露 validate 供容器保存前校验
+ */
 defineExpose({ validate });
 </script>
 

@@ -12,6 +12,9 @@
 
 <script setup>
 import { useLayout } from "./composables/useLayout";
+/**
+ * 基础布局骨架
+ */
 defineProps({
   showOverlay: {
     type: Boolean,

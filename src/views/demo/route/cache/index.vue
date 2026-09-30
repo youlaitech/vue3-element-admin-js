@@ -1,11 +1,5 @@
 <template>
   <div class="page-container">
-    <RouteInfoPanel
-      class="mb-4"
-      title="页面缓存：切走再回来，状态还在"
-      description="缓存由菜单 keep_alive 与路由 meta.keepAlive 共同控制；匹配键是完整路径（含 query），所以同一个页面带不同参数会各存一份缓存。"
-    />
-
     <el-card class="page-content" shadow="never">
       <template #header>缓存对照实验</template>
 

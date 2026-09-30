@@ -21,6 +21,9 @@
 
 <script setup>
 import DeptAPI from "@/api/system/dept";
+/**
+ * 用户部门树：按部门筛选用户
+ */
 const props = defineProps({
   modelValue: {
     type: [String, Number],
@@ -30,6 +33,9 @@ const props = defineProps({
 const deptList = ref();
 const deptTreeRef = ref();
 const deptName = ref("");
+/**
+ * 选中部门时上抛部门 ID
+ */
 const emits = defineEmits(["node-click"]);
 const deptId = useVModel(props, "modelValue", emits);
 watchEffect(

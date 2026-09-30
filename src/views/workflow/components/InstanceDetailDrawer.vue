@@ -100,6 +100,9 @@ async function open(instanceId) {
     diagramLoading.value = false;
   }
 }
+/**
+ * 暴露 open 供父组件打开实例详情
+ */
 defineExpose({ open });
 </script>
 

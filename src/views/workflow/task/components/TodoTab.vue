@@ -174,6 +174,7 @@ import { useFullscreen } from "@vueuse/core";
 import { ElMessage } from "element-plus";
 import WorkflowAPI from "@/api/workflow";
 import { usePageTable } from "@/composables";
+import { appConfig } from "@/settings";
 defineOptions({
   name: "WorkflowTodoTab",
 });

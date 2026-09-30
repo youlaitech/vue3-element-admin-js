@@ -9,6 +9,9 @@
 </template>
 
 <script setup>
+/**
+ * 表格操作列：统一渲染编辑/删除按钮
+ */
 const props = defineProps({
   /** 表格数据长度（用于性能优化，避免多次计算宽度） */
   listDataLength: {

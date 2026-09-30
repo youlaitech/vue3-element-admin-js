@@ -46,6 +46,9 @@
 </template>
 <script setup>
 import FileAPI from "@/api/file";
+/**
+ * 文件上传：支持多选与进度显示
+ */
 const props = defineProps({
   /** 请求携带的额外参数 */
   data: {
@@ -124,7 +127,7 @@ function handleBeforeUpload(file) {
   }
   return true;
 }
-/*
+/**
  * 上传文件
  */
 function handleUpload(options) {

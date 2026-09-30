@@ -1,11 +1,5 @@
 <template>
   <div class="page-container">
-    <RouteInfoPanel
-      class="mb-4"
-      title="三级菜单 A：多级菜单的最底层页面"
-      description="上方「路由匹配链」列出了从顶级目录到本页的每一层；菜单在侧边栏逐层折叠，路由上则是逐层拼接路径。"
-    />
-
     <el-card class="page-content" shadow="never">
       <template #header>三级结构逐层拆解</template>
 

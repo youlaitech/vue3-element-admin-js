@@ -196,6 +196,9 @@
 import Sortable from "sortablejs";
 import { FormTypeEnum, QueryTypeEnum } from "@/enums/codegen";
 const formData = defineModel({ type: Object, required: true });
+/**
+ * 代码生成字段配置步骤
+ */
 const props = defineProps({
   loading: Boolean,
   loadingText: String,

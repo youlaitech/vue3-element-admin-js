@@ -270,7 +270,11 @@
 
         <template v-if="isExternal">
           <el-form-item label="外链地址" prop="externalUrl">
-            <el-input v-model="formData.externalUrl" placeholder="https://example.com" clearable />
+            <el-input
+              v-model="formData.externalUrl"
+              placeholder="https://example.com 或站内路径 /data-screen"
+              clearable
+            />
           </el-form-item>
 
           <el-form-item label="打开方式">
@@ -518,6 +522,7 @@ import { DeviceEnum } from "@/enums/settings";
 import { isTenantEnabled } from "@/utils/tenant";
 import { isValidURL, joinRoutePath } from "@/utils";
 import { matchIcon } from "@/utils/icon";
+import { appConfig } from "@/settings";
 defineOptions({
   name: "SysMenu",
   inheritAttrs: false,
@@ -727,7 +732,7 @@ const validateComponent = (_, value, callback) => {
   callback();
 };
 /**
- * 校验外链地址
+ * 校验外链地址：支持外部网址与站内路径（/ 开头，新标签页打开站内页面）
  */
 const validateExternalUrl = (_, value, callback) => {
   if (!isExternal.value) {
@@ -735,11 +740,16 @@ const validateExternalUrl = (_, value, callback) => {
     return;
   }
   if (!value) {
-    callback(new Error("请输入外链地址"));
+    callback(new Error("请输入外链地址或站内路径"));
+    return;
+  }
+  // 站内路径（如 /data-screen）由前端补全当前站点域名
+  if (value.startsWith("/")) {
+    callback();
     return;
   }
   if (!isValidURL(value)) {
-    callback(new Error("请输入正确的外链地址"));
+    callback(new Error("请输入正确的外链地址，站内路径以 / 开头"));
     return;
   }
   callback();

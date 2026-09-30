@@ -59,6 +59,7 @@ import { useRoute, useRouter } from "vue-router";
 import { DeviceEnum, SidebarColor, ThemeMode, LayoutMode } from "@/enums/settings";
 import { useAppStore, useSettingsStore, useUserStore } from "@/stores";
 import { useTenantStoreHook } from "@/stores/tenant";
+import { defaults } from "@/settings";
 const { t } = useI18n();
 const appStore = useAppStore();
 const settingStore = useSettingsStore();

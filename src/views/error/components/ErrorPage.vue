@@ -61,6 +61,9 @@
 <script setup>
 import { computed } from "vue";
 import { Lock, Search } from "@element-plus/icons-vue";
+/**
+ * 错误页：404 / 无权限等场景通用
+ */
 const props = defineProps({
   statusCode: { type: String, required: true },
   label: { type: String, required: true },

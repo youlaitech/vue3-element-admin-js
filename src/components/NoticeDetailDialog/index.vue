@@ -26,6 +26,9 @@
 defineOptions({
   name: "NoticeDetailDialog",
 });
+/**
+ * 通知详情弹窗
+ */
 defineProps({
   /** 通知详情数据 */
   detail: {

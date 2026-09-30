@@ -36,6 +36,9 @@
 import "@wangeditor-next/editor/dist/css/style.css";
 // 文件上传 API
 import FileAPI from "@/api/file";
+/**
+ * wangEditor 富文本编辑器
+ */
 defineProps({
   height: {
     type: String,

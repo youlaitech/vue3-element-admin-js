@@ -66,6 +66,9 @@ const props = defineProps({
     default: false,
   },
 });
+/**
+ * 表单校验通过后上抛提交数据
+ */
 const emit = defineEmits(["submit"]);
 const formApi = ref();
 const formData = ref({});

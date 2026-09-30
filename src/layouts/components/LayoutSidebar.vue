@@ -29,6 +29,9 @@ import { SidebarColor, ThemeMode } from "@/enums/settings";
 import { useSettingsStore, useAppStore } from "@/stores";
 import { isExternal } from "@/utils/index";
 import variables from "@/styles/variables.module.scss";
+/**
+ * 侧边栏导航
+ */
 const props = defineProps({
   data: { type: Array, default: () => [] },
   basePath: { type: String, required: true },

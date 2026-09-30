@@ -29,7 +29,13 @@
 
 <script setup>
 import { useElementHover } from "@vueuse/core";
+/**
+ * 关闭公告时触发
+ */
 const emit = defineEmits(["close"]);
+/**
+ * 公告横向滚动
+ */
 const props = defineProps({
   /** 滚动文本内容（必填） */
   text: {
