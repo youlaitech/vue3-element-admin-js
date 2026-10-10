@@ -1,4 +1,3 @@
-import { appConfig } from "@/settings"; import logo from "@/assets/images/logo.png";
 <template>
   <div class="layout-logo">
     <transition enter-active-class="animate__animated animate__fadeInLeft">
@@ -13,6 +12,8 @@ import { appConfig } from "@/settings"; import logo from "@/assets/images/logo.p
 </template>
 
 <script setup>
+import { appConfig } from "@/settings";
+import logo from "@/assets/images/logo.png";
 /**
  * 侧边栏 Logo
  */
