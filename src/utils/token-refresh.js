@@ -32,7 +32,7 @@ export function installTokenRefresh(http) {
       const userStore = useUserStoreHook();
       // 匿名请求已重试过、或本就不参与续期：直接退出登录
       if (!retryConfig || retryConfig.isRetried || retryConfig.anonymous) {
-        await userStore.redirectToLogin("expired");
+        await userStore.redirectToLogin();
         return Promise.reject(new Error("Token Invalid"));
       }
       retryConfig.isRetried = true;
@@ -45,13 +45,13 @@ export function installTokenRefresh(http) {
         retryConfig.headers.set("Authorization", `Bearer ${token}`);
         return http(retryConfig);
       } catch {
-        await userStore.redirectToLogin("expired");
+        await userStore.redirectToLogin();
         return Promise.reject(new Error("Token refresh failed"));
       }
     }
     // Refresh token 失效
     if (code === ApiCodeEnum.REFRESH_TOKEN_INVALID) {
-      await useUserStoreHook().redirectToLogin("expired");
+      await useUserStoreHook().redirectToLogin();
       return Promise.reject(new Error("Token Invalid"));
     }
     // 其它错误交回基础拦截器处理
