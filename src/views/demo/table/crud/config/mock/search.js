@@ -1,4 +1,5 @@
-import { deptArr, stateArr } from "../config/options";
+import { deptArr, stateArr } from "../user/options";
+
 const searchConfig = {
   grid: "right",
   colon: true,
@@ -146,4 +147,5 @@ const searchConfig = {
     },
   ],
 };
+
 export default searchConfig;

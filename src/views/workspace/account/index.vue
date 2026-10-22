@@ -306,8 +306,10 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import FileAPI from "@/api/file";
 import { useUserStoreHook } from "@/stores";
 import {
+  Camera,
   CircleCheck,
   DataLine,
+  Edit,
   Female,
   Iphone,
   Key,
@@ -319,6 +321,7 @@ import {
   User,
   UserFilled,
 } from "@element-plus/icons-vue";
+
 const userStore = useUserStoreHook();
 const userProfile = ref({});
 let DialogType;
@@ -328,11 +331,13 @@ let DialogType;
   DialogType["MOBILE"] = "mobile";
   DialogType["EMAIL"] = "email";
 })(DialogType || (DialogType = {}));
+
 const dialogState = reactive({
   visible: false,
   title: "",
   type: "",
 });
+
 const userProfileFormRef = ref();
 const passwordChangeFormRef = ref();
 const mobileBindingFormRef = ref();
@@ -368,6 +373,7 @@ const recentLoginRecords = [
 const userProfileRules = {
   nickname: [{ required: true, message: "请输入昵称", trigger: "blur" }],
 };
+
 const passwordChangeRules = {
   oldPassword: [{ required: true, message: "请输入原密码", trigger: "blur" }],
   newPassword: [{ required: true, message: "请输入新密码", trigger: "blur" }],
@@ -411,6 +417,7 @@ const emailBindingRules = {
   code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
   password: [{ required: true, message: "请输入当前密码", trigger: "blur" }],
 };
+
 const displayAvatar = computed(() => userProfile.value.avatar || userStore.userInfo.avatar || "");
 const displayName = computed(() => {
   return (
@@ -421,12 +428,14 @@ const displayName = computed(() => {
     "未命名用户"
   );
 });
+
 const roleList = computed(() => {
   return (userProfile.value.roleNames || "")
     .split(/[,，]/)
     .map((role) => role.trim())
     .filter(Boolean);
 });
+
 const primaryRole = computed(() => roleList.value[0] || "普通用户");
 const permissionCount = computed(() => userStore.userInfo.perms?.length || 0);
 const genderText = computed(() => {
@@ -434,9 +443,11 @@ const genderText = computed(() => {
   if (userProfile.value.gender === 2) return "女";
   return "未设置";
 });
+
 const boundCount = computed(() => {
   return [userProfile.value.mobile, userProfile.value.email].filter(Boolean).length;
 });
+
 const profileCompletion = computed(() => {
   const fields = [
     userProfile.value.username,
@@ -450,6 +461,7 @@ const profileCompletion = computed(() => {
   ];
   return Math.round((fields.filter(Boolean).length / fields.length) * 100);
 });
+
 const securityLevel = computed(() => {
   const score = 60 + boundCount.value * 20;
   if (score >= 100) {
@@ -460,6 +472,7 @@ const securityLevel = computed(() => {
   }
   return { score, label: "低", type: "info" };
 });
+
 const profileInfoItems = computed(() => [
   {
     label: "用户名",
@@ -625,6 +638,7 @@ const securityItems = computed(() => [
 function formatValue(value) {
   return value ? String(value) : "-";
 }
+
 /**
  * 从弹窗结果里取出输入值
  */
@@ -634,6 +648,7 @@ function getPromptValue(result) {
   }
   return "";
 }
+
 /**
  * 手机号中间四位打码
  */
@@ -641,6 +656,7 @@ function maskMobile(mobile) {
   if (!mobile) return "";
   return mobile.replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2");
 }
+
 /**
  * 邮箱名打码
  */
@@ -651,16 +667,19 @@ function maskEmail(email) {
   if (name.length <= 2) return `${name[0] || ""}***@${domain}`;
   return `${name.slice(0, 2)}***@${domain}`;
 }
+
 const mobileSecurityDesc = computed(() => {
   return userProfile.value.mobile
     ? `已绑定：${maskMobile(userProfile.value.mobile)}`
     : "未绑定手机号，建议立即绑定";
 });
+
 const emailSecurityDesc = computed(() => {
   return userProfile.value.email
     ? `已绑定：${maskEmail(userProfile.value.email)}`
     : "未绑定邮箱，建议立即绑定";
 });
+
 /**
  * 打开账号/手机/邮箱修改弹窗
  */
@@ -691,6 +710,7 @@ const handleOpenDialog = (type) => {
       break;
   }
 };
+
 /**
  * 解绑手机号
  */
@@ -713,6 +733,7 @@ async function handleUnbindMobile() {
     // ignore
   }
 }
+
 /**
  * 解绑邮箱
  */
@@ -735,6 +756,7 @@ async function handleUnbindEmail() {
     // ignore
   }
 }
+
 /**
  * 发送手机验证码
  */
@@ -760,6 +782,7 @@ function handleSendMobileCode() {
     }, 1000);
   });
 }
+
 /**
  * 发送邮箱验证码
  */
@@ -785,6 +808,7 @@ function handleSendEmailCode() {
     }, 1000);
   });
 }
+
 /**
  * 提交弹窗表单
  */
@@ -825,6 +849,7 @@ const handleSubmit = async () => {
     // ignore
   }
 };
+
 /**
  * 关闭弹窗并重置表单
  */
@@ -840,6 +865,7 @@ const handleCancel = () => {
     emailBindingFormRef.value?.resetFields();
   }
 };
+
 const fileInput = ref(null);
 /**
  * 触发头像文件选择
@@ -847,6 +873,7 @@ const fileInput = ref(null);
 const triggerFileUpload = () => {
   fileInput.value?.click();
 };
+
 /**
  * 选择头像后上传
  */
@@ -864,6 +891,7 @@ const handleFileChange = async (event) => {
   }
   target.value = "";
 };
+
 /**
  * 加载个人中心用户信息
  */

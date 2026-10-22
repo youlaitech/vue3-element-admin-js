@@ -1,5 +1,6 @@
 import UserAPI from "@/api/system/user";
 import RoleAPI from "@/api/system/role";
+
 const contentConfig = {
   permPrefix: "sys:user", // 不写不进行按钮权限校验
   table: {
@@ -134,4 +135,5 @@ const contentConfig = {
     },
   ],
 };
+
 export default contentConfig;

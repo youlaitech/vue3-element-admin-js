@@ -1,5 +1,6 @@
 import UserAPI from "@/api/system/user";
 import { deptArr, roleArr } from "./options";
+
 const modalConfig = {
   permPrefix: "sys:user",
   dialog: {

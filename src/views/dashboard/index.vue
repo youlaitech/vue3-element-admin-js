@@ -69,7 +69,7 @@
         </div>
         <div class="stat-card__body">
           <span class="stat-card__label">在线用户</span>
-          <span class="stat-card__num">{{ onlineUserCount }}</span>
+          <span class="stat-card__num">{{ onlineUserCount ?? "--" }}</span>
         </div>
         <span
           :class="[
@@ -248,10 +248,11 @@ import { useUserStore } from "@/stores/user";
 import { useSettingsStore } from "@/stores/settings";
 import { formatGrowthRate } from "@/utils";
 import { useTransition } from "@vueuse/core";
-import { useOnlineUsers } from "./composables/useOnlineUsers";
+import { useOnlineUserCount } from "./composables/useOnlineUserCount";
+
 const userStore = useUserStore();
 const settingsStore = useSettingsStore();
-const { onlineUserCount, isConnected } = useOnlineUsers();
+const { onlineUserCount, isConnected } = useOnlineUserCount();
 const hours = new Date().getHours();
 const greetings = computed(() => {
   const n = userStore.userInfo.nickname;
@@ -261,11 +262,13 @@ const greetings = computed(() => {
   if (hours >= 18 && hours < 24) return `晚上好，${n}`;
   return `夜深了，${n}`;
 });
+
 const currentDateStr = computed(() => {
   const d = new Date();
   const w = ["日", "一", "二", "三", "四", "五", "六"];
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 星期${w[d.getDay()]}`;
 });
+
 const todoItems = [
   {
     id: 1,
@@ -330,14 +333,17 @@ const visitOverviewData = ref({
   pvGrowthRate: 0,
   totalPvCount: 0,
 });
+
 const uvGrowthText = computed(() => {
   const r = visitOverviewData.value.uvGrowthRate;
   return r == null ? "--" : formatGrowthRate(r);
 });
+
 const pvGrowthText = computed(() => {
   const r = visitOverviewData.value.pvGrowthRate;
   return r == null ? "--" : formatGrowthRate(r);
 });
+
 const uvIsUp = computed(() => (visitOverviewData.value.uvGrowthRate || 0) > 0);
 const pvIsUp = computed(() => (visitOverviewData.value.pvGrowthRate || 0) > 0);
 const uvTrendTone = computed(() => (uvIsUp.value ? "success" : "danger"));
@@ -369,6 +375,7 @@ function getCssVar(name, fallback) {
   if (typeof window === "undefined") return fallback;
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
+
 /**
  * 给颜色加上透明度
  */
@@ -391,6 +398,7 @@ function colorWithAlpha(color, alpha) {
   }
   return value;
 }
+
 /**
  * 拉取访问概览数据
  */
@@ -399,6 +407,7 @@ function fetchVisitOverviewData() {
     visitOverviewData.value = d;
   });
 }
+
 /**
  * 拉取访问趋势数据
  */
@@ -414,6 +423,7 @@ function fetchVisitTrendData() {
     updateVisitTrendChartOptions(d);
   });
 }
+
 /**
  * 更新访问趋势图表配置
  */

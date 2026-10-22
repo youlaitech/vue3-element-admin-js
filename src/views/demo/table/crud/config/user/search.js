@@ -1,4 +1,5 @@
 import { deptArr, stateArr } from "./options";
+
 const searchConfig = {
   permPrefix: "sys:user",
   formItems: [
@@ -57,4 +58,5 @@ const searchConfig = {
     },
   ],
 };
+
 export default searchConfig;

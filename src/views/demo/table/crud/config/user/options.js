@@ -1,6 +1,7 @@
 // 公共下载数据，减少重复请求次数
 import DeptAPI from "@/api/system/dept";
 import RoleAPI from "@/api/system/role";
+
 // 明确指定类型为 OptionItem[]
 export const deptArr = ref([]);
 export const roleArr = ref([]);

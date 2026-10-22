@@ -90,6 +90,7 @@
 import { onMounted, ref } from "vue";
 import NoticeAPI from "@/api/system/notice";
 import { usePageTable } from "@/composables";
+
 defineOptions({
   name: "MyNotice",
   inheritAttrs: false,
@@ -106,6 +107,7 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: NoticeAPI.getMyNoticePage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
+
 const noticeDialogVisible = ref(false);
 const noticeDetail = ref(null);
 /**

@@ -123,15 +123,16 @@ defineOptions({
 
 import UserAPI from "@/api/system/user";
 import useCrudPage from "@/components/Crud/useCrudPage";
-import editModalConfig from "./config/edit";
-import { initOptions } from "./config/options";
-import addModalConfig from "./config/add";
-import contentConfig from "./config/content";
-import searchConfig from "./config/search";
-import addModalConfig2 from "./config2/add";
-import contentConfig2 from "./config2/content";
-import editModalConfig2 from "./config2/edit";
-import searchConfig2 from "./config2/search";
+import editModalConfig from "./config/user/edit";
+import { initOptions } from "./config/user/options";
+import addModalConfig from "./config/user/add";
+import contentConfig from "./config/user/content";
+import searchConfig from "./config/user/search";
+import addModalConfig2 from "./config/mock/add";
+import contentConfig2 from "./config/mock/content";
+import editModalConfig2 from "./config/mock/edit";
+import searchConfig2 from "./config/mock/search";
+
 const {
   searchRef,
   contentRef,
@@ -147,6 +148,7 @@ const {
   handleSearchClick,
   handleFilterChange,
 } = useCrudPage();
+
 /**
  * 其他工具
  */
@@ -155,6 +157,7 @@ function handleToolbarClick(name) {
     ElMessage.success("点击了自定义1按钮");
   }
 }
+
 /**
  * 表格工具
  */
@@ -192,6 +195,7 @@ const handleOperateClick = (data) => {
     );
   }
 };
+
 /**
  * 处理操作列点击：查看、编辑等
  */
@@ -206,6 +210,7 @@ const handleOperateClick2 = (data) => {
     ElMessage.success("模拟删除成功");
   }
 };
+
 const addModalRef2 = ref();
 /**
  * 打开二级弹窗
@@ -213,6 +218,7 @@ const addModalRef2 = ref();
 const openSecondModal = () => {
   handleAddClick(addModalRef2);
 };
+
 /**
  * 提交二级弹窗
  */

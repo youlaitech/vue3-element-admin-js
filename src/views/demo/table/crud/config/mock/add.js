@@ -1,4 +1,5 @@
-import { deptArr } from "../config/options";
+import { deptArr } from "../user/options";
+
 const modalConfig = {
   colon: true,
   dialog: {

@@ -17,6 +17,7 @@ const chartRef = useTemplateRef("chart");
 onMounted(() => {
   chartRef.value?.initOptions(options);
 });
+
 /**
  * 生成一个500到1000的随机数
  */

@@ -19,7 +19,8 @@
 <script setup>
 import { useSettingsStore, useTagsViewStore } from "@/stores";
 import variables from "@/styles/variables.module.scss";
-import Error404 from "@/views/error/404.vue";
+import Error404 from "@/views/internal/error/404.vue";
+
 const { cachedViews } = toRefs(useTagsViewStore());
 const settingsStore = useSettingsStore();
 const wrapperMap = new Map();
@@ -52,6 +53,7 @@ const currentComponent = (component, route) => {
   }
   return h(wrapper);
 };
+
 const appMainHeight = computed(() => {
   if (settingsStore.showTagsView) {
     return `calc(100vh - ${variables["navbar-height"]} - ${variables["tags-view-height"]})`;
@@ -59,6 +61,7 @@ const appMainHeight = computed(() => {
     return `calc(100vh - ${variables["navbar-height"]})`;
   }
 });
+
 const transitionName = computed(() => {
   return settingsStore.pageSwitchingAnimation ?? "";
 });

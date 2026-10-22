@@ -1,5 +1,6 @@
 import { DeviceEnum } from "@/enums/settings";
 import { useAppStore } from "@/stores";
+
 const modalConfig = {
   permPrefix: "sys:user",
   component: "drawer",
@@ -98,4 +99,5 @@ const modalConfig = {
     },
   ],
 };
+
 export default reactive(modalConfig);

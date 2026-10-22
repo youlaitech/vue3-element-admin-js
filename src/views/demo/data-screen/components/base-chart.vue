@@ -29,6 +29,7 @@ import { useTemplateRef } from "vue";
 
 /** 核心模块 */
 import * as echarts from "echarts/core";
+
 /** 图表类型（按需注册） */
 import {
   BarChart,
@@ -39,6 +40,7 @@ import {
   ScatterChart,
   EffectScatterChart,
 } from "echarts/charts";
+
 /**功能组件（按需注册） */
 import {
   GridComponent, // 直角坐标系网格
