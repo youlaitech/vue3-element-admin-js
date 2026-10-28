@@ -39,6 +39,8 @@
 </template>
 
 <script setup>
+import { Link, Monitor } from "@element-plus/icons-vue";
+
 defineOptions({
   name: "FormPublishMethodStep",
 });

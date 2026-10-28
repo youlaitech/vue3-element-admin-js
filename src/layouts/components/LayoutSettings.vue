@@ -267,7 +267,7 @@
 </template>
 
 <script setup>
-import { DocumentCopy, RefreshLeft } from "@element-plus/icons-vue";
+import { ArrowRight, Check, DocumentCopy, RefreshLeft } from "@element-plus/icons-vue";
 import {
   LayoutMode,
   PageSwitchingAnimationOptions,
