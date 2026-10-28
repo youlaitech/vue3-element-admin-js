@@ -1,11 +1,14 @@
 // 表单字段解析（规则字段提取、提交数据解析与展示格式化）
+
 /**
  * 递归提取表单字段元数据（布局容器的子节点递归收集）
  * @param rules form-create 规则（JSON 解析产物，结构未校验）
  */
 export function extractFields(rules) {
   const result = [];
-  // 递归收集字段
+  /**
+   * 递归收集表单规则中的字段。
+   */
   const walk = (nodes) => {
     nodes.forEach((node) => {
       if (!node || typeof node !== "object") return;
@@ -25,6 +28,7 @@ export function extractFields(rules) {
   walk(Array.isArray(rules) ? rules : []);
   return result;
 }
+
 /**
  * 提取字段选项映射（value -> label，脏项跳过）
  * @param options 规则 options 数组
@@ -41,17 +45,20 @@ export function extractOptionMap(options) {
   });
   return optionMap;
 }
+
 /**
  * 解析提交数据（field -> value 映射，解析失败按空数据兜底）
  * @param dataJson 数据 JSON 字符串
  */
 export function parseDataJson(dataJson) {
   try {
-    return dataJson ? JSON.parse(dataJson) : {};
+    const value = dataJson ? JSON.parse(dataJson) : undefined;
+    return value !== null && typeof value === "object" && !Array.isArray(value) ? value : {};
   } catch {
     return {};
   }
 }
+
 /**
  * 格式化单元格展示值
  *

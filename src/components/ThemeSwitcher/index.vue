@@ -24,6 +24,7 @@
 import { useSettingsStore } from "@/stores";
 import { ThemeMode } from "@/enums";
 import { Moon, Sunny, Monitor } from "@element-plus/icons-vue";
+
 const { t } = useI18n();
 const settingsStore = useSettingsStore();
 const themeList = [
@@ -38,6 +39,7 @@ const currentThemeIcon = computed(() => {
   }
   return settingsStore.resolvedTheme === ThemeMode.DARK ? Moon : Sunny;
 });
+
 /**
  * 切换主题模式
  */

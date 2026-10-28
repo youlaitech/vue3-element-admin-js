@@ -53,6 +53,7 @@
 defineOptions({
   name: "ApprovalFlowTimeline",
 });
+
 /**
  * 审批流程时间线（流程走向 + 审批记录融合）
  * 以设计环节为骨架按编排顺序展示，实际办理记录按 activityId 归位到环节：
@@ -91,30 +92,35 @@ const recordMap = computed(() => {
   });
   return map;
 });
+
 /**
  * 取节点对应的审批记录
  */
 function recordsOf(nodeId) {
   return recordMap.value.get(nodeId) ?? [];
 }
+
 /**
  * 判断节点是否已有审批记录
  */
 function hasRecord(nodeId) {
   return recordsOf(nodeId).length > 0;
 }
+
 /**
  * 是否"未到"：流程运行中且位于当前环节之后
  */
 function isUpcoming(index) {
   return props.status === "running" && index >= props.active;
 }
+
 /**
  * 无记录环节状态标签：未到（后续环节）/ 未经过（分支跳过或已结束）
  */
 function pendingLabel(index) {
   return isUpcoming(index) ? "未到" : "未经过";
 }
+
 /**
  * 环节办理人描述：角色（成员账号）；发起人办理环节标注"发起人"
  */

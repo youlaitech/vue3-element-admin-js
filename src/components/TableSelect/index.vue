@@ -108,7 +108,7 @@
         >
           <template v-for="col in selectConfig.tableColumns" :key="col.prop">
             <!-- 自定义 -->
-            <template v-if="col.templet === 'custom'">
+            <template v-if="col.cellType === 'custom'">
               <el-table-column v-bind="col">
                 <template #default="scope">
                   <slot :name="col.slotName ?? col.prop" :prop="col.prop" v-bind="scope" />
@@ -144,9 +144,7 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import { useResizeObserver } from "@vueuse/core";
-/**
- * 表格选择器：弹窗表格选数据回填
- */
+
 const props = defineProps({
   selectConfig: {
     type: Object,
@@ -167,10 +165,12 @@ const props = defineProps({
     default: "",
   },
 });
+
 /**
  * 自定义事件
  */
 const emit = defineEmits(["confirmClick"]);
+
 // 主键
 const pk = props.selectConfig.pk ?? "id";
 // 是否多选
@@ -179,30 +179,24 @@ const isMultiple = props.selectConfig.multiple === true;
 const width = props.selectConfig.width ?? "100%";
 // 占位符
 const placeholder = props.selectConfig.placeholder ?? "请选择";
-// 是否显示弹出框
 const popoverVisible = ref(false);
-// 加载状态
 const loading = ref(false);
-// 数据总数
 const total = ref(0);
-// 列表数据
 const pageData = ref([]);
 // 每页条数
 const pageSize = 10;
-// 搜索参数
 const queryParams = reactive({
   pageNum: 1,
   pageSize,
 });
-// 计算 popover 的宽度
+
 const tableSelectRef = ref();
 const popoverWidth = ref(width);
 useResizeObserver(tableSelectRef, (entries) => {
   popoverWidth.value = `${entries[0].contentRect.width}px`;
 });
-// 表单操作
+
 const formRef = ref();
-// 初始化搜索条件
 for (const item of props.selectConfig.formItems) {
   queryParams[item.prop] = item.initialValue ?? "";
 }
@@ -219,6 +213,7 @@ function handleReset() {
 function handleQuery() {
   fetchPageData(true);
 }
+
 /**
  * 获取分页数据
  */
@@ -238,7 +233,7 @@ function fetchPageData(isRestart = false) {
       loading.value = false;
     });
 }
-// 列表操作
+
 const tableRef = ref();
 // 数据刷新后是否保留选项
 for (const item of props.selectConfig.tableColumns) {
@@ -247,7 +242,6 @@ for (const item of props.selectConfig.tableColumns) {
     break;
   }
 }
-// 选择
 const selectedItems = ref([]);
 const confirmText = computed(() => {
   return selectedItems.value.length > 0 ? `已选${selectedItems.value.length}条` : "请选择";
@@ -281,7 +275,7 @@ function handleSelectAll(selection) {
 function handlePagination() {
   fetchPageData();
 }
-// 弹出框
+
 const isInit = ref(false);
 /**
  * 显示

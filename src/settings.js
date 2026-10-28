@@ -1,4 +1,5 @@
 // 应用配置
+
 import {
   LayoutMode,
   ComponentSize,
@@ -7,10 +8,13 @@ import {
   LanguageEnum,
   TagsViewStyle,
 } from "@/enums";
+
 const env = import.meta.env;
 const { pkg } = __APP_INFO__;
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
 export const themeColorNames = ["primary", "success", "warning", "danger", "info"];
+
 export const themePalettePresets = [
   {
     id: "arco",
@@ -49,24 +53,21 @@ export const themePalettePresets = [
     },
   },
 ];
+
 export const defaultThemePalette = themePalettePresets[0];
-/**
- * 解析布尔环境变量，仅 "true" 视为开启，未设置或为空时取默认值
- *
- * @param value 环境变量原始值
- * @param defaultValue 未设置时的取值
- */
-function envBool(value, defaultValue) {
-  return value == null || value === "" ? defaultValue : value === "true";
-}
+
 export const appConfig = {
   name: pkg.name,
   version: pkg.version,
   title: env.VITE_APP_TITLE || pkg.name,
-  // 功能开关（缺省均关闭，需要时在 .env 中显式开启）
-  tenantEnabled: envBool(env.VITE_TENANT_ENABLED, false),
-  aiEnabled: envBool(env.VITE_AI_ENABLED, false),
+
+  // 环境变量是字符串，只有 "true" 开启功能。
+  tenantEnabled: env.VITE_TENANT_ENABLED === "true",
+  aiEnabled: env.VITE_AI_ENABLED === "true",
+  // 显示 OIDC 入口，后端需另行启用 security.oidc.enabled。
+  oidcEnabled: env.VITE_OIDC_ENABLED === "true",
 };
+
 export const defaults = {
   theme: prefersDark ? ThemeMode.DARK : ThemeMode.LIGHT,
   themePalette: defaultThemePalette.id,

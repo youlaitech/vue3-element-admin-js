@@ -149,7 +149,11 @@
                     <span class="i-svg:scan login-card__alt-icon" />
                     扫码登录
                   </button>
-                  <button class="login-card__alt-btn">
+                  <button
+                    v-if="appConfig.oidcEnabled"
+                    class="login-card__alt-btn"
+                    @click="startOidcLogin"
+                  >
                     <span class="i-svg:security login-card__alt-icon" />
                     统一认证
                   </button>
@@ -174,23 +178,30 @@
 
 <script setup>
 defineOptions({ name: "LoginPage", inheritAttrs: false });
-import { Lock, User } from "@element-plus/icons-vue";
-import AuthAPI from "@/api/auth";
+
+import { Clock, Lock, Loading, Refresh, User } from "@element-plus/icons-vue";
+import AuthAPI, { OIDC_AUTHORIZATION_URL } from "@/api/auth";
 import router from "@/router";
 import { useUserStore } from "@/stores";
 import { AuthStorage } from "@/utils/auth";
 import { appConfig } from "@/settings";
+import ResetPwd from "./components/ResetPwd.vue";
+import QrCodeLogin from "./components/QrCodeLogin.vue";
 import logo from "@/assets/images/logo.png";
+
 const userStore = useUserStore();
 const route = useRoute();
 const component = ref("login");
+
 const loginFormRef = ref();
 const loading = ref(false);
 const isCapsLock = ref(false);
 const captchaBase64 = ref();
 const codeLoading = ref(false);
+
 const UserIcon = markRaw(User);
 const LockIcon = markRaw(Lock);
+
 const loginFormData = ref({
   username: "youlai",
   password: "123456",
@@ -198,6 +209,7 @@ const loginFormData = ref({
   captchaCode: "",
   rememberMe: AuthStorage.getRememberMe(),
 });
+
 const loginRules = computed(() => ({
   username: [{ required: true, trigger: "blur", message: "请输入用户名" }],
   password: [
@@ -206,6 +218,7 @@ const loginRules = computed(() => ({
   ],
   captchaCode: [{ required: true, trigger: "blur", message: "请输入验证码" }],
 }));
+
 // 工作流演示账号，与 workflow.sql 预置数据一致
 const demoAccounts = [
   { username: "employee", label: "员工·发起" },
@@ -214,6 +227,7 @@ const demoAccounts = [
   { username: "finance", label: "财务" },
   { username: "clerk", label: "行政" },
 ];
+
 /**
  * 填充演示账号
  */
@@ -221,6 +235,7 @@ function fillDemoAccount(account) {
   loginFormData.value.username = account.username;
   loginFormData.value.password = "123456";
 }
+
 /**
  * 刷新验证码
  */
@@ -233,6 +248,7 @@ function getCaptcha() {
     })
     .finally(() => (codeLoading.value = false));
 }
+
 /**
  * 提交登录表单
  */
@@ -242,6 +258,7 @@ async function handleLoginSubmit() {
     () => false
   );
   if (!valid) return;
+
   loading.value = true;
   try {
     await userStore.login(loginFormData.value).then(
@@ -255,6 +272,7 @@ async function handleLoginSubmit() {
     loading.value = false;
   }
 }
+
 /**
  * 检测大写锁定是否打开
  */
@@ -263,13 +281,24 @@ function checkCapsLock(event) {
     isCapsLock.value = event.getModifierState("CapsLock");
   }
 }
+
 /**
  * 切换登录区展示的表单
  */
 function showForm(type) {
   component.value = type;
 }
-onMounted(() => getCaptcha());
+
+/**
+ * 跳转认证中心开始 OIDC 登录。
+ */
+function startOidcLogin() {
+  window.location.href = OIDC_AUTHORIZATION_URL;
+}
+
+onMounted(() => {
+  getCaptcha();
+});
 </script>
 
 <style lang="scss" scoped>

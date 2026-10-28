@@ -1,12 +1,14 @@
 import request from "@/utils/request";
+
 const APP_BASE_URL = "/api/v1/apps";
+
 const AppAPI = {
   /**
    * 获取应用分页数据
    */
   getPage(queryParams) {
     return request({
-      url: `${APP_BASE_URL}`,
+      url: APP_BASE_URL,
       method: "get",
       params: queryParams,
     });
@@ -24,7 +26,7 @@ const AppAPI = {
    * 新增应用
    */
   create(data) {
-    return request({ url: `${APP_BASE_URL}`, method: "post", data });
+    return request({ url: APP_BASE_URL, method: "post", data });
   },
   /**
    * 修改应用
@@ -45,5 +47,5 @@ const AppAPI = {
     return request({ url: `${APP_BASE_URL}/${id}/status`, method: "put", data: { status } });
   },
 };
+
 export default AppAPI;
-// 重导出类型

@@ -24,6 +24,7 @@
 <script setup>
 import { ComponentSize } from "@/enums/settings";
 import { useAppStore } from "@/stores/app";
+
 const { t } = useI18n();
 const sizeOptions = computed(() => {
   return [
@@ -32,6 +33,7 @@ const sizeOptions = computed(() => {
     { label: t("sizeSelect.small"), value: ComponentSize.SMALL },
   ];
 });
+
 const appStore = useAppStore();
 /**
  * 切换组件尺寸

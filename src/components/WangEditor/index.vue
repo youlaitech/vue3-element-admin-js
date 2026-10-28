@@ -34,8 +34,13 @@
 
 <script setup>
 import "@wangeditor-next/editor/dist/css/style.css";
+import { Toolbar, Editor } from "@wangeditor-next/editor-for-vue";
+
 // 文件上传 API
 import FileAPI from "@/api/file";
+
+// 上传图片回调函数类型
+
 /**
  * wangEditor 富文本编辑器
  */
@@ -45,25 +50,30 @@ defineProps({
     default: "500px",
   },
 });
-/**
- * 双向绑定 - 直接使用 v-model，无需手动 setHtml
- */
+// 双向绑定 - 直接使用 v-model，无需手动 setHtml
 const modelValue = defineModel({
   type: String,
   required: false,
   default: "",
 });
+
 // 编辑器实例，必须用 shallowRef
 const editorRef = shallowRef();
+
 const editorKey = ref(0);
 const innerUpdating = ref(false);
+
 // 工具栏配置
 const toolbarConfig = {};
+
 // 编辑器配置
 const editorConfig = {
   placeholder: "请输入内容..",
   MENU_CONF: {
     uploadImage: {
+      /**
+       * 上传编辑器图片并插入返回的文件地址。
+       */
       async customUpload(file, insertFn) {
         const data = await FileAPI.uploadFile(file);
         insertFn(data.url, data.name, data.url);
@@ -71,12 +81,14 @@ const editorConfig = {
     },
   },
 };
+
 /**
  * 记录 editor 实例
  */
 const handleCreated = (editor) => {
   editorRef.value = editor;
 };
+
 /**
  * 编辑器内容变化后同步回 v-model
  */
@@ -86,6 +98,7 @@ const handleChange = () => {
     innerUpdating.value = false;
   });
 };
+
 watch(
   () => modelValue.value,
   () => {
@@ -94,6 +107,7 @@ watch(
     editorKey.value += 1;
   }
 );
+
 // 组件销毁时，及时销毁编辑器
 onBeforeUnmount(() => {
   const editor = editorRef.value;

@@ -139,17 +139,24 @@
 
 <script setup>
 import { useFullscreen } from "@vueuse/core";
+import { FullScreen, Refresh } from "@element-plus/icons-vue";
+
 import LogAPI from "@/api/system/log";
 import { usePageTable } from "@/composables";
+
 defineOptions({
   name: "Log",
   inheritAttrs: false,
 });
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 const queryFormRef = ref();
+
 // 日志状态：1=成功，0=失败
 const LOG_STATUS_SUCCESS = 1;
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -161,8 +168,10 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: LogAPI.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
+
 const detailVisible = ref(false);
 const detailData = ref({});
+
 /**
  * 请求方法 → el-tag 类型映射
  *
@@ -178,6 +187,7 @@ function getMethodTagType(method) {
   };
   return map[method?.toUpperCase()] ?? "info";
 }
+
 /**
  * 打开日志详情弹窗
  *
@@ -187,6 +197,7 @@ function handleDetail(row) {
   detailData.value = row;
   detailVisible.value = true;
 }
+
 onMounted(() => {
   handleQuery();
 });

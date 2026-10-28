@@ -169,6 +169,7 @@ defineProps({
     default: () => [],
   },
 });
+
 const formRef = ref();
 const rules = {
   tableName: [{ required: true, message: "请输入表名", trigger: "blur" }],
@@ -177,6 +178,7 @@ const rules = {
   moduleName: [{ required: true, message: "请输入模块名", trigger: "blur" }],
   entityName: [{ required: true, message: "请输入实体名", trigger: "blur" }],
 };
+
 /**
  * 校验基础配置表单
  */
@@ -188,6 +190,7 @@ async function validate() {
     return false;
   }
 }
+
 /**
  * 暴露 validate 供容器保存前校验
  */

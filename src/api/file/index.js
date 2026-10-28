@@ -1,13 +1,15 @@
 import request from "@/utils/request";
+
 const FileAPI = {
   /**
    * 上传文件 （传入 FormData，上传进度回调）
    */
-  upload(formData, onProgress) {
+  upload(formData, onProgress, signal) {
     return request({
       url: "/api/v1/files",
       method: "post",
       data: formData,
+      signal,
       headers: { "Content-Type": "multipart/form-data" },
       onUploadProgress: (progressEvent) => {
         if (progressEvent.total) {
@@ -17,6 +19,7 @@ const FileAPI = {
       },
     });
   },
+
   /**
    * 上传文件（传入 File）
    */
@@ -30,6 +33,7 @@ const FileAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
   /**
    * 删除文件
    */
@@ -40,6 +44,7 @@ const FileAPI = {
       params: { filePath },
     });
   },
+
   /**
    * 下载文件
    */
@@ -59,5 +64,7 @@ const FileAPI = {
     });
   },
 };
+
 export default FileAPI;
+
 // 重导出类型

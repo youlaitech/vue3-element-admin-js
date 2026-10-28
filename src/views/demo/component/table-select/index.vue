@@ -33,6 +33,7 @@ defineOptions({
 
 import { useDictStore } from "@/stores";
 import selectConfig from "./config/select";
+
 const dictStore = useDictStore();
 const selectedUser = ref();
 /**
@@ -41,8 +42,8 @@ const selectedUser = ref();
 function handleConfirm(data) {
   selectedUser.value = data[0];
 }
+
 const text = computed(() => {
-  // 获取字典数据
   const dictData = dictStore.getDictItems("gender");
   const genderLabel = dictData.find(
     (item) => String(item.value) === String(selectedUser.value?.gender)

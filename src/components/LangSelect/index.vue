@@ -19,6 +19,7 @@
 <script setup>
 import { useAppStore } from "@/stores/app";
 import { LanguageEnum } from "@/enums/settings";
+
 /**
  * 语言切换：中英文切换入口
  */
@@ -28,6 +29,7 @@ defineProps({
     required: false,
   },
 });
+
 const langOptions = [
   { label: "中文", value: LanguageEnum.ZH_CN },
   { label: "English", value: LanguageEnum.EN },

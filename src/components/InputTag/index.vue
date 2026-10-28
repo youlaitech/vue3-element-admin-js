@@ -36,6 +36,7 @@ const tags = defineModel({
   type: Array,
   default: () => [],
 });
+
 /**
  * 标签输入框：回车新增标签
  */
@@ -49,6 +50,7 @@ defineProps({
     }),
   },
 });
+
 /**
  * 删除一个标签
  */
@@ -58,6 +60,7 @@ const handleClose = (tag) => {
     tags.value = [...newTags];
   }
 };
+
 /**
  * 显示标签输入框并聚焦
  */
@@ -65,6 +68,7 @@ const showInput = () => {
   inputVisible.value = true;
   nextTick(() => inputRef.value?.focus());
 };
+
 /**
  * 确认输入的标签并追加到列表
  */

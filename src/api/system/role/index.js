@@ -1,12 +1,14 @@
 import request from "@/utils/request";
+
 const ROLE_BASE_URL = "/api/v1/roles";
+
 const RoleAPI = {
   /**
    * 获取角色分页数据
    */
   getPage(queryParams) {
     return request({
-      url: `${ROLE_BASE_URL}`,
+      url: ROLE_BASE_URL,
       method: "get",
       params: queryParams,
     });
@@ -57,7 +59,7 @@ const RoleAPI = {
    * 新增角色
    */
   create(data) {
-    return request({ url: `${ROLE_BASE_URL}`, method: "post", data });
+    return request({ url: ROLE_BASE_URL, method: "post", data });
   },
   /**
    * 更新角色
@@ -72,5 +74,5 @@ const RoleAPI = {
     return request({ url: `${ROLE_BASE_URL}/${ids}`, method: "delete" });
   },
 };
+
 export default RoleAPI;
-// 重导出类型

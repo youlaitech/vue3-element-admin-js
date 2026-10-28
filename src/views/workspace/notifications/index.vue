@@ -88,6 +88,8 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { Refresh, Search } from "@element-plus/icons-vue";
+
 import NoticeAPI from "@/api/system/notice";
 import { usePageTable } from "@/composables";
 
@@ -95,9 +97,12 @@ defineOptions({
   name: "MyNotice",
   inheritAttrs: false,
 });
+
 // 通知已读标记（1:已读;0:未读）
 const NOTICE_READ = 1;
+
 const queryFormRef = ref();
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -110,6 +115,7 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
 
 const noticeDialogVisible = ref(false);
 const noticeDetail = ref(null);
+
 /**
  * 查看通知详情
  *
@@ -120,6 +126,7 @@ async function handleReadNotice(id) {
   noticeDetail.value = data;
   noticeDialogVisible.value = true;
 }
+
 onMounted(() => {
   handleQuery();
 });

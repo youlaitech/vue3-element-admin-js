@@ -1,5 +1,6 @@
 import { cloneDeep } from "lodash-es";
 import { FormTypeEnum, QueryTypeEnum } from "@/enums/codegen";
+
 // 参与比对的字段属性，顺序与字段配置表格一致
 const FIELD_ITEMS = [
   { key: "fieldComment", label: "字段描述", format: text },
@@ -17,12 +18,14 @@ const FIELD_ITEMS = [
 function text(value) {
   return value == null || value === "" ? "空" : String(value);
 }
+
 /**
  * 0/1 开关值转文本
  */
 function switchText(value) {
   return value === 1 ? "是" : "否";
 }
+
 /**
  * 枚举值转中文名，匹配不到时保留原值
  */
@@ -31,6 +34,7 @@ function enumLabel(options, value) {
   const hit = Object.values(options).find((item) => item.value === value);
   return hit?.label ?? String(value);
 }
+
 /**
  * 对比两份配置，只保留发生变化的部分
  */
@@ -64,6 +68,7 @@ export function diffGenConfig(before, after) {
   });
   return diff;
 }
+
 /**
  * AI 填充差异：填充前留快照，填充后算差异，支持撤销
  */

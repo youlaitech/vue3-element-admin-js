@@ -39,9 +39,6 @@ const options = {
     axisName: {
       color: "#ffffff",
       fontSize: 14,
-      // backgroundColor: "#0175FC",
-      // padding: [5, 5, 3, 5],
-      // borderRadius: 4,
     },
     splitLine: {
       lineStyle: { color: "rgba(0, 255, 255, 0.3)" },

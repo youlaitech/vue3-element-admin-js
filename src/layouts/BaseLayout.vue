@@ -12,15 +12,18 @@
 
 <script setup>
 import { useLayout } from "./composables/useLayout";
+
 /**
  * 基础布局骨架
  */
 defineProps({
+  /** 移动端展开侧边栏时是否显示遮罩层（LeftLayout 需要，MixLayout 不需要） */
   showOverlay: {
     type: Boolean,
     default: true,
   },
 });
+
 const { layoutClass, isSidebarOpen, isMobile, closeSidebar } = useLayout();
 </script>
 

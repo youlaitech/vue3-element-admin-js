@@ -1,16 +1,19 @@
 import request from "@/utils/request";
+
 const LOG_BASE_URL = "/api/v1/logs";
+
 const LogAPI = {
   /**
    * 获取日志分页列表
    */
   getPage(queryParams) {
     return request({
-      url: `${LOG_BASE_URL}`,
+      url: LOG_BASE_URL,
       method: "get",
       params: queryParams,
     });
   },
+
   /**
    * 获取访问趋势统计
    */
@@ -21,6 +24,7 @@ const LogAPI = {
       params: queryParams,
     });
   },
+
   /**
    * 获取访问概览统计
    */
@@ -31,5 +35,5 @@ const LogAPI = {
     });
   },
 };
+
 export default LogAPI;
-// 重导出类型

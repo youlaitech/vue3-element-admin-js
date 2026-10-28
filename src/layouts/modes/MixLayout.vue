@@ -78,6 +78,7 @@ import { translateRouteTitle } from "@/lang/utils";
 import { SidebarColor, ThemeMode } from "@/enums/settings";
 import BaseLayout from "../BaseLayout.vue";
 import variables from "@/styles/variables.module.scss";
+
 const { width } = useWindowSize();
 const appStore = useAppStore();
 const settingsStore = useSettingsStore();
@@ -90,6 +91,7 @@ const {
   resolvePath,
   handleTopMenuSelect,
 } = useMixMenu();
+
 const isLogoCollapsed = computed(() => width.value < 768);
 // 深色菜单配色
 // 暗色主题或经典蓝侧边栏时菜单区域使用深色背景与浅色文字，其他情况使用 Element Plus 默认配色

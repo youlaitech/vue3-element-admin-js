@@ -30,9 +30,11 @@ import {
   TooltipComponent,
   VisualMapComponent,
 } from "echarts/components";
+
 // 必须引入一个渲染器（CanvasRenderer 或 SVGRenderer），否则图表画不出来
 import { CanvasRenderer } from "echarts/renderers";
 import { useResizeObserver } from "@vueuse/core";
+
 // 按需注册组件
 echarts.use([
   CanvasRenderer,
@@ -65,6 +67,7 @@ const props = defineProps({
     default: "300px",
   },
 });
+
 const chartRef = ref(null);
 let chartInstance = null;
 /**

@@ -31,6 +31,7 @@
 import { useLayout } from "../composables/useLayout";
 import { useAppStore } from "@/stores";
 import BaseLayout from "../BaseLayout.vue";
+
 const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
 const appStore = useAppStore();
 </script>

@@ -68,7 +68,15 @@
           <el-icon :size="18"><Connection /></el-icon>
         </div>
         <div class="stat-card__body">
-          <span class="stat-card__label">在线用户</span>
+          <el-tooltip
+            :content="
+              presence
+                ? `节点 ${presence.nodeId} · ${presence.onlineConnections} 个连接`
+                : '当前节点在线用户，需在线人数查看权限'
+            "
+          >
+            <span class="stat-card__label">本节点在线用户</span>
+          </el-tooltip>
           <span class="stat-card__num">{{ onlineUserCount ?? "--" }}</span>
         </div>
         <span
@@ -241,6 +249,7 @@
 
 <script setup>
 defineOptions({ name: "Dashboard", inheritAttrs: false });
+
 import { dayjs } from "element-plus";
 import { ref } from "vue";
 import LogAPI from "@/api/system/log";
@@ -248,11 +257,23 @@ import { useUserStore } from "@/stores/user";
 import { useSettingsStore } from "@/stores/settings";
 import { formatGrowthRate } from "@/utils";
 import { useTransition } from "@vueuse/core";
+import {
+  User,
+  Connection,
+  View,
+  ArrowUp,
+  ArrowDown,
+  Clock,
+  CircleCheck,
+  Document,
+  VideoPlay,
+} from "@element-plus/icons-vue";
 import { useOnlineUserCount } from "./composables/useOnlineUserCount";
 
 const userStore = useUserStore();
 const settingsStore = useSettingsStore();
-const { onlineUserCount, isConnected } = useOnlineUserCount();
+const { onlineUserCount, isConnected, presence } = useOnlineUserCount();
+
 const hours = new Date().getHours();
 const greetings = computed(() => {
   const n = userStore.userInfo.nickname;
@@ -306,6 +327,7 @@ const todoItems = [
     done: true,
   },
 ];
+
 const activities = [
   { id: 1, content: "管理员 admin 登录系统", time: "3分钟前" },
   { id: 2, content: "新增用户李四，角色为普通用户", time: "25分钟前" },
@@ -314,17 +336,20 @@ const activities = [
   { id: 5, content: "角色权限批量修改：运营组新增导出权限", time: "昨天 16:42" },
   { id: 6, content: "SSL 证书已自动续期", time: "昨天 09:15" },
 ];
+
 const todoOverviewItems = [
   { label: "审批", value: "2", percent: 40, tone: "primary" },
   { label: "审核", value: "1", percent: 20, tone: "primary" },
   { label: "通知", value: "1", percent: 20, tone: "primary" },
   { label: "工单", value: "1", percent: 20, tone: "primary" },
 ];
+
 const todoSummaryItems = [
   { label: "今日新增", value: "3", tone: "primary" },
   { label: "即将超时", value: "1", tone: "primary" },
   { label: "今日完成", value: "1", tone: "success" },
 ];
+
 const visitOverviewData = ref({
   todayUvCount: 0,
   uvGrowthRate: 0,
@@ -338,17 +363,16 @@ const uvGrowthText = computed(() => {
   const r = visitOverviewData.value.uvGrowthRate;
   return r == null ? "--" : formatGrowthRate(r);
 });
-
 const pvGrowthText = computed(() => {
   const r = visitOverviewData.value.pvGrowthRate;
   return r == null ? "--" : formatGrowthRate(r);
 });
-
 const uvIsUp = computed(() => (visitOverviewData.value.uvGrowthRate || 0) > 0);
 const pvIsUp = computed(() => (visitOverviewData.value.pvGrowthRate || 0) > 0);
 const uvTrendTone = computed(() => (uvIsUp.value ? "success" : "danger"));
 const pvTrendTone = computed(() => (pvIsUp.value ? "success" : "danger"));
 const systemTrendTone = "success";
+
 const tUv = useTransition(
   computed(() => visitOverviewData.value.todayUvCount),
   {
@@ -365,14 +389,17 @@ const tPv = useTransition(
 );
 const displayTransitionUvCount = computed(() => Math.round(Number(tUv.value)));
 const displayTransitionPvCount = computed(() => Math.round(Number(tPv.value)));
+
 const visitTrendDateRange = ref(7);
 const visitTrendData = ref();
 const visitTrendChartOptions = ref({});
+
 /**
  * 读取 CSS 变量，取不到时用兜底值
  */
 function getCssVar(name, fallback) {
   if (typeof window === "undefined") return fallback;
+
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 }
 
@@ -381,6 +408,7 @@ function getCssVar(name, fallback) {
  */
 function colorWithAlpha(color, alpha) {
   const value = color.trim();
+
   if (value.startsWith("#")) {
     const hex =
       value.length === 4
@@ -390,12 +418,15 @@ function colorWithAlpha(color, alpha) {
     const r = (rgb >> 16) & 255;
     const g = (rgb >> 8) & 255;
     const b = rgb & 255;
+
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
+
   const parts = value.match(/\d+(\.\d+)?/g);
   if (parts && parts.length >= 3) {
     return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${alpha})`;
   }
+
   return value;
 }
 
@@ -433,6 +464,7 @@ function updateVisitTrendChartOptions(d) {
   const textSecondary = getCssVar("--el-text-color-secondary", "#909399");
   const borderLighter = getCssVar("--el-border-color-lighter", "#ebeef5");
   const gridLine = colorWithAlpha(borderLighter, 0.72);
+
   visitTrendChartOptions.value = {
     tooltip: {
       trigger: "axis",
@@ -518,6 +550,7 @@ function updateVisitTrendChartOptions(d) {
     ],
   };
 }
+
 watch(
   () => visitTrendDateRange.value,
   () => fetchVisitTrendData(),
@@ -527,6 +560,7 @@ watch(
   () => [settingsStore.resolvedTheme, settingsStore.themeColors],
   () => {
     if (!visitTrendData.value) return;
+
     requestAnimationFrame(() => {
       if (visitTrendData.value) updateVisitTrendChartOptions(visitTrendData.value);
     });

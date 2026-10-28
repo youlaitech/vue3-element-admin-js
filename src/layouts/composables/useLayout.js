@@ -2,6 +2,7 @@ import { useRoute } from "vue-router";
 import { useAppStore, usePermissionStore, useSettingsStore } from "@/stores";
 import { DeviceEnum } from "@/enums/settings";
 import { defaults } from "@/settings";
+
 /**
  * 提供布局组件共用的响应式状态
  */

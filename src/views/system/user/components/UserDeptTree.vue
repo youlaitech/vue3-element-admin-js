@@ -21,6 +21,7 @@
 
 <script setup>
 import DeptAPI from "@/api/system/dept";
+
 /**
  * 用户部门树：按部门筛选用户
  */
@@ -30,6 +31,7 @@ const props = defineProps({
     default: undefined,
   },
 });
+
 const deptList = ref();
 const deptTreeRef = ref();
 const deptName = ref("");
@@ -55,6 +57,7 @@ function handleFilter(value, data) {
   }
   return String(data.label ?? "").includes(value);
 }
+
 /**
  * 点击部门树节点
  */

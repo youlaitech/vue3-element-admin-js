@@ -9,6 +9,7 @@
 
 <script setup>
 import { useDictStore } from "@/stores";
+
 /**
  * 字典标签：按字典值回显文本
  */
@@ -20,50 +21,25 @@ const props = defineProps({
     default: "default", // 标签大小
   },
 });
-const label = ref("");
-const tagType = ref(); // 标签类型
-const tagSize = ref(props.size); // 标签大小
+
 const dictStore = useDictStore();
-/**
- * 根据字典项的值获取对应的 label 和 tagType
- *
- * @param dictCode 字典编码
- * @param value 字典项的值
- * @returns 包含 label 和 tagType 的对象
- */
-const getLabelAndTagByValue = async (dictCode, value) => {
-  // 按需加载字典数据
-  await dictStore.loadDictItems(dictCode);
-  // 从缓存中获取字典数据
-  const dictItems = dictStore.getDictItems(dictCode);
-  /**
-   * 查找对应的字典项
-   */
-  const dictItem = dictItems.find((item) => String(item.value) === String(value));
-  return {
-    label: dictItem?.label || "",
-    tagType: dictItem?.tagType,
-  };
-};
-/**
- * 更新 label 和 tagType
- */
-const updateLabelAndTag = async () => {
-  if (!props.code || props.modelValue === undefined) return;
-  const { label: newLabel, tagType: newTagType } = await getLabelAndTagByValue(
-    props.code,
-    props.modelValue
-  );
-  label.value = newLabel;
-  tagType.value = newTagType;
-};
-// 初始化或 code 变化时更新标签和标签样式
+const item = computed(() =>
+  props.code
+    ? dictStore
+        .getDictItems(props.code)
+        .find((entry) => String(entry.value) === String(props.modelValue))
+    : undefined
+);
+const label = computed(() => item.value?.label ?? "");
+const tagType = computed(() => item.value?.tagType || undefined);
+const tagSize = computed(() =>
+  props.size === "large" || props.size === "small" ? props.size : "default"
+);
+
 watch(
-  [() => props.code, () => props.modelValue],
-  async () => {
-    if (props.code) {
-      await updateLabelAndTag();
-    }
+  () => props.code,
+  async (code) => {
+    if (code) await dictStore.loadDictItems(code);
   },
   { immediate: true }
 );

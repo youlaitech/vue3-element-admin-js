@@ -151,6 +151,19 @@
           </div>
         </section>
 
+        <section v-if="appConfig.oidcEnabled" ref="identityRef" class="profile-card">
+          <header class="profile-card__header">
+            <div>
+              <h3 class="profile-card__title">认证身份</h3>
+              <p class="profile-card__desc">
+                把本地账号与统一认证的登录身份绑定，绑定后可直接用认证中心登录
+              </p>
+            </div>
+          </header>
+
+          <IdentityBinding />
+        </section>
+
         <div class="profile-page__grid">
           <section class="profile-card">
             <header class="profile-card__header">
@@ -302,10 +315,16 @@
 
 <script setup>
 import UserAPI from "@/api/system/user";
+
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import FileAPI from "@/api/file";
+import { useRoute } from "vue-router";
+import { appConfig } from "@/settings";
+import IdentityBinding from "./components/IdentityBinding.vue";
 import { useUserStoreHook } from "@/stores";
+
 import {
+  Calendar,
   Camera,
   CircleCheck,
   DataLine,
@@ -313,24 +332,28 @@ import {
   Female,
   Iphone,
   Key,
+  Location,
   Lock,
   Male,
   Message,
+  Monitor,
   OfficeBuilding,
   Timer,
   User,
   UserFilled,
+  Warning,
 } from "@element-plus/icons-vue";
 
 const userStore = useUserStoreHook();
+
 const userProfile = ref({});
-let DialogType;
-(function (DialogType) {
-  DialogType["ACCOUNT"] = "account";
-  DialogType["PASSWORD"] = "password";
-  DialogType["MOBILE"] = "mobile";
-  DialogType["EMAIL"] = "email";
-})(DialogType || (DialogType = {}));
+
+const DialogType = {
+  ACCOUNT: "account",
+  PASSWORD: "password",
+  MOBILE: "mobile",
+  EMAIL: "email",
+};
 
 const dialogState = reactive({
   visible: false,
@@ -342,14 +365,22 @@ const userProfileFormRef = ref();
 const passwordChangeFormRef = ref();
 const mobileBindingFormRef = ref();
 const emailBindingFormRef = ref();
+
 const userProfileForm = reactive({});
-const passwordChangeForm = reactive({});
-const mobileUpdateForm = reactive({});
-const emailUpdateForm = reactive({});
+const passwordChangeForm = reactive({
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+});
+const mobileUpdateForm = reactive({ mobile: "", code: "", password: "" });
+const emailUpdateForm = reactive({ email: "", code: "", password: "" });
+
 const mobileCountdown = ref(0);
 const mobileTimer = ref();
+
 const emailCountdown = ref(0);
 const emailTimer = ref();
+
 const recentLoginRecords = [
   {
     device: "Chrome / Windows",
@@ -370,13 +401,17 @@ const recentLoginRecords = [
     time: "2026-06-18 14:08",
   },
 ];
+
 const userProfileRules = {
   nickname: [{ required: true, message: "请输入昵称", trigger: "blur" }],
 };
 
 const passwordChangeRules = {
   oldPassword: [{ required: true, message: "请输入原密码", trigger: "blur" }],
-  newPassword: [{ required: true, message: "请输入新密码", trigger: "blur" }],
+  newPassword: [
+    { required: true, message: "请输入新密码", trigger: "blur" },
+    { min: 6, max: 20, message: "密码长度为 6 至 20 位", trigger: "blur" },
+  ],
   confirmPassword: [
     { required: true, message: "请再次输入新密码", trigger: "blur" },
     {
@@ -391,6 +426,7 @@ const passwordChangeRules = {
     },
   ],
 };
+
 // 手机号校验规则
 const mobileBindingRules = {
   mobile: [
@@ -404,6 +440,7 @@ const mobileBindingRules = {
   code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
   password: [{ required: true, message: "请输入当前密码", trigger: "blur" }],
 };
+
 // 邮箱校验规则
 const emailBindingRules = {
   email: [
@@ -419,6 +456,7 @@ const emailBindingRules = {
 };
 
 const displayAvatar = computed(() => userProfile.value.avatar || userStore.userInfo.avatar || "");
+
 const displayName = computed(() => {
   return (
     userProfile.value.nickname ||
@@ -437,7 +475,9 @@ const roleList = computed(() => {
 });
 
 const primaryRole = computed(() => roleList.value[0] || "普通用户");
+
 const permissionCount = computed(() => userStore.userInfo.perms?.length || 0);
+
 const genderText = computed(() => {
   if (userProfile.value.gender === 1) return "男";
   if (userProfile.value.gender === 2) return "女";
@@ -504,6 +544,7 @@ const profileInfoItems = computed(() => [
     muted: !userProfile.value.createTime,
   },
 ]);
+
 const profileStats = computed(() => [
   {
     label: "安全评分",
@@ -534,6 +575,7 @@ const profileStats = computed(() => [
     tone: "info",
   },
 ]);
+
 const accountStatusItems = computed(() => [
   {
     label: "登录账号",
@@ -556,6 +598,7 @@ const accountStatusItems = computed(() => [
     done: profileCompletion.value >= 80,
   },
 ]);
+
 const securityItems = computed(() => [
   {
     key: "password",
@@ -632,6 +675,7 @@ const securityItems = computed(() => [
         ],
   },
 ]);
+
 /**
  * 空值统一显示占位符
  */
@@ -796,6 +840,7 @@ function handleSendEmailCode() {
     ElMessage.error("邮箱格式不正确");
     return;
   }
+
   UserAPI.sendEmailCode(emailUpdateForm.email).then(() => {
     ElMessage.success("验证码发送成功");
     emailCountdown.value = 60;
@@ -817,6 +862,7 @@ const handleSubmit = async () => {
     if (dialogState.type === DialogType.ACCOUNT) {
       const valid = await userProfileFormRef.value?.validate();
       if (!valid) return;
+
       await UserAPI.updateProfile(userProfileForm);
       ElMessage.success("账号资料修改成功");
       dialogState.visible = false;
@@ -827,12 +873,14 @@ const handleSubmit = async () => {
     } else if (dialogState.type === DialogType.PASSWORD) {
       const valid = await passwordChangeFormRef.value?.validate();
       if (!valid) return;
+
       await UserAPI.changePassword(passwordChangeForm);
       dialogState.visible = false;
       await userStore.redirectToLogin();
     } else if (dialogState.type === DialogType.MOBILE) {
       const valid = await mobileBindingFormRef.value?.validate();
       if (!valid) return;
+
       await UserAPI.bindOrChangeMobile(mobileUpdateForm);
       ElMessage.success(userProfile.value.mobile ? "手机号更换成功" : "手机号绑定成功");
       dialogState.visible = false;
@@ -840,6 +888,7 @@ const handleSubmit = async () => {
     } else if (dialogState.type === DialogType.EMAIL) {
       const valid = await emailBindingFormRef.value?.validate();
       if (!valid) return;
+
       await UserAPI.bindOrChangeEmail(emailUpdateForm);
       ElMessage.success(userProfile.value.email ? "邮箱更换成功" : "邮箱绑定成功");
       dialogState.visible = false;
@@ -867,6 +916,7 @@ const handleCancel = () => {
 };
 
 const fileInput = ref(null);
+
 /**
  * 触发头像文件选择
  */
@@ -899,6 +949,10 @@ const loadUserProfile = async () => {
   const data = await UserAPI.getProfile();
   userProfile.value = data;
 };
+
+const route = useRoute();
+const identityRef = ref();
+
 onMounted(async () => {
   if (mobileTimer.value) {
     clearInterval(mobileTimer.value);
@@ -907,7 +961,12 @@ onMounted(async () => {
     clearInterval(emailTimer.value);
   }
   await loadUserProfile();
+  // 从头像菜单或应用中心进入时定位到认证身份区块
+  if (route.query.tab === "identity") {
+    identityRef.value?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 });
+
 onBeforeUnmount(() => {
   if (mobileTimer.value) {
     clearInterval(mobileTimer.value);

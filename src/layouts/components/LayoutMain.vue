@@ -22,15 +22,19 @@ import variables from "@/styles/variables.module.scss";
 import Error404 from "@/views/internal/error/404.vue";
 
 const { cachedViews } = toRefs(useTagsViewStore());
+
 const settingsStore = useSettingsStore();
+
 const wrapperMap = new Map();
 /**
  * 解析当前路由要渲染的组件
  */
 const currentComponent = (component, route) => {
   if (!component) return;
+
   const { fullPath: componentName } = route;
   let wrapper = wrapperMap.get(componentName);
+
   if (!wrapper) {
     wrapper = {
       name: componentName,
@@ -45,12 +49,14 @@ const currentComponent = (component, route) => {
     };
     wrapperMap.set(componentName, wrapper);
   }
+
   if (wrapperMap.size > 100) {
     const firstKey = wrapperMap.keys().next().value;
     if (firstKey) {
       wrapperMap.delete(firstKey);
     }
   }
+
   return h(wrapper);
 };
 

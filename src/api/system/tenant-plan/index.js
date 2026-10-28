@@ -1,16 +1,19 @@
 import request from "@/utils/request";
+
 const TENANT_PLAN_BASE_URL = "/api/v1/tenant-plans";
+
 const TenantPlanAPI = {
   /**
    * 获取租户套餐分页数据
    */
   getPage(queryParams) {
     return request({
-      url: `${TENANT_PLAN_BASE_URL}`,
+      url: TENANT_PLAN_BASE_URL,
       method: "get",
       params: queryParams,
     });
   },
+
   /**
    * 获取租户套餐表单数据
    */
@@ -20,24 +23,28 @@ const TenantPlanAPI = {
       method: "get",
     });
   },
+
   /**
    * 新增租户套餐
    */
   create(data) {
-    return request({ url: `${TENANT_PLAN_BASE_URL}`, method: "post", data });
+    return request({ url: TENANT_PLAN_BASE_URL, method: "post", data });
   },
+
   /**
    * 修改租户套餐
    */
   update(planId, data) {
     return request({ url: `${TENANT_PLAN_BASE_URL}/${planId}`, method: "put", data });
   },
+
   /**
    * 删除租户套餐
    */
   deleteByIds(ids) {
     return request({ url: `${TENANT_PLAN_BASE_URL}/${ids}`, method: "delete" });
   },
+
   /**
    * 获取租户方案下拉选项
    */
@@ -47,6 +54,7 @@ const TenantPlanAPI = {
       method: "get",
     });
   },
+
   /**
    * 获取方案菜单 ID 集合
    */
@@ -56,6 +64,7 @@ const TenantPlanAPI = {
       method: "get",
     });
   },
+
   /**
    * 更新方案菜单
    */
@@ -67,5 +76,5 @@ const TenantPlanAPI = {
     });
   },
 };
+
 export default TenantPlanAPI;
-// 重导出类型

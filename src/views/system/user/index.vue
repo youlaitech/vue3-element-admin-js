@@ -153,37 +153,9 @@
             <el-table-column label="手机号码" prop="mobile" width="130" />
             <el-table-column label="邮箱" prop="email" min-width="180" show-overflow-tooltip />
             <el-table-column label="创建时间" prop="createTime" width="160" show-overflow-tooltip />
-            <el-table-column label="操作" fixed="right" width="200">
+            <el-table-column label="操作" fixed="right" width="260">
               <template #default="scope">
-                <div>
-                  <el-button
-                    v-hasPerm="'sys:user:update'"
-                    type="primary"
-                    size="small"
-                    link
-                    @click="handleEditClick(scope.row.id)"
-                  >
-                    编辑
-                  </el-button>
-                  <el-button
-                    v-hasPerm="'sys:user:delete'"
-                    type="danger"
-                    size="small"
-                    link
-                    @click="handleDelete(scope.row.id)"
-                  >
-                    删除
-                  </el-button>
-                  <el-button
-                    v-hasPerm="'sys:user:reset-password'"
-                    type="primary"
-                    size="small"
-                    link
-                    @click="openResetPasswordDialog(scope.row)"
-                  >
-                    重置密码
-                  </el-button>
-                </div>
+                <TableActions :actions="getUserActions(scope.row)" />
               </template>
             </el-table-column>
           </el-table>
@@ -329,25 +301,36 @@
 
 <script setup>
 import { ElMessage, ElMessageBox } from "element-plus";
+
 import UserAPI from "@/api/system/user";
 import DeptAPI from "@/api/system/dept";
 import RoleAPI from "@/api/system/role";
 import { useAppStore, useUserStore } from "@/stores";
 import { usePageTable, useTableSelection } from "@/composables";
-import { CommonStatus, DeviceEnum, DialogMode } from "@/enums";
+import { CommonStatus, DeviceEnum, DialogMode, UserGender } from "@/enums";
 import { downloadFile } from "@/utils";
+import { hasPerm } from "@/utils/permission";
+
+import TableActions from "@/components/TableActions/index.vue";
+import UserDeptTree from "./components/UserDeptTree.vue";
+import UserImportDialog from "./components/UserImportDialog.vue";
+
 defineOptions({
   name: "User",
   inheritAttrs: false,
 });
+
 const appStore = useAppStore();
 const userStore = useUserStore();
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 const queryFormRef = ref();
 const userFormRef = ref();
 const resetPasswordFormRef = ref();
 const sidebarCollapsed = ref(false);
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -357,33 +340,44 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: UserAPI.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
+
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
+
 const dialogState = reactive({
   visible: false,
   title: "",
   mode: DialogMode.CREATE,
 });
+
 const importDialogVisible = ref(false);
 const resetPasswordSubmitting = ref(false);
+
 const initialFormData = {
   status: CommonStatus.ENABLED,
 };
+
 const formData = reactive({ ...initialFormData });
+
 const resetPasswordDialog = reactive({
   visible: false,
   userId: "",
   username: "",
   nickname: "",
 });
+
 const resetPasswordForm = reactive({
   password: "",
 });
+
 const deptOptions = ref([]);
 const roleOptions = ref([]);
+
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "600px" : "90%"));
+
 const resetPasswordDialogWidth = computed(() =>
   appStore.device === DeviceEnum.DESKTOP ? "420px" : "90%"
 );
+
 const rules = {
   username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
   nickname: [{ required: true, message: "请输入用户昵称", trigger: "blur" }],
@@ -392,12 +386,14 @@ const rules = {
   email: [{ type: "email", message: "请输入正确的邮箱地址", trigger: "blur" }],
   mobile: [{ pattern: /^1[3-9]\d{9}$/, message: "请输入正确的手机号码", trigger: "blur" }],
 };
+
 const resetPasswordRules = {
   password: [
     { required: true, message: "请输入新密码", trigger: "blur" },
-    { min: 6, message: "密码至少需要6位字符", trigger: "blur" },
+    { min: 6, max: 20, message: "密码长度为 6 至 20 位", trigger: "blur" },
   ],
 };
+
 /**
  * 取昵称/用户名首字母作为头像占位文本
  *
@@ -407,6 +403,7 @@ function getAvatarText(row) {
   const text = row.nickname || row.username || "?";
   return text.slice(0, 1).toUpperCase();
 }
+
 /**
  * 加载表单所需的下拉选项（角色 + 部门），并行请求
  */
@@ -416,12 +413,14 @@ async function loadFormOptions() {
     DeptAPI.getOptions(),
   ]);
 }
+
 /**
  * 打开用户表单弹窗
  */
 function openDialog() {
   dialogState.visible = true;
 }
+
 /**
  * 关闭用户表单弹窗并清理临时状态
  */
@@ -429,6 +428,7 @@ function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
+
 /**
  * 重置表单数据和验证状态
  */
@@ -440,6 +440,7 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
+
 /**
  * 打开新增弹窗
  */
@@ -449,6 +450,7 @@ async function handleCreateClick() {
   await loadFormOptions();
   openDialog();
 }
+
 /**
  * 打开编辑弹窗并回填数据
  */
@@ -460,13 +462,43 @@ async function handleEditClick(id) {
   Object.assign(formData, data);
   openDialog();
 }
-// 校验并提交用户表单
+
+/**
+ * 返回当前用户有权使用的行操作。
+ */
+function getUserActions(row) {
+  const actions = [];
+  if (hasPerm("sys:user:update")) {
+    actions.push({ key: "edit", label: "编辑", run: () => handleEditClick(row.id) });
+  }
+  if (hasPerm("sys:user:delete")) {
+    actions.push({
+      key: "delete",
+      label: "删除",
+      buttonProps: { type: "danger" },
+      run: () => handleDelete(row.id),
+    });
+  }
+  if (hasPerm("sys:user:reset-password")) {
+    actions.push({
+      key: "reset-password",
+      label: "重置密码",
+      run: () => openResetPasswordDialog(row),
+    });
+  }
+  return actions;
+}
+
+/**
+ * 校验并提交用户资料。
+ */
 const handleSubmit = useDebounceFn(async () => {
   const valid = await userFormRef.value?.validate().then(
     () => true,
     () => false
   );
   if (!valid) return;
+
   loading.value = true;
   try {
     if (formData.id) {
@@ -482,6 +514,7 @@ const handleSubmit = useDebounceFn(async () => {
     loading.value = false;
   }
 }, 300);
+
 /**
  * 删除单个或批量用户，删除前拦住"把自己删掉"这条路径
  *
@@ -493,6 +526,7 @@ async function handleDelete(id) {
     ElMessage.warning("请勾选删除项");
     return;
   }
+
   // 安全检查：防止删除当前登录用户
   const currentUserId = userStore.userInfo?.userId;
   if (currentUserId) {
@@ -504,6 +538,7 @@ async function handleDelete(id) {
       return;
     }
   }
+
   try {
     await ElMessageBox.confirm("确认删除选中的用户吗？", "警告", {
       confirmButtonText: "确定",
@@ -514,6 +549,7 @@ async function handleDelete(id) {
     ElMessage.info("已取消删除");
     return;
   }
+
   loading.value = true;
   try {
     await UserAPI.deleteByIds(userIds);
@@ -523,6 +559,7 @@ async function handleDelete(id) {
     loading.value = false;
   }
 }
+
 /**
  * 导出当前查询条件下的用户列表
  */
@@ -531,12 +568,14 @@ async function handleExport() {
   downloadFile(response);
   ElMessage.success("导出成功");
 }
+
 /**
  * 打开用户导入弹窗
  */
 function openImportDialog() {
   importDialogVisible.value = true;
 }
+
 /**
  * 打开重置密码弹窗
  *
@@ -547,16 +586,19 @@ function openResetPasswordDialog(row) {
   resetPasswordDialog.username = row.username ?? "";
   resetPasswordDialog.nickname = row.nickname ?? "";
   resetPasswordDialog.visible = true;
+
   nextTick(() => {
     resetPasswordFormRef.value?.clearValidate();
   });
 }
+
 /**
  * 关闭重置密码弹窗
  */
 function closeResetPasswordDialog() {
   resetPasswordDialog.visible = false;
 }
+
 /**
  * 重置密码表单状态
  */
@@ -568,13 +610,17 @@ function resetResetPasswordForm() {
   resetPasswordDialog.username = "";
   resetPasswordDialog.nickname = "";
 }
-// 提交重置密码
+
+/**
+ * 校验并提交密码重置。
+ */
 const handleResetPasswordSubmit = useDebounceFn(async () => {
   const valid = await resetPasswordFormRef.value?.validate().then(
     () => true,
     () => false
   );
   if (!valid || !resetPasswordDialog.userId) return;
+
   resetPasswordSubmitting.value = true;
   try {
     await UserAPI.resetPassword(resetPasswordDialog.userId, resetPasswordForm.password);
@@ -584,6 +630,7 @@ const handleResetPasswordSubmit = useDebounceFn(async () => {
     resetPasswordSubmitting.value = false;
   }
 }, 300);
+
 onMounted(() => {
   handleQuery();
 });

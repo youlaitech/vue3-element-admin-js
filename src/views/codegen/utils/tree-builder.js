@@ -30,6 +30,7 @@ export function buildFileTree(data) {
   });
   return root;
 }
+
 /**
  * 递归查找第一个叶子节点
  */
@@ -43,6 +44,7 @@ export function findFirstLeaf(node) {
   }
   return null;
 }
+
 /**
  * 根据 key 查找叶子节点
  */
@@ -57,6 +59,7 @@ export function findLeafByKey(nodes, key) {
   }
   return null;
 }
+
 /**
  * 根据文件扩展名获取图标名
  */
@@ -73,6 +76,7 @@ export function getFileIcon(node) {
   if (["cs", "go", "py", "php", "js"].includes(ext)) return "code";
   return "file";
 }
+
 /**
  * 过滤树节点（基于 scope 和 language）
  * 返回过滤后的新树

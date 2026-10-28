@@ -16,6 +16,9 @@
 </template>
 
 <script setup>
+/**
+ * 分页组件：数据总条数、每页条数与布局
+ */
 const props = defineProps({
   /** 数据总条数 */
   total: {
@@ -45,6 +48,7 @@ const props = defineProps({
     default: false,
   },
 });
+
 /**
  * 页码或每页条数变化时回传
  */
@@ -54,15 +58,14 @@ const emit = defineEmits(["pagination"]);
  */
 const currentPage = defineModel("page", {
   type: Number,
-  required: true,
   default: 1,
 });
+
 /**
  * 每页条数，双向绑定到父组件的 limit
  */
 const pageSize = defineModel("limit", {
   type: Number,
-  required: true,
   default: 10,
 });
 // 数据总量变化后，若当前页超出最后一页，则回退到最后一页
@@ -83,6 +86,7 @@ function handleSizeChange(val) {
   currentPage.value = 1;
   emit("pagination", { page: currentPage.value, limit: val });
 }
+
 /**
  * 切换页码时触发分页请求
  */

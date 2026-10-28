@@ -222,17 +222,21 @@
 <script setup>
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { FullScreen, Refresh } from "@element-plus/icons-vue";
 import { usePageTable, useTableSelection } from "@/composables";
 import AppAPI from "@/api/system/app";
 import { CommonStatus } from "@/enums";
+
 defineOptions({
   name: "App",
   inheritAttrs: false,
 });
+
 const queryFormRef = ref();
 const dataFormRef = ref();
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 // 三方平台下拉选项
 const platformOptions = [
   { value: "WECHAT_MP", label: "微信公众号" },
@@ -241,12 +245,14 @@ const platformOptions = [
   { value: "APPLE", label: "苹果" },
   { value: "QQ", label: "QQ" },
 ];
+
 /**
  * 根据平台值解析中文名称
  */
 function resolvePlatformLabel(platform) {
   return platformOptions.find((item) => item.value === platform)?.label || "-";
 }
+
 const initialFormData = {
   appName: "",
   appCode: "",
@@ -258,6 +264,7 @@ const initialFormData = {
   status: CommonStatus.ENABLED,
   remark: "",
 };
+
 // 应用表格数据
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -270,18 +277,23 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: AppAPI.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
+
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
+
 const dialog = reactive({
   title: "",
   visible: false,
 });
+
 const formData = reactive({ ...initialFormData });
+
 const rules = {
   appName: [{ required: true, message: "请输入应用名称", trigger: "blur" }],
   appCode: [{ required: true, message: "请输入应用编码", trigger: "blur" }],
   platform: [{ required: true, message: "请选择平台", trigger: "change" }],
   appId: [{ required: true, message: "请输入 AppId", trigger: "blur" }],
 };
+
 /**
  * 关闭弹窗并重置表单
  */
@@ -289,6 +301,7 @@ function closeDialog() {
   dialog.visible = false;
   resetForm();
 }
+
 /**
  * 重置表单数据为初始值并清理校验
  */
@@ -300,6 +313,7 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
+
 /**
  * 打开新增弹窗
  */
@@ -307,6 +321,7 @@ function handleCreateClick() {
   dialog.title = "新增应用";
   dialog.visible = true;
 }
+
 /**
  * 打开编辑弹窗并回填数据
  */
@@ -316,6 +331,7 @@ async function handleEditClick(id) {
   Object.assign(formData, data);
   dialog.visible = true;
 }
+
 /**
  * 切换应用状态
  */
@@ -329,6 +345,7 @@ async function handleStatusChange(row) {
     row.status = status === CommonStatus.ENABLED ? CommonStatus.DISABLED : CommonStatus.ENABLED;
   }
 }
+
 /**
  * 提交应用表单
  */
@@ -338,6 +355,7 @@ async function handleSubmit() {
     () => false
   );
   if (!valid) return;
+
   loading.value = true;
   try {
     const id = formData.id;
@@ -354,12 +372,14 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
+
 /**
  * 批量删除应用
  */
 function handleBatchDelete() {
   handleDelete();
 }
+
 /**
  * 删除应用（单个或批量）
  */
@@ -369,6 +389,7 @@ async function handleDelete(id) {
     ElMessage.warning("请勾选删除项");
     return;
   }
+
   try {
     await ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
       confirmButtonText: "确定",
@@ -379,6 +400,7 @@ async function handleDelete(id) {
     ElMessage.info("已取消删除");
     return;
   }
+
   loading.value = true;
   try {
     await AppAPI.deleteByIds(ids);
@@ -388,6 +410,7 @@ async function handleDelete(id) {
     loading.value = false;
   }
 }
+
 onMounted(() => {
   handleQuery();
 });

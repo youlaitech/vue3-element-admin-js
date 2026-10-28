@@ -121,20 +121,28 @@
 <script setup>
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { Refresh } from "@element-plus/icons-vue";
+
 import WorkflowAPI from "@/api/workflow";
 import { usePageTable } from "@/composables";
+import InstanceDetailDrawer from "../../components/InstanceDetailDrawer.vue";
+
 defineOptions({
   name: "WorkflowMineTab",
 });
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 const queryFormRef = ref();
+
 // 实例状态展示映射（标签文案 + 标签色）
 const statusOptions = {
   running: { label: "运行中", tag: "primary" },
   finished: { label: "已完成", tag: "success" },
   terminated: { label: "已终止", tag: "danger" },
 };
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -145,12 +153,15 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: WorkflowAPI.instance.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
+
 /**
  * 暴露刷新能力：审批中心页签切换时父组件调用
  */
 defineExpose({ fetchData });
+
 // 实例详情抽屉
 const detailDrawerRef = ref();
+
 /**
  * 打开实例详情抽屉
  *
@@ -159,6 +170,7 @@ const detailDrawerRef = ref();
 function openDetail(instanceId) {
   detailDrawerRef.value?.open(instanceId);
 }
+
 /**
  * 撤销运行中的流程（仅发起人）
  *
@@ -179,6 +191,7 @@ async function handleCancel(instanceId) {
   ElMessage.success("撤销成功");
   fetchData();
 }
+
 /**
  * 终止运行中的流程（管理员）
  *
@@ -203,6 +216,7 @@ async function handleTerminate(instanceId) {
   ElMessage.success("终止成功");
   fetchData();
 }
+
 onMounted(() => {
   handleQuery();
 });

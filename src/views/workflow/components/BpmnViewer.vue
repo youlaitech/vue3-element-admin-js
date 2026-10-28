@@ -4,14 +4,14 @@
 
 <script setup>
 import Viewer from "bpmn-js/lib/NavigatedViewer";
+
 defineOptions({
   name: "BpmnViewer",
   inheritAttrs: false,
 });
+
 /**
- * BPMN 流程图查看器
- * 渲染 BPMN XML 并按节点状态高亮：已办节点标记走过路径、
- * 进行中节点标记当前待办；缩放平移由 NavigatedViewer 自带滚轮/空格拖拽支持
+ * BPMN 流程图与节点高亮数据。
  */
 const props = defineProps({
   /** BPMN 2.0 XML */
@@ -30,8 +30,10 @@ const props = defineProps({
     default: undefined,
   },
 });
+
 const containerRef = ref(null);
 const viewer = shallowRef();
+
 /**
  * 导入 XML 并叠加高亮标记
  *
@@ -51,12 +53,14 @@ async function renderDiagram(xml, executedIds, activeIds) {
     console.error("BPMN 流程图渲染失败:", error);
   }
 }
+
 // 后续 props 变化时重新渲染（post：待组件树更新完毕再执行）
 watch(
   () => [props.xml, props.executedActivityIds, props.activeActivityIds],
   ([xml, executedIds, activeIds]) => renderDiagram(xml, executedIds, activeIds),
   { flush: "post" }
 );
+
 onMounted(() => {
   viewer.value = new Viewer({
     container: containerRef.value,
@@ -68,6 +72,7 @@ onMounted(() => {
     renderDiagram(props.xml, props.executedActivityIds, props.activeActivityIds);
   }
 });
+
 onBeforeUnmount(() => {
   viewer.value?.destroy();
 });

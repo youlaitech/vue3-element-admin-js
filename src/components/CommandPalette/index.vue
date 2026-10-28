@@ -88,6 +88,7 @@
 <script setup>
 import { computed } from "vue";
 import { useCommandPalette } from "./useCommandPalette";
+
 const {
   visible,
   keyword,
@@ -102,6 +103,7 @@ const {
   onNavigate,
   onGo,
 } = useCommandPalette();
+
 const displayList = computed(() => (results.value.length ? results.value : history.value));
 /**
  * 处理输入框键盘操作：上下选择、回车跳转

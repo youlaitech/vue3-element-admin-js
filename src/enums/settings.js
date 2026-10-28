@@ -9,6 +9,7 @@ export const ThemeMode = {
   /** 系统自动 */
   AUTO: "auto",
 };
+
 /**
  * 侧边栏配色方案枚举
  */
@@ -18,6 +19,7 @@ export const SidebarColor = {
   /** 极简白 */
   MINIMAL_WHITE: "minimal-white",
 };
+
 /**
  * 页签栏风格枚举
  */
@@ -27,6 +29,7 @@ export const TagsViewStyle = {
   /** 卡片页签，保留图标和浅色激活块 */
   CARD: "card",
 };
+
 /**
  * 菜单布局枚举
  */
@@ -40,6 +43,7 @@ export const LayoutMode = {
   /** 双列菜单布局 */
   DOUBLE: "double",
 };
+
 /**
  * 侧边栏状态枚举
  */
@@ -49,6 +53,7 @@ export const SidebarStatus = {
   /** 关闭 */
   CLOSED: "closed",
 };
+
 /**
  * 组件尺寸枚举
  */
@@ -60,6 +65,7 @@ export const ComponentSize = {
   /** 小型 */
   SMALL: "small",
 };
+
 /**
  * 语言枚举
  */
@@ -69,6 +75,7 @@ export const LanguageEnum = {
   /** 英文 */
   EN: "en",
 };
+
 /**
  * 设备枚举
  */
@@ -78,6 +85,7 @@ export const DeviceEnum = {
   /** 窄屏设备 */
   MOBILE: "mobile",
 };
+
 /**
  * 页面切换动画枚举
  */
@@ -91,6 +99,7 @@ export const PageSwitchingAnimationEnum = {
   /** 缩放切换 */
   FADE_SCALE: "fade-scale",
 };
+
 export const PageSwitchingAnimationOptions = {
   none: { value: "none", label: "无动画" },
   fade: { value: "fade", label: "淡入淡出" },

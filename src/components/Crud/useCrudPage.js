@@ -1,113 +1,101 @@
 import { ref } from "vue";
+
 /**
- * 组合搜索区与内容区，统一分页查询入口
+ * 连接搜索、表格与共用表单。
  */
 function useCrudPage() {
   const searchRef = ref();
-  const contentRef = ref();
-  const addModalRef = ref();
-  const editModalRef = ref();
+  const tableRef = ref();
+  const formRef = ref();
+
   /**
-   * 搜索
+   * 应用查询并回到第一页；不传参数时读取搜索草稿。
    */
-  function handleQueryClick(queryParams) {
-    const filterParams = contentRef.value?.getFilterParams();
-    contentRef.value?.fetchPageData({ ...queryParams, ...filterParams }, true);
+  async function search(queryParams = searchRef.value?.getQueryParams() ?? {}) {
+    await tableRef.value?.loadData(queryParams, true).catch(() => undefined);
   }
+
   /**
-   * 重置
+   * 恢复搜索初值、清除表头筛选并重新查询。
    */
-  function handleResetClick(queryParams) {
-    const filterParams = contentRef.value?.getFilterParams();
-    contentRef.value?.fetchPageData({ ...queryParams, ...filterParams }, true);
+  async function resetSearch(queryParams) {
+    const values = queryParams ?? searchRef.value?.reset() ?? {};
+    tableRef.value?.clearFilters();
+    await search(values);
   }
+
   /**
-   * 新增
+   * 重建初值并打开新增表单。
    */
-  function handleAddClick(RefImpl) {
-    if (RefImpl) {
-      RefImpl?.value.setModalVisible();
-      RefImpl?.value.handleDisabled(false);
-    } else {
-      addModalRef.value?.setModalVisible();
-      addModalRef.value?.handleDisabled(false);
-    }
+  function openCreate(target = formRef) {
+    target.value?.openForm("create");
   }
+
   /**
-   * 编辑
+   * 打开表单并加载详情，省略加载器时使用当前行。
    */
-  async function handleEditClick(row, callback, RefImpl) {
-    if (RefImpl) {
-      RefImpl.value?.setModalVisible();
-      RefImpl.value?.handleDisabled(false);
-      const from = await (callback?.(row) ?? Promise.resolve(row));
-      RefImpl.value?.setFormData(from ? from : row);
-    } else {
-      editModalRef.value?.setModalVisible();
-      editModalRef.value?.handleDisabled(false);
-      const from = await (callback?.(row) ?? Promise.resolve(row));
-      editModalRef.value?.setFormData(from ? from : row);
-    }
+  async function openRecord(mode, row, loader, target = formRef) {
+    const form = target.value;
+    if (!form?.openForm(mode, row)) return;
+    await form.loadFormData(async () => (loader ? await loader(row) : row));
   }
+
   /**
-   * 查看
+   * 打开编辑表单，可按需加载完整详情。
    */
-  async function handleViewClick(row, callback, RefImpl) {
-    if (RefImpl) {
-      RefImpl.value?.setModalVisible();
-      RefImpl.value?.handleDisabled(true);
-      const from = await (callback?.(row) ?? Promise.resolve(row));
-      RefImpl.value?.setFormData(from ? from : row);
-    } else {
-      editModalRef.value?.setModalVisible();
-      editModalRef.value?.handleDisabled(true);
-      const from = await (callback?.(row) ?? Promise.resolve(row));
-      editModalRef.value?.setFormData(from ? from : row);
-    }
+  function openEdit(row, loader, target) {
+    return openRecord("edit", row, loader, target);
   }
+
   /**
-   * 表单提交
+   * 打开只读表单，可按需加载完整详情。
    */
-  function handleSubmitClick() {
-    // 根据检索条件刷新列表数据
-    const queryParams = searchRef.value?.getQueryParams();
-    contentRef.value?.fetchPageData(queryParams, true);
+  function openView(row, loader, target) {
+    return openRecord("view", row, loader, target);
   }
+
   /**
-   * 导出
+   * 沿用已应用条件刷新；查询失败由表格显示。
    */
-  function handleExportClick() {
-    // 根据检索条件导出数据
-    const queryParams = searchRef.value?.getQueryParams();
-    contentRef.value?.exportPageData(queryParams);
+  async function refresh() {
+    await tableRef.value?.refresh().catch(() => undefined);
   }
+
   /**
-   * 搜索显隐
+   * 使用已成功查询的条件下载服务端文件。
    */
-  function handleSearchClick() {
+  async function exportFile() {
+    await tableRef.value?.exportFile();
+  }
+
+  /**
+   * 切换搜索区域。
+   */
+  function toggleSearch() {
     searchRef.value?.toggleVisible();
   }
+
   /**
-   * 筛选数据
+   * 应用表头筛选，保留已提交搜索并回到第一页。
    */
-  function handleFilterChange(filterParams) {
-    const queryParams = searchRef.value?.getQueryParams();
-    contentRef.value?.fetchPageData({ ...queryParams, ...filterParams }, true);
+  async function applyFilters() {
+    await tableRef.value?.refresh(true).catch(() => undefined);
   }
+
   return {
     searchRef,
-    contentRef,
-    addModalRef,
-    editModalRef,
-    handleQueryClick,
-    handleResetClick,
-    handleAddClick,
-    handleEditClick,
-    handleViewClick,
-    handleSubmitClick,
-    handleExportClick,
-    handleSearchClick,
-    handleFilterChange,
+    tableRef,
+    formRef,
+    search,
+    resetSearch,
+    refresh,
+    openCreate,
+    openEdit,
+    openView,
+    exportFile,
+    toggleSearch,
+    applyFilters,
   };
 }
+
 export default useCrudPage;

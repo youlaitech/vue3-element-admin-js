@@ -94,7 +94,7 @@
         :dict-code="currentType.dictCode"
         :dict-name="currentType.name"
       />
-      <el-card v-else class="page-content dict-page__empty" shadow="never">
+      <el-card v-else class="page-content" shadow="never">
         <el-empty description="请先在左侧选择字典类型" />
       </el-card>
     </div>
@@ -138,18 +138,26 @@
 
 <script setup>
 import { ElMessage, ElMessageBox } from "element-plus";
+import { ArrowLeft, ArrowRight, Delete, Edit, Plus } from "@element-plus/icons-vue";
+
 import DictAPI from "@/api/system/dict";
 import { usePageTable } from "@/composables";
 import { CommonStatus } from "@/enums";
+import DictItemPanel from "./components/DictItemPanel.vue";
+
 defineOptions({
   name: "Dict",
   inheritAttrs: false,
 });
+
 // 左侧字典类型折叠状态：折叠后右侧顶部仍会显示当前字典，用以免丢失上下文
 const sidebarCollapsed = ref(false);
+
 const dictFormRef = ref();
+
 // 当前选中的字典类型，右侧字典项据此联动
 const currentType = ref();
+
 // 字典类型列表分页数据管理
 const { loading, list, total, params, fetchData } = usePageTable({
   initialParams: {
@@ -159,6 +167,7 @@ const { loading, list, total, params, fetchData } = usePageTable({
   },
   request: DictAPI.getPage,
 });
+
 /**
  * 拉取字典类型并保持右侧选中项有效
  *
@@ -166,9 +175,11 @@ const { loading, list, total, params, fetchData } = usePageTable({
  */
 async function fetchTypes(preferDictCode) {
   await fetchData();
+
   const target = preferDictCode ?? currentType.value?.dictCode;
   currentType.value = list.value.find((row) => row.dictCode === target) ?? list.value[0];
 }
+
 /**
  * 按关键字查询字典类型
  */
@@ -176,12 +187,14 @@ function handleSearch() {
   params.pageNum = 1;
   fetchTypes();
 }
+
 /**
  * 左侧列表翻页
  */
 function handlePageChange() {
   fetchTypes();
 }
+
 /**
  * 选中字典类型，右侧字典项面板随之切换
  *
@@ -191,18 +204,23 @@ function handleTypeClick(row) {
   if (row.dictCode === currentType.value?.dictCode) return;
   currentType.value = row;
 }
+
 const dialogState = reactive({
   title: "",
   visible: false,
 });
+
 const initialFormData = {
   status: CommonStatus.ENABLED,
 };
+
 const formData = reactive({ ...initialFormData });
+
 const rules = {
   name: [{ required: true, message: "请输入字典名称", trigger: "blur" }],
   dictCode: [{ required: true, message: "请输入字典编码", trigger: "blur" }],
 };
+
 /**
  * 重置表单数据和验证状态
  */
@@ -214,12 +232,14 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
+
 /**
  * 打开字典表单弹窗
  */
 function openDialog() {
   dialogState.visible = true;
 }
+
 /**
  * 关闭字典表单弹窗并清理临时状态
  */
@@ -227,6 +247,7 @@ function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
+
 /**
  * 打开新增字典弹窗
  */
@@ -235,6 +256,7 @@ function handleCreateClick() {
   dialogState.title = "新增字典";
   openDialog();
 }
+
 /**
  * 打开编辑字典弹窗并回填数据
  *
@@ -248,6 +270,7 @@ async function handleEditClick(id) {
   Object.assign(formData, data);
   openDialog();
 }
+
 /**
  * 校验并提交字典表单
  */
@@ -257,6 +280,7 @@ async function handleSubmit() {
     () => false
   );
   if (!valid) return;
+
   loading.value = true;
   try {
     const id = formData.id;
@@ -273,6 +297,7 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
+
 /**
  * 删除单个字典，删除后右侧联动到剩余的字典类型
  *
@@ -280,6 +305,7 @@ async function handleSubmit() {
  */
 async function handleDelete(id) {
   if (!id) return;
+
   try {
     await ElMessageBox.confirm("确认删除该字典及其字典数据吗?", "警告", {
       confirmButtonText: "确定",
@@ -290,6 +316,7 @@ async function handleDelete(id) {
     ElMessage.info("已取消删除");
     return;
   }
+
   loading.value = true;
   try {
     await DictAPI.deleteByIds(id);
@@ -299,6 +326,7 @@ async function handleDelete(id) {
     loading.value = false;
   }
 }
+
 onMounted(() => {
   fetchTypes();
 });
@@ -307,11 +335,6 @@ onMounted(() => {
 <style lang="scss" scoped>
 .dict-page {
   --page-aside-width: 320px;
-}
-
-.dict-page__empty {
-  align-items: center;
-  justify-content: center;
 }
 
 .dict-type {

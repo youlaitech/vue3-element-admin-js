@@ -193,11 +193,15 @@
 
 <script setup>
 import GeneratorAPI from "@/api/codegen";
+import { appConfig } from "@/settings";
 import { useGenConfig } from "../composables/useGenConfig";
 import { useCodePreview } from "../composables/useCodePreview";
 import { useLocalWrite } from "../composables/useLocalWrite";
 import { useAiFillDiff } from "../composables/useAiFillDiff";
-import { appConfig } from "@/settings";
+import BasicConfigStep from "./BasicConfigStep.vue";
+import FieldConfigStep from "./FieldConfigStep.vue";
+import PreviewStep from "./PreviewStep.vue";
+
 const STEP = { BASIC_CONFIG: 0, FIELD_CONFIG: 1, PREVIEW: 2 };
 const STEPS = [
   {
@@ -225,7 +229,9 @@ const STEPS = [
     nextText: "下载代码",
   },
 ];
+
 const visible = defineModel("visible", { type: Boolean, required: true });
+
 /**
  * 代码生成抽屉：承载三步向导
  */
@@ -234,14 +240,17 @@ defineProps({ title: { type: String, default: "" } });
  * 生成成功或重置配置时上抛
  */
 defineEmits(["success"]);
+
 const currentStep = ref(STEP.BASIC_CONFIG);
 const currentTableName = ref("");
 const loading = ref(false);
 const aiLoading = ref(false);
 const loadingText = ref("loading...");
+
 const basicConfigRef = ref();
 const fieldConfigRef = ref();
 const previewRef = ref();
+
 const {
   genConfigFormData,
   menuOptions,
@@ -251,6 +260,7 @@ const {
   validateBasic,
   applyDefaults,
 } = useGenConfig();
+
 const {
   aiDiff,
   fieldChanges,
@@ -260,20 +270,24 @@ const {
   resolveDiff,
   undo,
 } = useAiFillDiff();
+
 // AI 改动明细弹窗
 const aiDiffVisible = ref(false);
 // 明细中选中的字段，定位到字段配置时用
 const diffTargetColumn = ref("");
+
 // 每次打开清掉上次的选择，避免定位到上一轮残留的字段
 watch(aiDiffVisible, (visible) => {
   if (visible) diffTargetColumn.value = "";
 });
+
 /**
  * 点击改动明细定位到对应字段
  */
 function handleDiffRowClick(row) {
   diffTargetColumn.value = row.columnName;
 }
+
 const {
   filteredTreeData,
   previewScope,
@@ -285,6 +299,7 @@ const {
   handleFileTreeNodeClick,
   handleCopyCode,
 } = useCodePreview(genConfigFormData);
+
 const {
   supportsFSAccess,
   writeDialog,
@@ -301,12 +316,14 @@ const {
   pickBackendDir,
   confirmWrite,
 } = useLocalWrite(genConfigFormData);
+
 const writeDialogVisible = computed({
   get: () => writeDialog.visible,
   set: (val) => {
     writeDialog.visible = val;
   },
 });
+
 watch(currentStep, (val) => {
   if (val === STEP.FIELD_CONFIG) {
     nextTick(() => fieldConfigRef.value?.initSort());
@@ -315,6 +332,7 @@ watch(currentStep, (val) => {
     nextTick(() => previewRef.value?.refreshEditor());
   }
 });
+
 /**
  * 打开生成向导并加载表配置
  */
@@ -337,6 +355,7 @@ async function open(tableName) {
     loading.value = false;
   }
 }
+
 /**
  * 回到上一步
  */
@@ -357,6 +376,7 @@ async function handlePrev() {
     currentStep.value--;
   }
 }
+
 /**
  * AI 推断字段描述、表单/查询类型并回填，回填后跳到字段配置核对差异
  */
@@ -382,6 +402,7 @@ async function handleAiFill() {
     loadingText.value = "loading...";
   }
 }
+
 /**
  * 跳到字段配置，并只显示 AI 改动过的字段
  */
@@ -389,6 +410,7 @@ function gotoFieldChanges() {
   currentStep.value = STEP.FIELD_CONFIG;
   nextTick(() => fieldConfigRef.value?.showOnlyAiChanged());
 }
+
 /**
  * 同一字段的多条改动合并字段列，避免字段名反复出现
  */
@@ -405,6 +427,7 @@ function diffSpanMethod({ rowIndex, columnIndex }) {
   }
   return { rowspan, colspan: 1 };
 }
+
 /**
  * 从明细弹窗定位到选中字段：切到字段配置并滚动高亮该字段
  */
@@ -415,6 +438,7 @@ function locateFromDiff() {
   gotoFieldChanges();
   nextTick(() => fieldConfigRef.value?.locateField(columnName));
 }
+
 /**
  * 恢复到 AI 填充前的配置
  */
@@ -424,6 +448,7 @@ function undoAiFill() {
   genConfigFormData.value = config;
   ElMessage.info("已撤销 AI 填充");
 }
+
 /**
  * 从明细弹窗撤销
  */
@@ -431,6 +456,7 @@ function undoFromDiff() {
   aiDiffVisible.value = false;
   undoAiFill();
 }
+
 /**
  * 进入下一步
  */
@@ -440,6 +466,7 @@ async function handleNext() {
     currentStep.value = STEP.FIELD_CONFIG;
     return;
   }
+
   if (currentStep.value === STEP.FIELD_CONFIG) {
     loading.value = true;
     loadingText.value = "代码生成中，请稍候...";
@@ -455,11 +482,13 @@ async function handleNext() {
     }
     return;
   }
+
   if (currentStep.value === STEP.PREVIEW) {
     const pageType = genConfigFormData.value.pageType || "classic";
-    GeneratorAPI.download(currentTableName.value, pageType, "ts");
+    await GeneratorAPI.download(currentTableName.value, pageType, "ts");
   }
 }
+
 /**
  * 生成预览文件
  */
@@ -468,6 +497,7 @@ async function doPreview(tableName) {
   // 把文件列表传给写入本地模块，这样点写入时能拿到数据
   setPreviewFiles(files);
 }
+
 /**
  * 关闭生成向导
  */
@@ -475,6 +505,7 @@ function handleClose() {
   visible.value = false;
   fieldConfigRef.value?.destroySort();
 }
+
 /**
  * 暴露 open 供列表页打开抽屉
  */

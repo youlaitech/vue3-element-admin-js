@@ -1,10 +1,10 @@
 import request from "@/utils/request";
+
 const USER_BASE_URL = "/api/v1/users";
+
 const UserAPI = {
   /**
-   * 获取当前登录用户信息
-   *
-   * @returns 登录用户昵称、头像信息，包括角色和权限
+   * 获取当前用户资料、角色与权限。
    */
   getInfo() {
     return request({
@@ -12,23 +12,20 @@ const UserAPI = {
       method: "get",
     });
   },
+
   /**
    * 获取用户分页列表
-   *
-   * @param queryParams 查询参数
    */
   getPage(queryParams) {
     return request({
-      url: `${USER_BASE_URL}`,
+      url: USER_BASE_URL,
       method: "get",
       params: queryParams,
     });
   },
+
   /**
    * 获取用户表单详情
-   *
-   * @param userId 用户 ID
-   * @returns 用户表单详情
    */
   getFormData(userId) {
     return request({
@@ -36,23 +33,20 @@ const UserAPI = {
       method: "get",
     });
   },
+
   /**
    * 添加用户
-   *
-   * @param data 用户表单数据
    */
   create(data) {
     return request({
-      url: `${USER_BASE_URL}`,
+      url: USER_BASE_URL,
       method: "post",
       data,
     });
   },
+
   /**
    * 修改用户
-   *
-   * @param id 用户 ID
-   * @param data 用户表单数据
    */
   update(id, data) {
     return request({
@@ -61,11 +55,20 @@ const UserAPI = {
       data,
     });
   },
+
+  /**
+   * 修改用户启用状态。
+   */
+  updateStatus(userId, status) {
+    return request({
+      url: `${USER_BASE_URL}/${userId}/status`,
+      method: "patch",
+      params: { status },
+    });
+  },
+
   /**
    * 修改用户密码
-   *
-   * @param id 用户 ID
-   * @param password 新密码
    */
   resetPassword(id, password) {
     return request({
@@ -74,10 +77,9 @@ const UserAPI = {
       data: { password },
     });
   },
+
   /**
-   * 批量删除用户，多个以英文逗号(,)分割
-   *
-   * @param ids 用户 ID 字符串，多个以英文逗号(,)分割
+   * 批量删除用户，ID 以英文逗号分隔。
    */
   deleteByIds(ids) {
     return request({
@@ -85,6 +87,7 @@ const UserAPI = {
       method: "delete",
     });
   },
+
   /**
    * 下载用户导入模板
    */
@@ -95,10 +98,9 @@ const UserAPI = {
       responseType: "blob",
     });
   },
+
   /**
    * 导出用户
-   *
-   * @param queryParams 查询参数
    */
   export(queryParams) {
     return request({
@@ -108,10 +110,9 @@ const UserAPI = {
       responseType: "blob",
     });
   },
+
   /**
    * 导入用户
-   *
-   * @param file 导入文件
    */
   import(file) {
     const formData = new FormData();
@@ -125,6 +126,7 @@ const UserAPI = {
       },
     });
   },
+
   /**
    * 获取个人中心用户信息
    */
@@ -134,6 +136,7 @@ const UserAPI = {
       method: "get",
     });
   },
+
   /**
    * 修改个人中心用户信息
    */
@@ -144,6 +147,7 @@ const UserAPI = {
       data,
     });
   },
+
   /**
    * 修改个人中心用户密码
    */
@@ -154,6 +158,7 @@ const UserAPI = {
       data,
     });
   },
+
   /**
    * 发送短信验证码（绑定或更换手机号）
    */
@@ -164,6 +169,7 @@ const UserAPI = {
       params: { mobile },
     });
   },
+
   /**
    * 绑定或更换手机号
    */
@@ -174,6 +180,7 @@ const UserAPI = {
       data,
     });
   },
+
   /**
    * 解绑手机号
    */
@@ -184,6 +191,7 @@ const UserAPI = {
       data,
     });
   },
+
   /**
    * 发送邮箱验证码（绑定或更换邮箱）
    */
@@ -194,6 +202,7 @@ const UserAPI = {
       params: { email },
     });
   },
+
   /**
    * 绑定或更换邮箱
    */
@@ -204,6 +213,7 @@ const UserAPI = {
       data,
     });
   },
+
   /**
    * 解绑邮箱
    */
@@ -214,8 +224,9 @@ const UserAPI = {
       data,
     });
   },
+
   /**
-   *  获取用户下拉列表
+   * 获取用户下拉列表
    */
   getOptions() {
     return request({
@@ -224,5 +235,5 @@ const UserAPI = {
     });
   },
 };
+
 export default UserAPI;
-// 重导出类型

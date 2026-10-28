@@ -6,7 +6,7 @@
 <script setup>
 import chinaGeoJSON from "../assets/chinaGeoJSON.json";
 
-import getSeriesData from "../utils/seriesData";
+import getSeriesData from "../utils/series-data";
 import { useTemplateRef } from "vue";
 import { useKeepTicking } from "../composables/useKeepTicking";
 

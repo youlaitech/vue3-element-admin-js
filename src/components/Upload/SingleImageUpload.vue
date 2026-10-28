@@ -33,6 +33,7 @@
 
 <script setup>
 import FileAPI from "@/api/file";
+
 /**
  * 单图上传：仅保留一张图片
  */
@@ -49,16 +50,18 @@ const props = defineProps({
     type: String,
     default: "file",
   },
-  /** 最大文件大小（单位：M） */
+  /** 最大文件大小（单位：MB） */
   maxFileSize: {
     type: Number,
     default: 10,
   },
-  /** 上传图片格式，默认支持所有图片(image/*)，指定格式示例：'.png,.jpg,.jpeg,.gif,.bmp' */
+
+  /** 上传图片格式，默认支持所有图片 (image/*)，指定格式示例：'.png,.jpg,.jpeg,.gif,.bmp' */
   accept: {
     type: String,
     default: "image/*",
   },
+
   /** 自定义样式，用于设置组件的宽度和高度等其他样式 */
   style: {
     type: Object,
@@ -70,18 +73,16 @@ const props = defineProps({
     },
   },
 });
-const modelValue = defineModel("modelValue", {
-  type: String,
-  default: () => "",
-});
+
+const modelValue = defineModel({ type: String, default: "" });
+
 /**
  * 限制用户上传文件的格式和大小
  */
 function handleBeforeUpload(file) {
-  /**
-   * accept 支持 image/*、.png、image/png 三种写法，浏览器只按它过滤，还需按同样规则复核实际文件
-   */
+  // accept 支持 image/*、.png、image/png 三种写法，浏览器只按它过滤，还需按同样规则复核实际文件
   const acceptTypes = props.accept.split(",").map((type) => type.trim());
+
   const isValidType = acceptTypes.some((type) => {
     if (type === "image/*") {
       return file.type.startsWith("image/");
@@ -91,10 +92,12 @@ function handleBeforeUpload(file) {
       return file.type === type;
     }
   });
+
   if (!isValidType) {
     ElMessage.warning("上传文件的格式不正确，仅支持 " + props.accept);
     return false;
   }
+
   // 限制文件大小
   if (file.size > props.maxFileSize * 1024 * 1024) {
     ElMessage.warning("上传图片不能大于" + props.maxFileSize + "M");
@@ -102,18 +105,22 @@ function handleBeforeUpload(file) {
   }
   return true;
 }
+
 /**
  * 上传图片
  */
 function handleUpload(options) {
   return new Promise((resolve, reject) => {
     const file = options.file;
+
     const formData = new FormData();
     formData.append(props.name, file);
+
     // 处理附加参数
     Object.keys(props.data).forEach((key) => {
       formData.append(key, props.data[key]);
     });
+
     FileAPI.upload(formData).then(
       (data) => {
         resolve(data);
@@ -124,12 +131,14 @@ function handleUpload(options) {
     );
   });
 }
+
 /**
  * 删除图片
  */
 function handleDelete() {
   modelValue.value = "";
 }
+
 /**
  * 上传成功回调
  *
@@ -139,10 +148,12 @@ const onSuccess = (fileInfo) => {
   ElMessage.success("上传成功");
   modelValue.value = fileInfo.url;
 };
+
 /**
  * 上传失败回调
  */
 const getErrorMessage = (error) => (error instanceof Error ? error.message : String(error));
+
 /**
  * 上传失败时提示错误
  */

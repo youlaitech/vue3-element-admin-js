@@ -14,6 +14,8 @@
 </template>
 
 <script setup>
+import { House, Refresh } from "@element-plus/icons-vue";
+
 defineOptions({ name: "Page404" });
 const router = useRouter();
 /**
@@ -22,6 +24,7 @@ const router = useRouter();
 function goHome() {
   router.push("/");
 }
+
 /**
  * 重新加载页面，处理动态路由未及时注册的场景
  */

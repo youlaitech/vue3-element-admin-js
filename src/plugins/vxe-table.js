@@ -1,9 +1,11 @@
 // 引入样式
 import "vxe-pc-ui/lib/style.css";
 import "vxe-table/lib/style.css";
+
 // 导入主题变量，也可以重写主题变量
 import "vxe-pc-ui/styles/cssvar.scss";
 import "vxe-table/styles/cssvar.scss";
+
 // 导入默认的语言
 import enUS from "vxe-pc-ui/lib/language/en-US";
 import zhCN from "vxe-pc-ui/lib/language/zh-CN";
@@ -12,6 +14,7 @@ import ExcelJS from "exceljs";
 import { VxeUI } from "vxe-pc-ui";
 import { useAppStore } from "@/stores/app";
 import { DeviceEnum } from "@/enums";
+
 /**
  * 配置 vxe-table 的默认参数
  */

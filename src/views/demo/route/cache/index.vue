@@ -34,6 +34,7 @@ let mountedTotal = 0;
 
 <script setup>
 import { onActivated, onDeactivated } from "vue";
+
 defineOptions({
   name: "RouteCache",
 });

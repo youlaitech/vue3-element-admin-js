@@ -48,9 +48,11 @@
 
 <script setup>
 import QRCode from "qrcode";
+
 defineOptions({
   name: "FormPublishResultStep",
 });
+
 /**
  * 发布完成汇总（向导第③步：菜单位置、可见角色、分享二维码与链接）
  */
@@ -86,6 +88,7 @@ const props = defineProps({
     default: "",
   },
 });
+
 /**
  * 上抛前往查看与复制链接操作
  */

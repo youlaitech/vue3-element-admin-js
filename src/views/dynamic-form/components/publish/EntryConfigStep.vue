@@ -129,6 +129,7 @@
 defineOptions({
   name: "FormPublishEntryConfigStep",
 });
+
 /**
  * 入口配置（向导第②步；数据由容器持有，校验经 expose 供容器保存前调用）
  */
@@ -159,6 +160,7 @@ const props = defineProps({
     default: "",
   },
 });
+
 /**
  * 上抛复制分享链接操作
  */
@@ -181,6 +183,7 @@ const rules = computed(() =>
 function handleSelectAllRoles() {
   menuForm.value.roleIds = props.roleOptions.map((role) => String(role.value));
 }
+
 /**
  * 校验菜单表单（容器保存前调用）
  *
@@ -195,6 +198,7 @@ function validate() {
     () => false
   );
 }
+
 /**
  * 暴露 validate 供容器保存前校验
  */

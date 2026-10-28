@@ -42,6 +42,7 @@
 defineOptions({
   name: "FormPublishMethodStep",
 });
+
 /**
  * 发布方式选择（向导第①步；卡片单选/全选，已配置过的入口带标签提示）
  */
@@ -62,6 +63,7 @@ defineProps({
     default: false,
   },
 });
+
 /**
  * 上抛发布方式切换
  */

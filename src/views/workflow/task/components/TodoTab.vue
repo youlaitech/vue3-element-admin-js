@@ -172,19 +172,29 @@
 <script setup>
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage } from "element-plus";
+import { MagicStick, Refresh } from "@element-plus/icons-vue";
+
 import WorkflowAPI from "@/api/workflow";
 import { usePageTable } from "@/composables";
 import { appConfig } from "@/settings";
+import ApprovalTimeline from "../../components/ApprovalTimeline.vue";
+import FormDetail from "../../components/FormDetail.vue";
+import ProcessStages from "../../components/ProcessStages.vue";
+
 defineOptions({
   name: "WorkflowTodoTab",
 });
+
 /**
  * 待办数量回传（驱动审批中心页签角标）
  */
 const emit = defineEmits(["totalChange"]);
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 const queryFormRef = ref();
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -195,24 +205,31 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: WorkflowAPI.task.getTodoPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
+
 watch(total, (value) => emit("totalChange", value), { immediate: true });
+
 /**
  * 暴露刷新能力：审批中心页签切换时父组件调用
  */
 defineExpose({ fetchData });
+
 // 办理弹窗状态
 const approveState = reactive({
   visible: false,
   loading: false,
   title: "审批办理",
 });
+
 // 当前任务详情
 const detail = ref();
+
 // 审批意见（通过/驳回共用）
 const comment = ref("");
+
 // AI 摘要与生成状态
 const aiSummary = ref("");
 const aiLoading = ref(false);
+
 // 当前任务在流程走向中的位置（节点 ID 精确匹配，当前环节高亮进行中，之前为已完成；未匹配时不高亮）
 const currentStageIndex = computed(() => {
   const stages = detail.value?.stages;
@@ -221,11 +238,14 @@ const currentStageIndex = computed(() => {
   }
   return stages.findIndex((stage) => stage.nodeId === detail.value?.taskDefinitionKey);
 });
+
 // 驳回模式状态
 const rejectMode = ref(false);
 const rejectTargets = ref([]);
 const rejectTargetId = ref("");
+
 const submitting = ref(false);
+
 /**
  * 打开办理弹窗并加载任务详情
  *
@@ -244,6 +264,7 @@ async function openApprove(taskId) {
     approveState.loading = false;
   }
 }
+
 /**
  * 生成当前任务的 AI 摘要
  */
@@ -260,6 +281,7 @@ async function handleAiSummary() {
     aiLoading.value = false;
   }
 }
+
 /**
  * 切入驳回模式并加载可驳回的历史节点
  */
@@ -272,6 +294,7 @@ async function handleRejectClick() {
   rejectTargetId.value = rejectTargets.value[0].activityId;
   rejectMode.value = true;
 }
+
 /**
  * 退出驳回模式（保留已填意见）
  */
@@ -280,6 +303,7 @@ function closeRejectMode() {
   rejectTargets.value = [];
   rejectTargetId.value = "";
 }
+
 /**
  * 审批通过
  */
@@ -294,6 +318,7 @@ async function handleComplete() {
     submitting.value = false;
   }
 }
+
 /**
  * 驳回到指定历史节点
  */
@@ -311,6 +336,7 @@ async function handleReject() {
     submitting.value = false;
   }
 }
+
 onMounted(() => {
   handleQuery();
 });

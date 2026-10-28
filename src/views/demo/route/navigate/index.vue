@@ -36,6 +36,7 @@
 <script setup>
 import router from "@/router";
 import { listMembers } from "./data";
+
 defineOptions({
   name: "RouteNavigate",
 });
@@ -61,6 +62,7 @@ onMounted(loadMembers);
 function handleEditClick(row) {
   router.push({ name: "RouteExampleEdit", params: { id: row.id } });
 }
+
 /**
  * 打开成员详情弹窗
  */

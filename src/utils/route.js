@@ -1,5 +1,6 @@
 // 路由路径工具
 import { isExternal } from "./validate";
+
 /**
  * 拼接路由路径
  *
@@ -13,6 +14,7 @@ export function joinRoutePath(basePath, path) {
   if (isExternal(path) || path.startsWith("/")) return path;
   return `${basePath.replace(/\/+$/, "")}/${path}`;
 }
+
 /**
  * 解析外链地址：http(s)/mailto/tel 原样返回，站内路径补全为当前站点地址
  *

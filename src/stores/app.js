@@ -4,6 +4,7 @@ import { store } from "@/stores";
 import { DeviceEnum, SidebarStatus } from "@/enums";
 import { STORAGE_KEYS } from "@/constants";
 import { defaults } from "@/settings";
+
 export const useAppStore = defineStore("app", () => {
   // 当前设备类型
   const device = useStorage(STORAGE_KEYS.DEVICE, DeviceEnum.DESKTOP);
@@ -13,7 +14,6 @@ export const useAppStore = defineStore("app", () => {
   const language = useStorage(STORAGE_KEYS.LANGUAGE, defaults.language);
   // 侧边栏持久化状态
   const sidebarStatus = useStorage(STORAGE_KEYS.SIDEBAR_STATUS, SidebarStatus.CLOSED);
-  // 侧边栏显示状态
   const sidebar = reactive({
     opened: sidebarStatus.value === SidebarStatus.OPENED,
     withoutAnimation: false,
@@ -26,7 +26,6 @@ export const useAppStore = defineStore("app", () => {
   const activeTopMenuPath = useStorage(STORAGE_KEYS.ACTIVE_TOP_MENU_PATH, "", sessionStorage);
   // 内容区是否全屏
   const contentFullscreen = ref(false);
-  // Element Plus 当前语言包
   const locale = computed(() => (language?.value === "en" ? en : zhCn));
   /**
    * 切换侧边栏展开状态
@@ -105,6 +104,7 @@ export const useAppStore = defineStore("app", () => {
     activeTopMenuPath,
   };
 });
+
 /**
  * 在组件外拿 app store 实例
  */

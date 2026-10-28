@@ -89,31 +89,43 @@
 
 <script setup>
 import { ElMessage } from "element-plus";
+
 import WorkflowAPI from "@/api/workflow";
 import FormAPI from "@/api/form";
 import router from "@/router";
 import { useUserStore } from "@/stores";
+import FormRenderer from "../dynamic-form/components/FormRenderer.vue";
 import { useFormRenderer } from "../dynamic-form/composables/useFormRenderer";
+import ProcessStages from "./components/ProcessStages.vue";
+
 defineOptions({
   name: "WorkflowLaunch",
   inheritAttrs: false,
 });
+
 // 演示引导提示条可见状态（关闭后本次会话不再显示）
 const demoTipVisible = ref(true);
+
 // 可发起流程列表
 const processList = ref([]);
+
 const selectedId = ref("");
+
 const selectedProcess = computed(() =>
   processList.value.find((process) => process.id === selectedId.value)
 );
+
 // 审批流程走向预览
 const stages = ref([]);
+
 const userStore = useUserStore();
+
 // 流程实例名称：默认按"流程-姓名-时间"自动拼接，切换流程或手动修改后重置， 用户可编辑以获得可读标题（同一流程多次发起也能从列表一眼区分）
 const processName = ref("");
 const autoNameValue = ref("");
 // 名称被手动修改过：区别于自动值，展示"恢复自动命名"入口
 const autoNameDirty = ref(false);
+
 /**
  * 生成默认流程名称：流程名-昵称-MM 月 DD 日
  * 精确到日即可：同日多次发起由列表的"发起时间"列区分，名称保持简洁；特殊情况可手动编辑
@@ -127,6 +139,7 @@ function buildAutoName() {
     ? `${selectedProcess.value.name}-${nickname}-${pad(now.getMonth() + 1)}月${pad(now.getDate())}日`
     : "";
 }
+
 /**
  * 切换流程后重置自动命名，并回填默认拼接值
  */
@@ -135,12 +148,14 @@ function applyAutoName() {
   processName.value = autoNameValue.value;
   autoNameDirty.value = false;
 }
+
 /**
  * 用户手动编辑名称：与自动值不同视为已修改，清除自动状态
  */
 function handleNameInput(value) {
   autoNameDirty.value = value !== autoNameValue.value;
 }
+
 /**
  * 恢复为自动拼接的默认名称
  */
@@ -148,16 +163,18 @@ function resetAutoName() {
   processName.value = autoNameValue.value;
   autoNameDirty.value = false;
 }
-/**
- * 发起表单渲染状态（复用动态表单渲染管线，保证与填写页一致）
- */
+
+// 复用动态表单的规则加载与渲染状态。
 const { rule, option, loading, submitted, load, refill } = useFormRenderer(() =>
   FormAPI.getRender(selectedProcess.value?.formKey ?? "")
 );
+
 const starting = ref(false);
+
 onMounted(async () => {
   processList.value = await WorkflowAPI.definition.listStartable();
 });
+
 /**
  * 切换流程时按 formKey 加载发起表单规则与审批走向
  * 未绑定表单的流程走确认直发，不加载规则
@@ -170,6 +187,7 @@ async function handleProcessChange() {
   }
   stages.value = selectedId.value ? await WorkflowAPI.definition.listStages(selectedId.value) : [];
 }
+
 /**
  * 提交发起表单并发起流程（表单数据即流程变量，驱动网关条件）
  *
@@ -183,6 +201,7 @@ async function handleSubmit(data) {
   });
   submitted.value = true;
 }
+
 /**
  * 未绑定表单流程的直接发起
  */
@@ -199,6 +218,7 @@ async function handleDirectStart() {
     starting.value = false;
   }
 }
+
 /**
  * 跳转审批中心「我发起的」页签查看进度
  */

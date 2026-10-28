@@ -1,6 +1,7 @@
 import { useLayout } from "./useLayout";
 import { useAppStore, usePermissionStore } from "@/stores";
 import { isExternal } from "@/utils/index";
+
 /**
  * 混合布局的顶部菜单与激活路径
  */
@@ -10,7 +11,6 @@ export function useMixMenu() {
   const appStore = useAppStore();
   const permissionStore = usePermissionStore();
   const { activeTopMenuPath, sideMenuRoutes } = useLayout();
-  // 顶部菜单
   const topMenuItems = computed(() => permissionStore.routes.filter((item) => !item.meta?.hidden));
   // 解析当前侧边菜单激活路径
   const activeSideMenuPath = computed(() => {

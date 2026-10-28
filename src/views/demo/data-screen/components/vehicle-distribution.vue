@@ -2,7 +2,7 @@
   <BaseChart ref="chart" flex-1 />
 </template>
 <script setup>
-import { city } from "../utils/seriesData";
+import { city } from "../utils/series-data";
 import { useTemplateRef } from "vue";
 import { useKeepTicking } from "../composables/useKeepTicking";
 
@@ -15,12 +15,12 @@ onMounted(() => {
 });
 
 /**
- * 生成一个500到2000的数值
+ * 生成指定范围内的演示数值。
  */
 const randomNum = () => Math.floor(Math.random() * (500 - 2000 + 1)) + 2000;
 
 /**
- * 构建地图散点数据
+ * 为地图城市数据附加经纬度。
  */
 const buildGeoData = () =>
   Array.from({ length: 20 }).map(() => {

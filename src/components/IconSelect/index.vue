@@ -82,6 +82,7 @@
 
 <script setup>
 import { elementIconNames, svgIconNames } from "@/utils/icon";
+
 /**
  * 图标选择器：内置图标库检索与选择
  */
@@ -95,6 +96,7 @@ const props = defineProps({
     default: "500px",
   },
 });
+
 /**
  * 选中图标时回传图标名
  */
@@ -110,12 +112,14 @@ const selectedIcon = defineModel("modelValue", {
   required: true,
   default: "",
 });
+
 const filterText = ref("");
 const filteredSvgIcons = ref(svgIcons.value);
 const filteredElementIcons = ref(elementIcons.value);
 const isElementIcon = computed(() => {
   return selectedIcon.value && selectedIcon.value.startsWith("el-icon");
 });
+
 /**
  * 切换图标分类页签
  */
@@ -123,6 +127,7 @@ function handleTabClick(tabPane) {
   activeTab.value = tabPane.props.name;
   filterIcons();
 }
+
 /**
  * 按关键字过滤当前分类下的图标
  */
@@ -139,6 +144,7 @@ function filterIcons() {
       : elementIcons.value;
   }
 }
+
 /**
  * 选中图标并回传给 v-model
  */
@@ -147,6 +153,7 @@ function selectIcon(icon) {
   emit("update:modelValue", iconName);
   popoverVisible.value = false;
 }
+
 /**
  * 展开或收起图标选择弹层
  */
@@ -156,6 +163,7 @@ function togglePopover() {
 onClickOutside(iconSelectRef, () => (popoverVisible.value = false), {
   ignore: [popoverContentRef],
 });
+
 /**
  * 清空已选图标
  */

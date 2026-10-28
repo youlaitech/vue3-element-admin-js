@@ -1,4 +1,5 @@
 import UserAPI from "@/api/system/user";
+
 const selectConfig = {
   pk: "id",
   width: "70%",
@@ -103,7 +104,7 @@ const selectConfig = {
       align: "center",
       prop: "gender",
       width: 100,
-      templet: "custom",
+      cellType: "custom",
       slotName: "gender",
     },
     { label: "部门", align: "center", prop: "deptName", width: 120 },
@@ -112,10 +113,11 @@ const selectConfig = {
       label: "状态",
       align: "center",
       prop: "status",
-      templet: "custom",
+      cellType: "custom",
       slotName: "status",
     },
     { label: "创建时间", align: "center", prop: "createTime", width: 180 },
   ],
 };
+
 export default selectConfig;

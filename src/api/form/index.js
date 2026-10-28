@@ -1,5 +1,7 @@
 import request from "@/utils/request";
+
 const FORM_BASE_URL = "/api/v1/forms";
+
 const FormAPI = {
   /**
    * 审批表单下拉选项（工作流设计器绑定表单用，仅已发布 workflow 类型）
@@ -33,7 +35,7 @@ const FormAPI = {
   /**
    * 表单定义表单数据（编辑回显）
    */
-  getFormData(id) {
+  getDefinitionForm(id) {
     return request({
       url: `${FORM_BASE_URL}/${id}/form`,
       method: "get",
@@ -92,7 +94,7 @@ const FormAPI = {
   /**
    * 匿名提交公开表单数据（后端按 formKey + IP 限流防刷）
    */
-  submitPublicFormData(formKey, data) {
+  submitPublicSubmission(formKey, data) {
     return request({
       url: `${FORM_BASE_URL}/public/${formKey}/data`,
       method: "post",
@@ -103,7 +105,7 @@ const FormAPI = {
   /**
    * 表单数据分页列表
    */
-  getFormDataPage(formKey, queryParams) {
+  getSubmissionPage(formKey, queryParams) {
     return request({
       url: `${FORM_BASE_URL}/${formKey}/data`,
       method: "get",
@@ -113,7 +115,7 @@ const FormAPI = {
   /**
    * 提交表单数据
    */
-  submitFormData(formKey, data) {
+  submitSubmission(formKey, data) {
     return request({
       url: `${FORM_BASE_URL}/${formKey}/data`,
       method: "post",
@@ -123,7 +125,7 @@ const FormAPI = {
   /**
    * 获取表单数据详情（只读回显，返回提交时版本的规则快照）
    */
-  getFormDataDetail(formKey, dataId) {
+  getSubmissionDetail(formKey, dataId) {
     return request({
       url: `${FORM_BASE_URL}/${formKey}/data/${dataId}`,
       method: "get",
@@ -132,7 +134,7 @@ const FormAPI = {
   /**
    * 删除表单数据（ids 多个用逗号拼接）
    */
-  deleteFormData(formKey, ids) {
+  deleteSubmissions(formKey, ids) {
     return request({ url: `${FORM_BASE_URL}/${formKey}/data/${ids}`, method: "delete" });
   },
   /**
@@ -151,5 +153,5 @@ const FormAPI = {
     return request({ url: `${FORM_BASE_URL}/${formId}/menu`, method: "post", data });
   },
 };
+
 export default FormAPI;
-// 重导出类型

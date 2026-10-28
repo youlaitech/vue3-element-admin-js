@@ -22,6 +22,7 @@ function handleOpenDrawer(tableName) {
     drawerRef.value?.open(tableName);
   });
 }
+
 /**
  * 重置指定表的生成配置
  */

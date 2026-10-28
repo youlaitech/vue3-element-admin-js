@@ -9,6 +9,7 @@ import {
 } from "@/utils/theme";
 import { STORAGE_KEYS } from "@/constants";
 import { defaults, themePalettePresets } from "@/settings";
+
 const CUSTOM_THEME_PALETTE = "custom";
 const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
 export const useSettingsStore = defineStore("setting", () => {

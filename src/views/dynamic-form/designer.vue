@@ -42,36 +42,50 @@
 
 <script setup>
 import { ElMessage } from "element-plus";
+import { ArrowLeft, MagicStick } from "@element-plus/icons-vue";
+
+import FcDesigner from "@form-create/designer";
+
 import FormAPI from "@/api/form";
 import router from "@/router";
 import { appConfig } from "@/settings";
+
 defineOptions({
   name: "FormDesigner",
   inheritAttrs: false,
 });
+
 const route = useRoute();
+
 // 表单 ID（列表页"设计"按钮携带）
 const formId = computed(() => String(route.query.id ?? ""));
+
 // 页面标题（列表页携带）
 const title = computed(() => String(route.query.title ?? "表单设计"));
+
 const designerRef = ref();
+
 // 隐藏设计器自带保存按钮，统一走工具栏
 const designerConfig = { showSaveBtn: false };
+
 // 保存中状态
 const saving = ref(false);
+
 // AI 生成弹窗与需求描述
 const aiDialogVisible = ref(false);
 const aiDescription = ref("");
 const aiGenerating = ref(false);
+
 // 表单定义元数据（保存时回传以满足后端非空校验）
 const formMeta = ref({});
+
 // 回显已有规则（空规则为空白画布）
 onMounted(async () => {
   if (!formId.value) {
     ElMessage.error("缺少表单ID参数");
     return;
   }
-  const data = await FormAPI.getFormData(formId.value);
+  const data = await FormAPI.getDefinitionForm(formId.value);
   formMeta.value = { formKey: data.formKey, formName: data.formName };
   if (data.formJson) {
     designerRef.value?.setRule(JSON.parse(data.formJson));
@@ -85,6 +99,7 @@ onMounted(async () => {
     designerRef.value?.setOption(option);
   }
 });
+
 /**
  * 保存设计器产出的规则与全局配置
  */
@@ -103,6 +118,7 @@ async function handleSave() {
     saving.value = false;
   }
 }
+
 /**
  * AI 生成的规则直接覆盖画布，用户确认后再点保存
  */
@@ -124,12 +140,14 @@ async function handleAiGenerate() {
     aiGenerating.value = false;
   }
 }
+
 /**
  * @returns 表单列表
  */
 function handleBack() {
   router.back();
 }
+
 /**
  * 预览读取已保存规则，未保存改动不体现
  */

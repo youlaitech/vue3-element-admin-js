@@ -26,9 +26,11 @@
 import { ElMessage } from "element-plus";
 import router from "@/router";
 import { getMember, updateMember } from "./data";
+
 defineOptions({
   name: "RouteExampleEdit",
 });
+
 const route = useRoute();
 const formData = reactive({ id: 0, name: "", dept: "", post: "" });
 onMounted(() => {
@@ -40,6 +42,7 @@ onMounted(() => {
   }
   Object.assign(formData, member);
 });
+
 /**
  * 保存编辑并返回列表
  */
@@ -48,6 +51,7 @@ function handleSubmit() {
   ElMessage.success("保存成功");
   router.back();
 }
+
 /**
  * 取消编辑并返回列表
  */

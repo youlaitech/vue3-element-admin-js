@@ -2,6 +2,7 @@ import GeneratorAPI from "@/api/codegen";
 import DictAPI from "@/api/system/dict";
 import MenuAPI from "@/api/system/menu";
 import { FormTypeEnum, QueryTypeEnum } from "@/enums/codegen";
+
 /**
  * 代码生成配置表单
  */

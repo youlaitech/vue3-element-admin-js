@@ -1,5 +1,7 @@
 import request from "@/utils/request";
+
 const GENERATOR_BASE_URL = "/api/v1/codegen";
+
 /**
  * 构建预览和下载接口的查询参数
  */
@@ -13,6 +15,7 @@ const buildCodegenParams = (pageType, type) => {
   }
   return Object.keys(params).length ? params : undefined;
 };
+
 const GeneratorAPI = {
   /**
    * 获取数据表分页列表
@@ -24,6 +27,7 @@ const GeneratorAPI = {
       params,
     });
   },
+
   /**
    * 获取代码生成配置
    */
@@ -33,6 +37,7 @@ const GeneratorAPI = {
       method: "get",
     });
   },
+
   /**
    * AI 推断代码生成配置，未开启 AI 时返回业务异常
    */
@@ -43,6 +48,7 @@ const GeneratorAPI = {
       data: requirement ? { requirement } : undefined,
     });
   },
+
   /**
    * 保存代码生成配置
    */
@@ -53,6 +59,7 @@ const GeneratorAPI = {
       data,
     });
   },
+
   /**
    * 获取代码生成预览数据
    */
@@ -63,6 +70,7 @@ const GeneratorAPI = {
       params: buildCodegenParams(pageType, type),
     });
   },
+
   /**
    * 重置代码生成配置
    */
@@ -72,6 +80,7 @@ const GeneratorAPI = {
       method: "delete",
     });
   },
+
   /**
    * 下载代码生成 ZIP 文件
    */
@@ -95,14 +104,17 @@ const GeneratorAPI = {
           }
         }
       }
+
       const blob = new Blob([response.data], { type: "application/zip" });
       const a = document.createElement("a");
       const downloadUrl = window.URL.createObjectURL(blob);
       a.href = downloadUrl;
       a.download = fileName;
+
       a.click();
       window.URL.revokeObjectURL(downloadUrl);
     });
   },
 };
+
 export default GeneratorAPI;

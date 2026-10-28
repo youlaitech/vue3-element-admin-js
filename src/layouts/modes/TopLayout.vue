@@ -27,6 +27,7 @@ import { useLayout } from "../composables/useLayout";
 import { useAppStore } from "@/stores";
 import { usePermissionStore } from "@/stores";
 import BaseLayout from "../BaseLayout.vue";
+
 const { showTagsView, showLogo } = useLayout();
 const appStore = useAppStore();
 const { width } = useWindowSize();
@@ -34,6 +35,7 @@ const permissionStore = usePermissionStore();
 const topMenuItems = computed(() => {
   return permissionStore.routes.filter((item) => !item.meta?.hidden);
 });
+
 const isLogoCollapsed = computed(() => width.value < 768);
 </script>
 

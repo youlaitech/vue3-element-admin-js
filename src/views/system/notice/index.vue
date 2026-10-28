@@ -310,17 +310,23 @@
 
 <script setup>
 import { ElMessage, ElMessageBox } from "element-plus";
+import { Close, CopyDocument, FullScreen, Refresh } from "@element-plus/icons-vue";
+
 import NoticeAPI from "@/api/system/notice";
 import UserAPI from "@/api/system/user";
 import { usePageTable, useTableSelection } from "@/composables";
+
 defineOptions({
   name: "Notice",
   inheritAttrs: false,
 });
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 const queryFormRef = ref();
 const noticeFormRef = ref();
+
 // 通知发布状态：0=未发布，1=已发布，-1=已撤回
 const NOTICE_STATUS_DRAFT = 0;
 const NOTICE_STATUS_PUBLISHED = 1;
@@ -328,6 +334,7 @@ const NOTICE_STATUS_REVOKED = -1;
 // 通知目标类型：1=全体，2=指定用户
 const NOTICE_TARGET_ALL = 1;
 const NOTICE_TARGET_SPECIFIED = 2;
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -339,18 +346,24 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: NoticeAPI.getPage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
+
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
+
 const userOptions = ref([]);
+
 const dialogState = reactive({
   title: "",
   visible: false,
   fullscreen: false,
 });
+
 const initialFormData = {
   level: "L",
   targetType: NOTICE_TARGET_ALL,
 };
+
 const formData = reactive({ ...initialFormData });
+
 const rules = {
   title: [{ required: true, message: "请输入通知标题", trigger: "blur" }],
   content: [
@@ -369,10 +382,12 @@ const rules = {
   ],
   type: [{ required: true, message: "请选择通知类型", trigger: "change" }],
 };
+
 const detailDialog = reactive({
   visible: false,
 });
 const currentNotice = ref({});
+
 /**
  * 将后端返回的 `targetUserIds`（可能是数组、JSON 字符串、逗号分隔字符串）标准化为数字数组
  * 用于编辑回显时把后端字段转换成表单 `targetUsers` 字段
@@ -411,6 +426,7 @@ function normalizeTargetUsers(value) {
   }
   return [];
 }
+
 /**
  * 构造提交给后端的 payload
  * 字段名转换：targetUsers → targetUserIds
@@ -422,6 +438,7 @@ function buildSubmitPayload() {
     targetUserIds: formData.targetType === NOTICE_TARGET_SPECIFIED ? (targetUsers ?? []) : [],
   };
 }
+
 /**
  * 重置表单数据和验证状态
  * 重置表单数据
@@ -434,12 +451,14 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
+
 /**
  * 切换表单弹窗的全屏状态
  */
 function toggleDialogFullscreen() {
   dialogState.fullscreen = !dialogState.fullscreen;
 }
+
 /**
  * 打开新增/编辑通知弹窗
  *
@@ -451,6 +470,7 @@ async function openDialog(id) {
   UserAPI.getOptions().then((data) => {
     userOptions.value = data;
   });
+
   dialogState.visible = true;
   if (id) {
     dialogState.title = "修改公告";
@@ -464,6 +484,7 @@ async function openDialog(id) {
     dialogState.title = "新增公告";
   }
 }
+
 /**
  * 关闭表单弹窗并重置表单
  */
@@ -472,6 +493,7 @@ function closeDialog() {
   dialogState.fullscreen = false;
   resetForm();
 }
+
 /**
  * 校验并提交通知表单
  */
@@ -481,6 +503,7 @@ async function handleSubmit() {
     () => false
   );
   if (!valid) return;
+
   loading.value = true;
   try {
     const payload = buildSubmitPayload();
@@ -498,6 +521,7 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
+
 /**
  * 发布通知公告
  *
@@ -508,6 +532,7 @@ async function handlePublish(id) {
   ElMessage.success("发布成功");
   fetchData();
 }
+
 /**
  * 撤回通知公告
  *
@@ -518,6 +543,7 @@ async function handleRevoke(id) {
   ElMessage.success("撤回成功");
   fetchData();
 }
+
 /**
  * 删除单个或批量通知
  *
@@ -529,6 +555,7 @@ async function handleDelete(id) {
     ElMessage.warning("请勾选删除项");
     return;
   }
+
   try {
     await ElMessageBox.confirm("确认删除已选中的数据项吗？", "警告", {
       confirmButtonText: "确定",
@@ -539,6 +566,7 @@ async function handleDelete(id) {
     ElMessage.info("已取消删除");
     return;
   }
+
   loading.value = true;
   try {
     await NoticeAPI.deleteByIds(deleteIds);
@@ -548,21 +576,24 @@ async function handleDelete(id) {
     loading.value = false;
   }
 }
+
 /**
  * 打开通知详情弹窗
  *
  * @param id 通知 ID
  */
 async function openDetailDialog(id) {
-  currentNotice.value = await NoticeAPI.getDetail(id);
+  currentNotice.value = await NoticeAPI.getPreview(id);
   detailDialog.visible = true;
 }
+
 /**
  * 关闭通知详情弹窗
  */
 function closeDetailDialog() {
   detailDialog.visible = false;
 }
+
 onMounted(() => {
   handleQuery();
 });

@@ -1,9 +1,14 @@
 import { isExternal } from "@/utils";
+
+/**
+ * 维护已访问页签和缓存视图。
+ */
 export const useTagsViewStore = defineStore("tagsView", () => {
   const visitedViews = ref([]);
   const cachedViews = ref([]);
   const router = useRouter();
   const route = useRoute();
+
   /**
    * 添加已访问视图到已访问视图列表中
    */
@@ -23,19 +28,21 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       visitedViews.value.push(view);
     }
   }
+
   /**
    * 添加缓存视图到缓存视图列表中
    */
   function addCachedView({ fullPath, keepAlive }) {
-    // 如果缓存视图名称已经存在于缓存视图列表中，则不再添加
+    // 以 fullPath 区分同一路径下的不同查询参数。
     if (cachedViews.value.includes(fullPath)) {
       return;
     }
-    // 如果视图需要缓存（keepAlive），则将其路由名称添加到缓存视图列表中
+
     if (keepAlive) {
       cachedViews.value.push(fullPath);
     }
   }
+
   /**
    * 从已访问视图列表中删除指定的视图
    */
@@ -51,6 +58,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       resolve([...visitedViews.value]);
     });
   }
+
   /**
    * 删除单个缓存视图
    */
@@ -75,6 +83,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       resolve([...visitedViews.value]);
     });
   }
+
   /**
    * 删除其他缓存视图
    */
@@ -91,6 +100,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       resolve([...cachedViews.value]);
     });
   }
+
   /**
    * 更新访问视图的标题与图标
    */
@@ -102,17 +112,21 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       }
     }
   }
+
   /**
    * 根据路径更新标签名称
    *
    * @param fullPath 路径
    * @param title 标签名称
-   */ function updateTagName(fullPath, title) {
+   */
+  function updateTagName(fullPath, title) {
     const tag = visitedViews.value.find((tag) => tag.fullPath === fullPath);
+
     if (tag) {
       tag.title = title;
     }
   }
+
   /**
    * 新增页签：同时写入访问与缓存
    */
@@ -120,6 +134,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
     addVisitedView(view);
     addCachedView(view);
   }
+
   /**
    * 删除页签：同时移除访问与缓存
    */
@@ -133,6 +148,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       });
     });
   }
+
   /**
    * 删除其他页签
    */
@@ -146,6 +162,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       });
     });
   }
+
   /**
    * 删除左侧页签
    */
@@ -162,6 +179,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
         if (index >= currIndex || item?.affix) {
           return true;
         }
+
         const cacheIndex = cachedViews.value.indexOf(item.fullPath);
         if (cacheIndex > -1) {
           cachedViews.value.splice(cacheIndex, 1);
@@ -173,6 +191,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       });
     });
   }
+
   /**
    * 删除右侧页签
    */
@@ -200,6 +219,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       });
     });
   }
+
   /**
    * 删除全部页签
    */
@@ -214,6 +234,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       });
     });
   }
+
   /**
    * 删除全部访问视图
    */
@@ -224,6 +245,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       resolve([...visitedViews.value]);
     });
   }
+
   /**
    * 删除全部缓存视图
    */
@@ -233,6 +255,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       resolve([...cachedViews.value]);
     });
   }
+
   /**
    * 关闭当前 tagView
    */
@@ -253,12 +276,14 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       }
     });
   }
+
   /**
    * 判断页签是否对应当前路由
    */
   function isActive(tag) {
     return tag.path === route.path;
   }
+
   /**
    * 关闭后跳转到剩余页签的最后一个
    */
@@ -277,6 +302,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
       }
     }
   }
+
   return {
     visitedViews,
     cachedViews,

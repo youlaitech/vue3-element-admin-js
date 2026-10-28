@@ -1,6 +1,8 @@
 import request from "@/utils/request";
 import { MenuTypeEnum } from "@/enums";
+
 const MENU_BASE_URL = "/api/v1/menus";
+
 const MenuAPI = {
   /**
    * 获取当前用户的路由列表
@@ -13,7 +15,7 @@ const MenuAPI = {
    */
   getList(queryParams) {
     return request({
-      url: `${MENU_BASE_URL}`,
+      url: MENU_BASE_URL,
       method: "get",
       params: queryParams,
     });
@@ -58,7 +60,7 @@ const MenuAPI = {
    * 新增菜单
    */
   create(data) {
-    return request({ url: `${MENU_BASE_URL}`, method: "post", data });
+    return request({ url: MENU_BASE_URL, method: "post", data });
   },
   /**
    * 修改菜单
@@ -73,5 +75,5 @@ const MenuAPI = {
     return request({ url: `${MENU_BASE_URL}/${id}`, method: "delete" });
   },
 };
+
 export default MenuAPI;
-// 重导出类型

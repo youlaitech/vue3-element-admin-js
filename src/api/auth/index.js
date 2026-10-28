@@ -1,5 +1,12 @@
 import request from "@/utils/request";
+
 const AUTH_BASE_URL = "/api/v1/auth";
+
+/**
+ * OIDC 授权入口，末段对应后端 registrationId。
+ */
+export const OIDC_AUTHORIZATION_URL = "/oauth2/authorization/youlai";
+
 const AuthAPI = {
   /**
    * 登录
@@ -12,6 +19,7 @@ const AuthAPI = {
       captchaCode: data.captchaCode,
       ...(typeof data.tenantId !== "undefined" && { tenantId: data.tenantId }),
     };
+
     return request({
       url: `${AUTH_BASE_URL}/login`,
       method: "post",
@@ -20,6 +28,7 @@ const AuthAPI = {
       anonymous: true,
     });
   },
+
   /**
    * 获取验证码图片
    */
@@ -31,8 +40,11 @@ const AuthAPI = {
       anonymous: true,
     });
   },
+
   /**
    * 退出登录
+   *
+   * 统一认证登录额外返回认证中心登出地址，普通登录返回 null。
    */
   logout() {
     return request({
@@ -40,6 +52,7 @@ const AuthAPI = {
       method: "delete",
     });
   },
+
   /**
    * 切换租户并重新签发令牌
    */
@@ -47,9 +60,11 @@ const AuthAPI = {
     return request({
       url: `${AUTH_BASE_URL}/switch-tenant`,
       method: "post",
+      silentErrorStatuses: [404, 405, 501],
       params: { tenantId },
     });
   },
+
   /**
    * 用刷新令牌换取新的访问令牌
    */
@@ -57,24 +72,26 @@ const AuthAPI = {
     return request({
       url: `${AUTH_BASE_URL}/refresh-token`,
       method: "post",
-      params: { refreshToken },
+      data: { refreshToken },
       anonymous: true,
     });
   },
+
   /**
    * 生成扫码登录票据
    */
-  qrGenerate() {
+  generateQrCode() {
     return request({
       url: `${AUTH_BASE_URL}/qr-code/generate`,
       method: "post",
       anonymous: true,
     });
   },
+
   /**
    * 轮询扫码登录状态
    */
-  qrStatus(ticket) {
+  getQrCodeStatus(ticket) {
     return request({
       url: `${AUTH_BASE_URL}/qr-code/status`,
       method: "get",
@@ -82,6 +99,7 @@ const AuthAPI = {
       anonymous: true,
     });
   },
+
   /**
    * 用票据换取登录令牌
    */
@@ -93,5 +111,18 @@ const AuthAPI = {
       anonymous: true,
     });
   },
+
+  /**
+   * 用 OIDC 登录票据换取本地令牌。
+   */
+  exchangeOidcTicket(ticket) {
+    return request({
+      url: `${AUTH_BASE_URL}/oidc/tickets/exchange`,
+      method: "post",
+      data: { ticket },
+      anonymous: true,
+    });
+  },
 };
+
 export default AuthAPI;

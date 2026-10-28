@@ -95,14 +95,21 @@
 
 <script setup>
 import { useFullscreen } from "@vueuse/core";
+import { Refresh } from "@element-plus/icons-vue";
+
 import WorkflowAPI from "@/api/workflow";
 import { usePageTable } from "@/composables";
+import InstanceDetailDrawer from "../../components/InstanceDetailDrawer.vue";
+
 defineOptions({
   name: "WorkflowDoneTab",
 });
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 const queryFormRef = ref();
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -113,12 +120,15 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   request: WorkflowAPI.task.getDonePage,
   onBeforeReset: () => queryFormRef.value?.resetFields(),
 });
+
 /**
  * 暴露刷新能力：审批中心页签切换时父组件调用
  */
 defineExpose({ fetchData });
+
 // 实例详情抽屉
 const detailDrawerRef = ref();
+
 /**
  * 打开实例详情抽屉
  *
@@ -127,6 +137,7 @@ const detailDrawerRef = ref();
 function handleDetail(instanceId) {
   detailDrawerRef.value?.open(instanceId);
 }
+
 onMounted(() => {
   handleQuery();
 });

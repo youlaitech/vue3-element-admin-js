@@ -268,9 +268,16 @@
 
 <script setup>
 import { DocumentCopy, RefreshLeft } from "@element-plus/icons-vue";
-import { LayoutMode, PageSwitchingAnimationOptions, SidebarColor, TagsViewStyle } from "@/enums";
+import {
+  LayoutMode,
+  PageSwitchingAnimationOptions,
+  SidebarColor,
+  TagsViewStyle,
+  ThemeMode,
+} from "@/enums";
 import { useSettingsStore } from "@/stores";
-import { themeColorNames } from "@/settings";
+import { themeColorNames, themePalettePresets } from "@/settings";
+
 const { t } = useI18n();
 const pageSwitchingAnimationOptions = PageSwitchingAnimationOptions;
 const copyIcon = markRaw(DocumentCopy);
@@ -295,11 +302,13 @@ const colorPresets = {
   danger: ["#F53F3F", "#F76560", "#F56C6C", "#FF4D4F"],
   info: ["#86909C", "#909399", "#788896", "#6B7785"],
 };
+
 const paletteI18nKeys = {
   arco: "arco",
   "ant-design": "antDesign",
   "element-plus": "elementPlus",
 };
+
 const settingsStore = useSettingsStore();
 const isCustomColorsOpen = ref(false);
 const sidebarColor = ref(settingsStore.sidebarColorScheme);
@@ -309,16 +318,19 @@ const themeMode = computed({
     settingsStore.theme = value;
   },
 });
+
 const drawerVisible = computed({
   get: () => settingsStore.settingsVisible,
   set: (value) => (settingsStore.settingsVisible = value),
 });
+
 /**
  * 取调色板的颜色列表
  */
 function getPaletteColors(colors) {
   return colorOptions.map((item) => colors[item.name]);
 }
+
 /**
  * 取调色板名称
  */
@@ -326,6 +338,7 @@ function getPaletteName(palette) {
   const key = paletteI18nKeys[palette.id];
   return key ? t(`settings.themePalettes.${key}.name`) : palette.name;
 }
+
 /**
  * 取调色板描述
  */
@@ -333,12 +346,14 @@ function getPaletteDescription(palette) {
   const key = paletteI18nKeys[palette.id];
   return key ? t(`settings.themePalettes.${key}.description`) : palette.description;
 }
+
 /**
  * 取颜色项的名称
  */
 function getColorLabel(name) {
   return t(`settings.themeColorNames.${name}`);
 }
+
 const activePaletteName = computed(() =>
   settingsStore.activeThemePalette
     ? getPaletteName(settingsStore.activeThemePalette)
@@ -350,6 +365,7 @@ const activePaletteName = computed(() =>
 function toggleCustomColors() {
   isCustomColorsOpen.value = !isCustomColorsOpen.value;
 }
+
 /**
  * 更新单个主题色
  */
@@ -357,6 +373,7 @@ function handleThemeColorChange(name, color) {
   if (!color) return;
   settingsStore.updateThemeColor(name, color);
 }
+
 /**
  * 切换侧边栏配色
  */
@@ -364,6 +381,7 @@ function setSidebarColor(value) {
   if (value !== SidebarColor.CLASSIC_BLUE && value !== SidebarColor.MINIMAL_WHITE) return;
   settingsStore.sidebarColorScheme = value;
 }
+
 /**
  * 切换导航布局
  */
@@ -371,6 +389,7 @@ function handleLayoutChange(layout) {
   if (settingsStore.layout === layout) return;
   settingsStore.layout = layout;
 }
+
 /**
  * 复制当前 settings 默认配置片段
  */
@@ -389,6 +408,7 @@ async function copyCurrentSettings() {
     copyLoading.value = false;
   }
 }
+
 /**
  * 恢复所有设置为默认值
  */
@@ -409,6 +429,7 @@ async function resetSettingsToDefault() {
     resetLoading.value = false;
   }
 }
+
 /**
  * 生成 src/settings.ts 中 defaults 的配置片段
  */
@@ -449,6 +470,7 @@ function buildDefaultsCode() {
   watermarkContent: ${settings.watermarkContent},
 } as const;`;
 }
+
 /**
  * 关闭设置抽屉
  */

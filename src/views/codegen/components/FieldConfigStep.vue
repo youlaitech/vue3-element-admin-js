@@ -195,6 +195,7 @@
 <script setup>
 import Sortable from "sortablejs";
 import { FormTypeEnum, QueryTypeEnum } from "@/enums/codegen";
+
 const formData = defineModel({ type: Object, required: true });
 /**
  * 代码生成字段配置步骤
@@ -212,12 +213,12 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
 const formTypeOptions = FormTypeEnum;
 const queryTypeOptions = QueryTypeEnum;
 const listRef = ref();
 const sortFlag = ref(null);
 const fieldConfigs = computed(() => formData.value?.fieldConfigs || []);
-// 只看 AI 改动过的字段
 const onlyAiChanged = ref(false);
 // AI 改动过的字段数
 const aiChangedCount = computed(() => Object.keys(props.aiChanges ?? {}).length);
@@ -228,12 +229,14 @@ const visibleFields = computed(() => {
     (row) => row.columnName && props.aiChanges?.[row.columnName]?.length
   );
 });
+
 /**
  * 取某列的 AI 改动明细
  */
 function aiChangesOf(columnName) {
   return columnName ? props.aiChanges?.[columnName] : undefined;
 }
+
 /**
  * 是否给卡片加改动底色；全部字段都被改过时不再整片高亮，那已经没有对比意义
  */
@@ -241,6 +244,7 @@ function isAiChanged(columnName) {
   const changed = aiChangesOf(columnName)?.length;
   return !!changed && aiChangedCount.value < fieldConfigs.value.length;
 }
+
 /**
  * 只看 AI 改动过的字段，AI 填充完成后由父级调用
  */
@@ -288,6 +292,7 @@ function bulkSet(key, value) {
     row[key] = value;
   });
 }
+
 /**
  * 用 Sortable.js 实现卡片拖拽排序，需要在字段配置步骤显示后调用
  */
@@ -308,6 +313,7 @@ function initSort() {
     },
   });
 }
+
 /**
  * 销毁拖拽排序实例
  */
@@ -315,8 +321,13 @@ function destroySort() {
   sortFlag.value?.destroy();
   sortFlag.value = null;
 }
+
 /**
  * 暴露给父组件
+ */
+
+/**
+ * 暴露字段排序、显隐切换与定位能力
  */
 defineExpose({ initSort, destroySort, showOnlyAiChanged, locateField });
 onBeforeUnmount(() => {

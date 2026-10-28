@@ -28,6 +28,7 @@
 <script setup>
 import { computed } from "vue";
 import { useTenantStoreHook } from "@/stores/tenant";
+
 /**
  * 切换租户时回传租户 ID
  */
@@ -40,11 +41,13 @@ const currentTenantId = computed({
     tenantStore.currentTenantId = val;
   },
 });
+
 const currentTenantName = computed(() => {
   const currentId = currentTenantId.value;
   const fromList = tenantList.value.find((t) => t.id === currentId)?.name;
   return fromList || tenantStore.currentTenant?.name || "切换租户";
 });
+
 /**
  * 选择租户并抛出切换事件
  */

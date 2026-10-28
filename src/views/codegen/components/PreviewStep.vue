@@ -143,52 +143,86 @@
 
 <script setup>
 import "codemirror/mode/javascript/javascript.js";
+import Codemirror from "codemirror-editor-vue3";
 import GeneratorAPI from "@/api/codegen";
 import { getFileIcon } from "../utils/tree-builder";
+
 /**
  * 代码预览步骤
  */
 const props = defineProps({
-  genConfigFormData: { type: Object, required: true },
-  previewScope: { type: String, required: true },
-  previewTypes: { type: Array, required: true },
-  previewTypeOptions: { type: Array, required: true },
-  filteredTreeData: { type: Array, required: true },
-  code: { type: String, default: "" },
-  currentFileKey: { type: String, default: "" },
-  tableName: { type: String, default: "" },
+  genConfigFormData: {
+    type: Object,
+    required: true,
+  },
+  previewScope: {
+    type: String,
+    required: true,
+  },
+  previewTypes: {
+    type: Array,
+    required: true,
+  },
+  previewTypeOptions: {
+    type: Array,
+    required: true,
+  },
+  filteredTreeData: {
+    type: Array,
+    required: true,
+  },
+  code: {
+    type: String,
+    required: true,
+  },
+  currentFileKey: {
+    type: String,
+    required: true,
+  },
+  tableName: {
+    type: String,
+    required: true,
+  },
 });
+
 /**
  * 上抛预览范围变化与文件点击
  */
 const emit = defineEmits(["update:previewScope", "update:previewTypes", "file-click", "copy"]);
+
 const cmRef = ref();
 const cmOptions = { mode: "text/javascript" };
 const fileTreeRef = ref();
 const fileTreeWidth = ref(280);
+
 const currentFilePath = computed(() => {
   const key = props.currentFileKey;
   if (!key) return "";
   const idx = key.indexOf(":");
   return idx > -1 ? key.slice(idx + 1) : key;
 });
+
 /**
  * 切换预览范围
  */
 function onScopeChange(val) {
-  emit("update:previewScope", val);
+  if (val === "all" || val === "frontend" || val === "backend") emit("update:previewScope", val);
 }
+
 /**
  * 切换预览文件类型
  */
 function onTypesChange(val) {
-  emit("update:previewTypes", val);
+  if (Array.isArray(val) && val.every((item) => typeof item === "string"))
+    emit("update:previewTypes", val);
 }
+
 const currentLanguage = computed(() => {
   if (!props.currentFileKey) return "";
   const parts = currentFilePath.value.split(".");
   return parts.length > 1 ? parts.pop() : "";
 });
+
 const fileCount = computed(() => {
   let count = 0;
   /**
@@ -203,49 +237,58 @@ const fileCount = computed(() => {
   walk(props.filteredTreeData);
   return count;
 });
+
 /**
  * 下载生成的代码
  */
 function handleDownload() {
   const pageType = props.genConfigFormData.pageType || "classic";
-  GeneratorAPI.download(props.tableName, pageType, "ts");
+  return GeneratorAPI.download(props.tableName, pageType, "ts");
 }
+
 /**
  * 刷新代码编辑器布局
  */
 function refreshEditor() {
-  const inst = cmRef.value;
-  inst?.cminstance?.refresh?.();
-  inst?.cm?.refresh?.();
-  inst?.editor?.refresh?.();
+  cmRef.value?.refresh();
 }
+
+// 拖拽结束、再次开始或组件卸载时，共用同一份监听清理函数。
+let stopResize;
+
 /**
  * 开始拖动文件树宽度
  */
 function startResize(e) {
+  stopResize?.();
   const startX = e.clientX;
   const startWidth = fileTreeWidth.value;
   /**
-   * 拖动中更新文件树宽度
+   * 按鼠标位移调整预览区域宽度。
    */
   const onMove = (ev) => {
     fileTreeWidth.value = Math.max(200, Math.min(500, startWidth + ev.clientX - startX));
   };
   /**
-   * 结束拖动并解绑监听
+   * 结束拖动并移除鼠标监听。
    */
   const onUp = () => {
     document.removeEventListener("mousemove", onMove);
     document.removeEventListener("mouseup", onUp);
+    stopResize = undefined;
   };
+  stopResize = onUp;
   document.addEventListener("mousemove", onMove);
   document.addEventListener("mouseup", onUp);
 }
+
 /**
- * 暴露编辑器刷新与文件树引用
+ * 父组件切换到预览步骤后刷新编辑器布局。
  */
-defineExpose({ refreshEditor, fileTreeRef });
+defineExpose({ refreshEditor });
+
 onBeforeUnmount(() => {
+  stopResize?.();
   cmRef.value?.destroy();
 });
 </script>

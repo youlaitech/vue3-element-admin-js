@@ -9,6 +9,7 @@
 defineOptions({
   name: "DemoDetail",
 });
+
 const route = useRoute();
 const value = ref("");
 </script>

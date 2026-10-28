@@ -101,6 +101,7 @@
 <script setup>
 import { useI18n } from "vue-i18n";
 import AuthAPI from "@/api/auth";
+
 const { t } = useI18n();
 /**
  * 切换登录或注册表单
@@ -124,6 +125,7 @@ const model = ref({
   captchaCode: "",
   rememberMe: false,
 });
+
 const rules = computed(() => {
   return {
     username: [
@@ -173,7 +175,6 @@ const rules = computed(() => {
     ],
   };
 });
-// 获取验证码
 const codeLoading = ref(false);
 /**
  * 刷新验证码
@@ -187,6 +188,7 @@ function getCaptcha() {
     })
     .finally(() => (codeLoading.value = false));
 }
+
 /**
  * 检查输入大小写
  */
@@ -196,6 +198,7 @@ function checkCapsLock(event) {
     isCapsLock.value = event.getModifierState("CapsLock");
   }
 }
+
 /**
  * 提交注册表单
  */

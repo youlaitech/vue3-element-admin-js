@@ -19,6 +19,7 @@
 import { compile } from "path-to-regexp";
 import router from "@/router";
 import { translateRouteTitle } from "@/lang/utils";
+
 const currentRoute = useRoute();
 /**
  * 面包屑取 matched 链，不拼首页（首页与一级菜单平级，非父级）
@@ -29,6 +30,7 @@ const pathCompile = (path) => {
   const toPath = compile(path);
   return toPath(params);
 };
+
 const breadcrumbs = ref([]);
 /**
  * 生成面包屑：取路由 matched 中有标题的层级，
@@ -47,6 +49,7 @@ function getBreadcrumb() {
     return item.meta && item.meta.title && item.meta.breadcrumb !== false;
   });
 }
+
 /**
  * 跳转：有 redirect 走 redirect，否则按路径（含动态参数先 compile）
  */

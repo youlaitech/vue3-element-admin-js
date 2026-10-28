@@ -1,5 +1,7 @@
 import request from "@/utils/request";
+
 const WORKFLOW_BASE_URL = "/api/v1/workflow";
+
 /**
  * 流程模型接口（设计器侧使用）
  */
@@ -64,6 +66,7 @@ const ModelAPI = {
     return request({ url: `${WORKFLOW_BASE_URL}/models/demo/reset`, method: "post" });
   },
 };
+
 /**
  * 流程定义接口（发布产物管理，入口在「流程设计」页行内操作）
  */
@@ -106,6 +109,7 @@ const DefinitionAPI = {
     });
   },
 };
+
 /**
  * 流程实例接口
  */
@@ -165,6 +169,7 @@ const InstanceAPI = {
     });
   },
 };
+
 /**
  * 流程任务接口
  */
@@ -229,11 +234,12 @@ const TaskAPI = {
     return request({ url: `${WORKFLOW_BASE_URL}/tasks/${taskId}/reject`, method: "put", data });
   },
 };
+
 const WorkflowAPI = {
   model: ModelAPI,
   definition: DefinitionAPI,
   instance: InstanceAPI,
   task: TaskAPI,
 };
+
 export default WorkflowAPI;
-// 重导出类型

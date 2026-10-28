@@ -1,12 +1,14 @@
 import request from "@/utils/request";
+
 const DEPT_BASE_URL = "/api/v1/depts";
+
 const DeptAPI = {
   /**
    * 获取部门树形列表
    */
   getList(queryParams) {
     return request({
-      url: `${DEPT_BASE_URL}`,
+      url: DEPT_BASE_URL,
       method: "get",
       params: queryParams,
     });
@@ -27,7 +29,7 @@ const DeptAPI = {
    * 新增部门
    */
   create(data) {
-    return request({ url: `${DEPT_BASE_URL}`, method: "post", data });
+    return request({ url: DEPT_BASE_URL, method: "post", data });
   },
   /**
    * 修改部门
@@ -42,5 +44,5 @@ const DeptAPI = {
     return request({ url: `${DEPT_BASE_URL}/${ids}`, method: "delete" });
   },
 };
+
 export default DeptAPI;
-// 重导出类型

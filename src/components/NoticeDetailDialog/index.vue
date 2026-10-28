@@ -17,28 +17,34 @@
       </div>
     </template>
 
-    <div v-if="detail?.content" class="notice-dialog__content" v-html="detail.content" />
+    <!-- 富文本仅在显示边界清洗，存储内容仍由服务端负责校验。 -->
+    <div v-if="contentHtml" class="notice-dialog__content" v-html="contentHtml" />
     <el-empty v-else :image-size="60" description="暂无内容" />
   </el-dialog>
 </template>
 
 <script setup>
+import DOMPurify from "dompurify";
+
 defineOptions({
   name: "NoticeDetailDialog",
 });
+
 /**
  * 通知详情弹窗
  */
-defineProps({
+const props = defineProps({
   /** 通知详情数据 */
   detail: {
     type: Object,
     default: null,
   },
 });
-/**
- * 弹窗显示状态
- */
+
+const contentHtml = computed(() =>
+  DOMPurify.sanitize(props.detail?.content ?? "", { USE_PROFILES: { html: true } })
+);
+
 const visible = defineModel({ type: Boolean, default: false });
 </script>
 

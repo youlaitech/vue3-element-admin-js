@@ -10,7 +10,7 @@
 
 <script setup>
 /**
- * 表格操作列：统一渲染编辑/删除按钮
+ * 表格操作列：统一渲染编辑、删除等操作按钮
  */
 const props = defineProps({
   /** 表格数据长度（用于性能优化，避免多次计算宽度） */
@@ -44,6 +44,7 @@ const props = defineProps({
     default: 80,
   },
 });
+
 const count = ref(0);
 const maxWidth = ref(80);
 /**
@@ -66,6 +67,7 @@ const calculateWidth = () => {
   });
   count.value = 0;
 };
+
 const vAuto = {
   mounted: () => {
     // 初次挂载的时候计算一次
@@ -76,6 +78,7 @@ const vAuto = {
     calculateWidth();
   },
 };
+
 const finalWidth = computed(() => {
   return props.minWidth || maxWidth.value;
 });

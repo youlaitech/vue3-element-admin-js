@@ -7,12 +7,14 @@
 <script setup>
 import { useSettingsStore } from "@/stores";
 import { ThemeMode, SidebarColor, LayoutMode } from "@/enums/settings";
+
 /**
  * 侧边栏折叠按钮
  */
 defineProps({
   isActive: { type: Boolean, required: true },
 });
+
 /**
  * 点击时上抛折叠切换
  */
@@ -31,6 +33,7 @@ const hamburgerClass = computed(() => {
   }
   return "";
 });
+
 /**
  * 触发侧边栏折叠切换
  */

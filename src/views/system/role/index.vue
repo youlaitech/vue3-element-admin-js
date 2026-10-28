@@ -26,12 +26,26 @@
               v-for="row in list"
               :key="row.id"
               class="role-list__item"
-              :class="{ 'is-active': row.id === currentRole?.id }"
+              :class="{
+                'is-active': row.id === currentRole?.id,
+                'is-disabled': row.status === 0,
+              }"
               @click="handleRoleClick(row)"
             >
               <div class="role-list__info">
-                <span class="role-list__name" :title="row.name">{{ row.name }}</span>
-                <span class="role-list__code" :title="row.code">{{ row.code }}</span>
+                <span class="role-list__title">
+                  <span
+                    class="role-list__dot"
+                    :class="{ 'is-stopped': row.status !== CommonStatus.ENABLED }"
+                  />
+                  <span class="role-list__name" :title="row.name">{{ row.name }}</span>
+                </span>
+                <span class="role-list__meta">
+                  <span class="role-list__code" :title="row.code">{{ row.code }}</span>
+                  <span v-if="row.status !== CommonStatus.ENABLED" class="role-list__stopped">
+                    停用
+                  </span>
+                </span>
               </div>
               <div v-if="row.code !== ROLE_ROOT" class="role-list__actions">
                 <el-button
@@ -200,7 +214,7 @@
         </div>
       </el-card>
 
-      <el-card v-else class="page-content role-page__empty" shadow="never">
+      <el-card v-else class="page-content" shadow="never">
         <el-empty description="请先在左侧选择角色" />
       </el-card>
     </div>
@@ -276,23 +290,41 @@
 <script setup>
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CaretBottom,
+  CaretRight,
+  Delete,
+  Edit,
+  FullScreen,
+  Plus,
+  Refresh,
+  Search,
+} from "@element-plus/icons-vue";
+
 import RoleAPI from "@/api/system/role";
 import MenuAPI from "@/api/system/menu";
 import DeptAPI from "@/api/system/dept";
 import { usePageTable } from "@/composables";
 import { CommonStatus } from "@/enums";
 import { ROLE_ROOT } from "@/constants";
+
 defineOptions({
   name: "Role",
   inheritAttrs: false,
 });
+
 // 左侧角色列表折叠状态
 const sidebarCollapsed = ref(false);
+
 const roleFormRef = ref();
 const permWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(permWrapperRef);
+
 // 自定义数据权限取值
 const DATA_SCOPE_CUSTOM = 5;
+
 const dataScopeOptions = [
   { label: "全部数据", value: 1 },
   { label: "部门及子部门数据", value: 2 },
@@ -300,6 +332,7 @@ const dataScopeOptions = [
   { label: "本人数据", value: 4 },
   { label: "自定义部门数据", value: DATA_SCOPE_CUSTOM },
 ];
+
 // 左侧角色列表分页数据管理
 const { loading, list, total, params, fetchData } = usePageTable({
   initialParams: {
@@ -309,32 +342,15 @@ const { loading, list, total, params, fetchData } = usePageTable({
   },
   request: RoleAPI.getPage,
 });
+
 // 当前选中角色，右侧权限表格据此联动
 const currentRole = ref();
 // 当前选中角色是否为超级管理员：权限固定为全部，不允许编辑与分配
 const isRootRole = computed(() => currentRole.value?.code === ROLE_ROOT);
-// 权限表格数据与勾选状态
-const permRows = ref([]);
-const checkedIds = ref(new Set());
-const permLoading = ref(false);
-const saving = ref(false);
-const permKeywords = ref("");
-const CHECK_MODE_OPTIONS = [
-  { value: "linked", label: "父子联动" },
-  { value: "independent", label: "节点独立" },
-];
-const checkMode = ref("linked");
-// 折叠的目录 ID，折叠后其下菜单行不展示
-const collapsedIds = ref(new Set());
-// 节点祖先链，勾选子级时用于回填父级
-const nodeParents = new Map();
-// 节点及其全部后代的 ID
-const nodeFamilies = new Map();
-// 菜单树只请求一次，切换角色时复用
-let menuTreeLoaded = false;
+
 /**
  * 整理菜单层级
- * 后端返回的可能是树，也可能是扁平列表，扁平数据按 parentId 就地组装成树
+ * 后端返回的可能是树，也可能是扁平列表，扁平数据按 parentId 复制节点后组装成树
  *
  * @param list 菜单列表
  * @returns 顶层菜单列表
@@ -342,8 +358,10 @@ let menuTreeLoaded = false;
 function normalizeMenuTree(list) {
   const hasNested = list.some((menu) => (menu.children?.length ?? 0) > 0);
   if (hasNested) return list;
+
   const nodeMap = new Map();
   list.forEach((menu) => nodeMap.set(String(menu.id), { ...menu }));
+
   const roots = [];
   nodeMap.forEach((menu) => {
     const parent = nodeMap.get(String(menu.parentId ?? "0"));
@@ -355,52 +373,91 @@ function normalizeMenuTree(list) {
   });
   return roots;
 }
+
 /**
- * 菜单树转权限表格行
- * 目录节点占一行做分组标题，菜单节点占一行并把它下面的按钮权限摊到行内
- *
- * @param nodes 菜单节点列表
- * @param depth 当前层级
- * @param ancestors 祖先 ID 链
- * @returns 权限表格行列表
+ * 一次返回行与索引；后代集合包含节点自身，重建不会保留旧索引。
  */
-function buildPermRows(nodes, depth = 0, ancestors = []) {
-  const rows = [];
-  nodes.forEach((node) => {
-    const id = String(node.id);
-    const children = node.children ?? [];
-    const subMenus = children.filter((child) => child.type !== "B");
-    const buttons = children
-      .filter((child) => child.type === "B")
-      .map((child) => ({
-        id: String(child.id),
-        name: child.name ?? "",
-        group: false,
-        depth: depth + 1,
-        buttons: [],
-      }));
-    rows.push({
-      id,
-      name: node.name ?? "",
-      group: subMenus.length > 0,
-      depth,
-      buttons,
+function buildPermissionModel(nodes) {
+  const ancestorsById = new Map();
+  const descendantIdsById = new Map();
+
+  /**
+   * 按菜单层级构建权限表格行。
+   */
+  function buildRows(nodes, depth = 0, ancestors = []) {
+    const rows = [];
+
+    nodes.forEach((node) => {
+      const id = String(node.id);
+      const children = node.children ?? [];
+      const subMenus = children.filter((child) => child.type !== "B");
+      const buttons = children
+        .filter((child) => child.type === "B")
+        .map((child) => ({
+          id: String(child.id),
+          name: child.name ?? "",
+          group: false,
+          depth: depth + 1,
+          buttons: [],
+        }));
+
+      rows.push({
+        id,
+        name: node.name ?? "",
+        group: subMenus.length > 0,
+        depth,
+        buttons,
+      });
+      buttons.forEach((btn) => {
+        ancestorsById.set(btn.id, [...ancestors, id]);
+        descendantIdsById.set(btn.id, [btn.id]);
+      });
+
+      const childRows = buildRows(subMenus, depth + 1, [...ancestors, id]);
+      rows.push(...childRows);
+
+      ancestorsById.set(id, ancestors);
+      descendantIdsById.set(id, [
+        ...new Set([
+          id,
+          ...buttons.map((btn) => btn.id),
+          ...childRows.flatMap((row) => descendantIdsById.get(row.id) ?? []),
+        ]),
+      ]);
     });
-    buttons.forEach((btn) => {
-      nodeParents.set(btn.id, [...ancestors, id]);
-      nodeFamilies.set(btn.id, [btn.id]);
-    });
-    const childRows = buildPermRows(subMenus, depth + 1, [...ancestors, id]);
-    rows.push(...childRows);
-    nodeParents.set(id, ancestors);
-    nodeFamilies.set(id, [
-      id,
-      ...buttons.map((btn) => btn.id),
-      ...childRows.flatMap((row) => nodeFamilies.get(row.id) ?? []),
-    ]);
-  });
-  return rows;
+
+    return rows;
+  }
+
+  const rows = buildRows(normalizeMenuTree(nodes));
+  return { rows, ancestorsById, descendantIdsById };
 }
+
+// 权限表格数据与勾选状态
+const permRows = ref([]);
+const checkedIds = ref(new Set());
+const permLoading = ref(false);
+const saving = ref(false);
+const permKeywords = ref("");
+
+const CHECK_MODE_OPTIONS = [
+  { value: "linked", label: "父子联动" },
+  { value: "independent", label: "节点独立" },
+];
+
+const checkMode = ref("linked");
+
+// 折叠的目录 ID，折叠后其下菜单行不展示
+const collapsedIds = ref(new Set());
+
+// 节点祖先链，勾选子级时用于回填父级
+let ancestorsById = new Map();
+// 节点及其全部后代的 ID
+let descendantIdsById = new Map();
+
+// 菜单树只请求一次，切换角色时复用
+let menuTreeLoaded = false;
+
 /**
  * 按关键字过滤权限行
  * 分组内任一行命中即整组保留，避免只剩零散菜单丢失所属目录
@@ -411,15 +468,18 @@ function buildPermRows(nodes, depth = 0, ancestors = []) {
  */
 function filterPermRows(rows, keyword) {
   if (!keyword) return rows;
+
   const result = [];
   let groupRow = null;
   let groupRows = [];
   let groupHit = false;
+
   /**
    * 判断权限行是否命中搜索关键字
    */
   const hitRow = (row) =>
     row.name.includes(keyword) || row.buttons.some((btn) => btn.name.includes(keyword));
+
   /**
    * 把命中的权限分组写入结果
    */
@@ -431,6 +491,7 @@ function filterPermRows(rows, keyword) {
     groupRows = [];
     groupHit = false;
   };
+
   rows.forEach((row) => {
     if (row.group) {
       flushGroup();
@@ -438,52 +499,68 @@ function filterPermRows(rows, keyword) {
       groupHit = hitRow(row);
       return;
     }
+
     if (!groupRow) {
       if (hitRow(row)) result.push(row);
       return;
     }
+
     if (hitRow(row)) groupHit = true;
     groupRows.push(row);
   });
+
   flushGroup();
   return result;
 }
+
 // 权限表格渲染数据
 const displayRows = computed(() => {
   const rows = filterPermRows(permRows.value, permKeywords.value);
   // 搜索时全部展开，避免命中的菜单被折叠藏起来
   if (permKeywords.value || collapsedIds.value.size === 0) return rows;
+
   const visible = [];
   let collapsedDepth = null;
+
   rows.forEach((row) => {
     if (collapsedDepth !== null && row.depth > collapsedDepth) return;
+
     collapsedDepth = null;
     visible.push(row);
     if (row.group && collapsedIds.value.has(row.id)) {
       collapsedDepth = row.depth;
     }
   });
+
   return visible;
 });
+
 // 带下级菜单行的节点
 const collapsibleIds = computed(() =>
   permRows.value.filter((row) => row.group).map((row) => row.id)
 );
+
 // 带下级菜单行的节点是否都已折叠
 const isAllCollapsed = computed(
   () =>
     collapsibleIds.value.length > 0 &&
     collapsibleIds.value.every((id) => collapsedIds.value.has(id))
 );
+
 /**
  * 拉取菜单树并生成权限表格行
  */
 async function loadMenuTree() {
   if (menuTreeLoaded) return;
+
   const menuList = await MenuAPI.getList({});
-  permRows.value = buildPermRows(normalizeMenuTree(menuList));
+  const model = buildPermissionModel(menuList);
+  permRows.value = model.rows;
+  ancestorsById = model.ancestorsById;
+  descendantIdsById = model.descendantIdsById;
   menuTreeLoaded = true;
 }
+
 /**
  * 分组行加浅底色，和菜单行区分开
  *
@@ -493,6 +570,7 @@ async function loadMenuTree() {
 function resolveRowClass({ row }) {
   return row.group ? "role-perm__row--group" : "";
 }
+
 /**
  * 拉取指定角色已分配的菜单权限并回显
  *
@@ -500,6 +578,7 @@ function resolveRowClass({ row }) {
  */
 async function loadRolePerm(roleId) {
   if (!roleId) return;
+
   permLoading.value = true;
   try {
     await loadMenuTree();
@@ -514,6 +593,7 @@ async function loadRolePerm(roleId) {
     permLoading.value = false;
   }
 }
+
 /**
  * 拉取角色列表并保持右侧选中项有效
  *
@@ -521,10 +601,12 @@ async function loadRolePerm(roleId) {
  */
 async function fetchRoles(preferRoleId) {
   await fetchData();
+
   const targetId = preferRoleId ?? currentRole.value?.id;
   currentRole.value = list.value.find((row) => row.id === targetId) ?? list.value[0];
   await loadRolePerm(currentRole.value?.id);
 }
+
 /**
  * 按关键字查询角色
  */
@@ -532,12 +614,14 @@ function handleSearch() {
   params.pageNum = 1;
   fetchRoles();
 }
+
 /**
  * 角色列表翻页
  */
 function handlePageChange() {
   fetchRoles();
 }
+
 /**
  * 选中角色，右侧权限表格随之切换
  *
@@ -548,6 +632,7 @@ async function handleRoleClick(row) {
   currentRole.value = row;
   await loadRolePerm(row.id);
 }
+
 /**
  * 勾选或取消权限节点
  * 父子联动时向下级联并回填父级，节点独立时只作用于当前节点
@@ -557,6 +642,7 @@ async function handleRoleClick(row) {
  */
 function handleNodeCheck(nodeId, checked) {
   const isChecked = Boolean(checked);
+
   if (checkMode.value === "independent") {
     if (isChecked) {
       checkedIds.value.add(nodeId);
@@ -565,13 +651,15 @@ function handleNodeCheck(nodeId, checked) {
     }
     return;
   }
-  const family = nodeFamilies.get(nodeId) ?? [nodeId];
+
+  const family = descendantIdsById.get(nodeId) ?? [nodeId];
   if (isChecked) {
-    [...family, ...(nodeParents.get(nodeId) ?? [])].forEach((id) => checkedIds.value.add(id));
+    [...family, ...(ancestorsById.get(nodeId) ?? [])].forEach((id) => checkedIds.value.add(id));
   } else {
     family.forEach((id) => checkedIds.value.delete(id));
   }
 }
+
 /**
  * 折叠或展开指定目录
  *
@@ -584,32 +672,38 @@ function toggleGroup(groupId) {
     collapsedIds.value.add(groupId);
   }
 }
+
 /**
  * 一键折叠或展开全部目录
  */
 function toggleAllGroups() {
   collapsedIds.value = isAllCollapsed.value ? new Set() : new Set(collapsibleIds.value);
 }
+
 /**
  * 重新拉取当前角色的菜单权限
  */
 async function handleRefreshPerm() {
   await loadRolePerm(currentRole.value?.id);
 }
+
 /**
  * 提交当前角色的菜单权限配置
  */
 async function handleSavePerm() {
   const roleId = currentRole.value?.id;
   if (!roleId) return;
+
   // 超级管理员权限固定为全部，不支持修改
   if (currentRole.value?.code === ROLE_ROOT) {
     ElMessage.warning("超级管理员拥有全部权限，无需分配");
     return;
   }
+
   const menuIds = Array.from(checkedIds.value)
     .map((menuId) => Number(menuId))
     .filter((menuId) => !Number.isNaN(menuId));
+
   saving.value = true;
   try {
     await RoleAPI.updateRoleMenus(roleId, menuIds);
@@ -618,15 +712,19 @@ async function handleSavePerm() {
     saving.value = false;
   }
 }
+
 const dialogState = reactive({
   title: "",
   visible: false,
 });
+
 const initialFormData = {
   sort: 1,
   status: CommonStatus.ENABLED,
 };
+
 const formData = reactive({ ...initialFormData });
+
 const rules = {
   name: [{ required: true, message: "请输入角色名称", trigger: "blur" }],
   code: [{ required: true, message: "请输入角色编码", trigger: "blur" }],
@@ -634,14 +732,17 @@ const rules = {
   deptIds: [{ required: true, message: "请选择部门", trigger: "blur" }],
   status: [{ required: true, message: "请选择状态", trigger: "blur" }],
 };
+
 // 部门下拉选项（懒加载，新增/编辑时才请求）
 const deptOptions = ref([]);
+
 /**
  * 打开角色表单弹窗
  */
 function openDialog() {
   dialogState.visible = true;
 }
+
 /**
  * 关闭角色表单弹窗
  * 同步清理表单数据和校验状态
@@ -650,6 +751,7 @@ function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
+
 /**
  * 重置角色表单
  */
@@ -661,6 +763,7 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
+
 /**
  * 打开新增角色弹窗
  * 部门下拉首次打开时请求，之后复用缓存
@@ -672,6 +775,7 @@ async function handleCreateClick() {
   }
   openDialog();
 }
+
 /**
  * 打开编辑角色弹窗
  *
@@ -687,6 +791,7 @@ async function handleEditClick(roleId) {
   Object.assign(formData, data);
   openDialog();
 }
+
 /**
  * 校验并提交角色表单
  *
@@ -698,10 +803,12 @@ async function handleSubmit() {
     () => false
   );
   if (!valid) return;
+
   const submitData = { ...formData };
   if (submitData.dataScope !== DATA_SCOPE_CUSTOM) {
     submitData.deptIds = undefined;
   }
+
   loading.value = true;
   try {
     const roleId = formData.id;
@@ -718,6 +825,7 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
+
 /**
  * 删除角色，删除后右侧联动到剩余角色
  *
@@ -725,6 +833,7 @@ async function handleSubmit() {
  */
 async function handleDelete(roleId) {
   if (!roleId) return;
+
   try {
     await ElMessageBox.confirm("确认删除该角色?", "警告", {
       confirmButtonText: "确定",
@@ -735,6 +844,7 @@ async function handleDelete(roleId) {
     ElMessage.info("已取消删除");
     return;
   }
+
   loading.value = true;
   try {
     await RoleAPI.deleteByIds(roleId);
@@ -744,6 +854,7 @@ async function handleDelete(roleId) {
     loading.value = false;
   }
 }
+
 onMounted(() => {
   fetchRoles();
 });
@@ -752,11 +863,6 @@ onMounted(() => {
 <style lang="scss" scoped>
 .role-page {
   --page-aside-width: 280px;
-}
-
-.role-page__empty {
-  align-items: center;
-  justify-content: center;
 }
 
 .role-list {
@@ -772,6 +878,7 @@ onMounted(() => {
   }
 
   &__item {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -787,6 +894,17 @@ onMounted(() => {
     &.is-active {
       background-color: var(--el-color-primary-light-9);
     }
+
+    &.is-active::before {
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      left: 0;
+      width: 2px;
+      content: "";
+      background-color: var(--el-color-primary);
+      border-radius: 1px;
+    }
   }
 
   &__info {
@@ -797,13 +915,41 @@ onMounted(() => {
     line-height: 1.35;
   }
 
+  &__title {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
+  }
+
   &__name {
+    flex: 0 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 14px;
     font-weight: 600;
     color: var(--el-text-color-primary);
     white-space: nowrap;
+  }
+
+  &__dot {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    background-color: var(--el-color-success);
+    border-radius: 50%;
+
+    &.is-stopped {
+      background-color: var(--el-text-color-placeholder);
+    }
+  }
+
+  &__meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
   }
 
   &__code {
@@ -814,8 +960,22 @@ onMounted(() => {
     white-space: nowrap;
   }
 
+  &__stopped {
+    flex-shrink: 0;
+    padding: 0 4px;
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--el-color-warning);
+    background-color: var(--el-color-warning-light-9);
+    border-radius: 3px;
+  }
+
   &__item.is-active &__name {
     color: var(--el-color-primary);
+  }
+
+  &__item.is-disabled:not(.is-active) &__name {
+    color: var(--el-text-color-secondary);
   }
 
   &__actions {

@@ -28,9 +28,11 @@ import path from "path-browserify";
 import { SidebarColor, ThemeMode } from "@/enums/settings";
 import { useSettingsStore, useAppStore } from "@/stores";
 import { isExternal } from "@/utils/index";
+import LayoutSidebarItem from "./LayoutSidebarItem.vue";
 import variables from "@/styles/variables.module.scss";
+
 /**
- * 侧边栏导航
+ * 侧边栏导航：菜单数据与展示模式（垂直/水平）
  */
 const props = defineProps({
   data: { type: Array, default: () => [] },
@@ -40,9 +42,12 @@ const props = defineProps({
     default: "vertical",
     validator: (v) => ["vertical", "horizontal"].includes(v),
   },
+  /** 强制展开，忽略全局 sidebar.opened 状态（DoubleLayout 第二列需要始终展开） */
   alwaysExpand: { type: Boolean, default: false },
+  /** 显式覆盖 collapse 状态，优先级高于 alwaysExpand 和全局 sidebar.opened */
   collapseOverride: { type: Boolean, default: null },
 });
+
 const menuRef = ref();
 const settingsStore = useSettingsStore();
 const appStore = useAppStore();
@@ -59,6 +64,7 @@ const menuThemeProps = computed(() => {
     activeTextColor: isDarkOrClassicBlue ? variables["menu-active-text"] : undefined,
   };
 });
+
 const activeMenuPath = computed(() => {
   const { meta, path } = currentRoute;
   if (meta?.activeMenu && typeof meta.activeMenu === "string") {
@@ -66,6 +72,7 @@ const activeMenuPath = computed(() => {
   }
   return path;
 });
+
 /**
  * 解析菜单跳转路径
  */
@@ -81,6 +88,7 @@ function resolveFullPath(routePath) {
   }
   return path.resolve(props.basePath, routePath);
 }
+
 /**
  * 记录展开的子菜单
  */
@@ -88,6 +96,7 @@ const onMenuOpen = (index) => {
   if (expandedMenuIndexes.value.includes(index)) return;
   expandedMenuIndexes.value.push(index);
 };
+
 /**
  * 移除已收起的子菜单
  */

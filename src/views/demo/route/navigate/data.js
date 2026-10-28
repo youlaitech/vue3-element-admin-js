@@ -13,6 +13,7 @@ export function listMembers(keywords = "") {
   const matched = keyword ? members.filter((item) => item.name.includes(keyword)) : members;
   return matched.map((item) => ({ ...item }));
 }
+
 /**
  * 按 ID 取单条
  */
@@ -20,6 +21,7 @@ export function getMember(id) {
   const found = members.find((item) => item.id === id);
   return found ? { ...found } : undefined;
 }
+
 /**
  * 回写修改后的成员信息
  */

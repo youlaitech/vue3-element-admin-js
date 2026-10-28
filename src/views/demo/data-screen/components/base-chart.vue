@@ -29,7 +29,6 @@ import { useTemplateRef } from "vue";
 
 /** 核心模块 */
 import * as echarts from "echarts/core";
-
 /** 图表类型（按需注册） */
 import {
   BarChart,
@@ -40,7 +39,6 @@ import {
   ScatterChart,
   EffectScatterChart,
 } from "echarts/charts";
-
 /**功能组件（按需注册） */
 import {
   GridComponent, // 直角坐标系网格
@@ -97,7 +95,9 @@ const emit = defineEmits(["onload"]);
 const chartRef = useTemplateRef("chart");
 const chartInstance = ref();
 
-/** 初始化图表实例 */
+/**
+ * 初始化图表实例
+ */
 const init = async () => {
   await nextTick();
   if (!chartRef.value) return;
@@ -106,21 +106,25 @@ const init = async () => {
   if (!chartInstance.value) {
     chartInstance.value = markRaw(
       echarts.init(chartRef.value, theme, {
-        renderer: "canvas", // 指定渲染模式（canvas性能更好）
+        renderer: "canvas",
       })
     );
   }
 };
 
-/** 初始化配置（清空后设置） */
+/**
+ * 初始化配置（清空后设置）
+ */
 const initOptions = async (options) => {
   await nextTick();
-  chartInstance.value?.clear(); // 清空旧配置
-  chartInstance.value?.setOption(options); // 应用新配置
+  chartInstance.value?.clear();
+  chartInstance.value?.setOption(options);
   emit("onload", chartInstance.value);
 };
 
-/** 更新图表配置（增量更新） */
+/**
+ * 更新图表配置（增量更新）
+ */
 const updateCharts = async (options) => {
   await nextTick();
   chartInstance.value?.setOption(options);
@@ -131,7 +135,7 @@ onMounted(() => init());
 onBeforeUnmount(() => chartInstance.value?.dispose());
 
 /**
- * 暴露图表实例与初始化配置
+ * 暴露图表实例与初始化、更新方法供父组件调用
  */
 defineExpose({
   echarts,

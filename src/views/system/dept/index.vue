@@ -172,44 +172,57 @@
 
 <script setup>
 import { ElMessage, ElMessageBox } from "element-plus";
+import { Refresh, FullScreen } from "@element-plus/icons-vue";
+
 import DeptAPI from "@/api/system/dept";
 import { useTableSelection } from "@/composables";
 import { CommonStatus } from "@/enums";
+
 defineOptions({
   name: "Dept",
   inheritAttrs: false,
 });
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 const queryFormRef = ref();
 const deptFormRef = ref();
 const tableRef = ref();
 // 是否展开全部部门层级，默认展开
 const expandAll = ref(true);
+
 const loading = ref(false);
 const list = ref([]);
 const queryParams = reactive({
   keywords: "",
   status: undefined,
 });
+
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
+
 const dialogState = reactive({
   title: "",
   visible: false,
 });
+
 const deptOptions = ref([]);
+
 const initialFormData = {
   status: CommonStatus.ENABLED,
   parentId: "0",
   sort: 1,
 };
+
 const formData = reactive({ ...initialFormData });
+
 const rules = {
   parentId: [{ required: true, message: "上级部门不能为空", trigger: "change" }],
   name: [{ required: true, message: "部门名称不能为空", trigger: "blur" }],
   code: [{ required: true, message: "部门编号不能为空", trigger: "blur" }],
   sort: [{ required: true, message: "显示排序不能为空", trigger: "blur" }],
 };
+
 /**
  * 拉取部门列表数据（一次性返回全量树）
  */
@@ -221,6 +234,7 @@ async function fetchData() {
     loading.value = false;
   }
 }
+
 /**
  * 展开/折叠全部部门层级
  */
@@ -228,6 +242,7 @@ function toggleExpandAll() {
   expandAll.value = !expandAll.value;
   applyExpansion();
 }
+
 /**
  * 按当前开关应用展开状态，逐级下发到所有部门节点
  */
@@ -238,18 +253,22 @@ function applyExpansion() {
   const walk = (rows) => {
     rows.forEach((row) => {
       if (!row.children?.length) return;
+
       tableRef.value?.toggleRowExpansion(row, expandAll.value);
       walk(row.children);
     });
   };
+
   walk(list.value);
 }
+
 /**
  * 按当前筛选条件重新查询
  */
 function handleQuery() {
   fetchData();
 }
+
 /**
  * 重置搜索表单后重新查询
  */
@@ -257,6 +276,7 @@ function handleResetQuery() {
   queryFormRef.value?.resetFields();
   fetchData();
 }
+
 /**
  * 重置表单数据和验证状态
  */
@@ -268,6 +288,7 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
+
 /**
  * 打开新增/编辑部门弹窗
  *
@@ -283,6 +304,7 @@ async function openDialog(parentId, deptId) {
       children: data,
     },
   ];
+
   dialogState.visible = true;
   if (deptId) {
     dialogState.title = "修改部门";
@@ -293,6 +315,7 @@ async function openDialog(parentId, deptId) {
     formData.parentId = parentId || "0";
   }
 }
+
 /**
  * 校验并提交部门表单
  */
@@ -302,6 +325,7 @@ async function handleSubmit() {
     () => false
   );
   if (!valid) return;
+
   loading.value = true;
   try {
     const deptId = formData.id;
@@ -318,6 +342,7 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
+
 /**
  * 删除单个或批量部门
  *
@@ -329,6 +354,7 @@ async function handleDelete(deptId) {
     ElMessage.warning("请勾选删除项");
     return;
   }
+
   try {
     await ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
       confirmButtonText: "确定",
@@ -339,6 +365,7 @@ async function handleDelete(deptId) {
     ElMessage.info("已取消删除");
     return;
   }
+
   loading.value = true;
   try {
     await DeptAPI.deleteByIds(deptIds);
@@ -348,6 +375,7 @@ async function handleDelete(deptId) {
     loading.value = false;
   }
 }
+
 /**
  * 关闭弹窗并重置表单
  */
@@ -355,6 +383,7 @@ function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
+
 onMounted(() => {
   fetchData();
 });

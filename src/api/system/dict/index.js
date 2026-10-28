@@ -1,5 +1,7 @@
 import request from "@/utils/request";
+
 const DICT_BASE_URL = "/api/v1/dicts";
+
 /**
  * 标签样式以语义全称（primary/success/warning/danger/info）存储，单字母是历史数据，这里兼容读取
  */
@@ -30,6 +32,7 @@ const decodeDictTagType = (code) => {
       return "";
   }
 };
+
 /**
  * 统一转换字典项标签类型
  */
@@ -37,6 +40,7 @@ const normalizeDictTagType = (item) => ({
   ...item,
   tagType: decodeDictTagType(item.tagType),
 });
+
 const DictAPI = {
   // 字典相关接口
   /**
@@ -44,7 +48,7 @@ const DictAPI = {
    */
   getPage(queryParams) {
     return request({
-      url: `${DICT_BASE_URL}`,
+      url: DICT_BASE_URL,
       method: "get",
       params: queryParams,
     });
@@ -65,7 +69,7 @@ const DictAPI = {
    * 新增字典
    */
   create(data) {
-    return request({ url: `${DICT_BASE_URL}`, method: "post", data });
+    return request({ url: DICT_BASE_URL, method: "post", data });
   },
   /**
    * 修改字典
@@ -79,6 +83,7 @@ const DictAPI = {
   deleteByIds(ids) {
     return request({ url: `${DICT_BASE_URL}/${ids}`, method: "delete" });
   },
+
   // 字典项相关接口
   /**
    * 获取字典项分页列表
@@ -138,5 +143,5 @@ const DictAPI = {
     return request({ url: `${DICT_BASE_URL}/${dictCode}/items/${ids}`, method: "delete" });
   },
 };
+
 export default DictAPI;
-// 重导出类型

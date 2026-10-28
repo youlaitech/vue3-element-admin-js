@@ -3,16 +3,16 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-header">
-          <span>字典 SSE 实时更新演示</span>
-          <el-tag :type="sseConnected ? 'success' : 'danger'" size="small" class="ml-2">
-            SSE {{ sseStatusText }}
+          <span>字典 WebSocket 实时更新演示</span>
+          <el-tag :type="realtimeConnected ? 'success' : 'danger'" size="small" class="ml-2">
+            WebSocket {{ realtimeStatusText }}
           </el-tag>
         </div>
       </template>
 
       <el-alert type="info" :closable="false" class="mb-4">
-        本示例展示 SSE 实时更新字典缓存的效果。您可以编辑"男"性别字典项，保存后后端将通过 SSE
-        通知所有客户端刷新缓存。
+        本示例展示 WebSocket
+        实时更新字典缓存的效果。编辑“男”字典项后，服务端会通知其他客户端刷新缓存。
       </el-alert>
 
       <el-row :gutter="16">
@@ -143,11 +143,13 @@
 import { useDictStoreHook } from "@/stores/dict";
 import { useDateFormat } from "@vueuse/core";
 import DictAPI from "@/api/system/dict";
-import { useSse } from "@/utils/sse";
+import { useRealtime } from "@/composables/useRealtime";
+
 // 性别字典编码
 const DICT_CODE = "gender";
 // 男性字典项 ID
 const MALE_ITEM_ID = "1";
+
 // 字典 store
 const dictStore = useDictStoreHook();
 // 保存状态
@@ -158,31 +160,28 @@ const lastUpdateTime = ref("-");
 const dictForm = ref(null);
 // 选中的性别
 const selectedGender = ref("");
-// SSE 连接（用于展示连接状态）
-const sse = useSse();
-// 获取连接状态
-const sseConnected = computed(() => sse.isConnected.value);
-// SSE 连接状态显示文本
-const sseStatusText = computed(() => (sseConnected.value ? "已连接" : "未连接"));
-// 保存 SSE 清理函数
+
+const { isConnected: realtimeConnected } = useRealtime();
+const realtimeStatusText = computed(() => (realtimeConnected.value ? "已连接" : "未连接"));
+
 let unregisterCallback = null;
+
 // 当前选中字典的缓存状态
 const dictCacheStatus = computed(() => {
   // 检查字典是否在缓存中
   return dictStore.getDictItems(DICT_CODE).length > 0;
 });
+
 /**
- * 设置 SSE
+ * 监听字典缓存失效
  */
-const setupSse = () => {
-  // 初始化字典同步订阅（幂等，全局已在应用启动时开启）
-  dictStore.setupDictSync();
-  // 注册字典消息回调
+const watchDictChange = () => {
   unregisterCallback = dictStore.onDictChange((message) => {
     // 只有当消息是关于性别字典的更新时才处理
     if (message.dictCode === DICT_CODE) {
       // 更新最后更新时间
       lastUpdateTime.value = useDateFormat(new Date(), "YYYY-MM-DD HH:mm:ss").value;
+
       // 触发字典组件重新加载
       nextTick(() => {
         refreshDictComponent();
@@ -190,6 +189,7 @@ const setupSse = () => {
     }
   });
 };
+
 /**
  * 刷新字典组件，强制重新加载字典数据
  */
@@ -198,6 +198,7 @@ const refreshDictComponent = async () => {
   await dictStore.loadDictItems(DICT_CODE);
   ElMessage.success("字典组件已刷新");
 };
+
 /**
  * 加载男性字典表单数据
  */
@@ -206,19 +207,24 @@ const loadMaleDict = async () => {
   const data = await DictAPI.getDictItemFormData(DICT_CODE, MALE_ITEM_ID);
   dictForm.value = data;
 };
+
 /**
  * 保存字典值
  */
 const saveDict = async () => {
   if (!dictForm.value) return;
+
   saving.value = true;
   // dictForm 的类型已经是 DictItemForm，直接传递
   await DictAPI.updateDictItem(DICT_CODE, MALE_ITEM_ID, dictForm.value);
+
   // 更新时间
   lastUpdateTime.value = useDateFormat(new Date(), "YYYY-MM-DD HH:mm:ss").value;
-  ElMessage.success("保存成功，后端将通过 SSE 通知所有客户端");
+
+  ElMessage.success("保存成功，服务端将通知其他客户端刷新缓存");
   saving.value = false;
 };
+
 // 组件挂载时加载性别字典
 onMounted(async () => {
   await loadMaleDict();
@@ -226,10 +232,9 @@ onMounted(async () => {
   await dictStore.loadDictItems(DICT_CODE);
   // 初始化选中性别为男
   selectedGender.value = "1";
-  // 设置 SSE
-  setupSse();
+  watchDictChange();
 });
-// 组件卸载时清理 SSE
+
 onUnmounted(() => {
   unregisterCallback?.();
 });

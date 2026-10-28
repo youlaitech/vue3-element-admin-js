@@ -34,6 +34,13 @@ export const constantRoutes = [
     component: () => import("@/views/login/index.vue"),
     meta: { hidden: true },
   },
+  // 统一认证回调页（匿名访问，守卫白名单，只用票据换取业务令牌）
+  {
+    path: "/oidc/callback",
+    name: "OidcCallback",
+    component: () => import("@/views/login/oidc-callback.vue"),
+    meta: { hidden: true },
+  },
   // 公开表单分享页（匿名访问，守卫白名单，不套管理端 Layout）
   {
     path: "/f/:formKey",

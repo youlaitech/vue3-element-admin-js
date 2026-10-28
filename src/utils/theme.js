@@ -1,5 +1,6 @@
 import { ThemeMode } from "@/enums";
 import { themeColorNames } from "@/settings";
+
 const SYSTEM_DARK_MEDIA = "(prefers-color-scheme: dark)";
 /**
  * 十六进制颜色转 RGB
@@ -8,12 +9,14 @@ function hexToRgb(hex) {
   const bigint = parseInt(hex.slice(1), 16);
   return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
 }
+
 /**
  * RGB 转十六进制颜色
  */
 function rgbToHex(r, g, b) {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
+
 /**
  * 加深颜色值
  * @param {String} color 颜色值字符串
@@ -25,6 +28,7 @@ export function getDarkColor(color, level) {
   for (let i = 0; i < 3; i++) rgb[i] = Math.round(20.5 * level + rgb[i] * (1 - level));
   return rgbToHex(rgb[0], rgb[1], rgb[2]);
 }
+
 /**
  * 变浅颜色值
  * @param {String} color 颜色值字符串
@@ -36,6 +40,7 @@ export const getLightColor = (color, level) => {
   for (let i = 0; i < 3; i++) rgb[i] = Math.round(255 * level + rgb[i] * (1 - level));
   return rgbToHex(rgb[0], rgb[1], rgb[2]);
 };
+
 /**
  * Element Plus 运行时需要 base、light-1..9 和 dark-2
  * 这里从完整颜色方案一次性生成，避免主色和功能色来自不同体系
@@ -59,18 +64,21 @@ export function generateThemeColors(palette, theme) {
   });
   return colors;
 }
+
 /**
  * 取系统的明暗主题偏好
  */
 export function getSystemTheme() {
   return window.matchMedia(SYSTEM_DARK_MEDIA).matches ? ThemeMode.DARK : ThemeMode.LIGHT;
 }
+
 /**
  * 自动模式解析为实际生效的主题
  */
 export function resolveThemeMode(theme) {
   return theme === ThemeMode.AUTO ? getSystemTheme() : theme;
 }
+
 /**
  * 监听系统主题变化
  */
@@ -83,6 +91,7 @@ export function watchSystemTheme(callback) {
     mediaQuery.removeEventListener("change", handler);
   };
 }
+
 /**
  * 把主题色写入根节点的 CSS 变量
  */
@@ -96,6 +105,7 @@ export function applyTheme(colors) {
     el.style.setProperty("--theme-update-trigger", Date.now().toString());
   });
 }
+
 /**
  * 切换暗黑模式
  *
@@ -108,6 +118,7 @@ export function toggleDarkMode(isDark) {
     document.documentElement.classList.remove(ThemeMode.DARK);
   }
 }
+
 /**
  * 切换浅色主题下的侧边栏颜色方案
  *

@@ -119,48 +119,67 @@
 <script setup>
 import { useFullscreen } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { Refresh } from "@element-plus/icons-vue";
+
 import FormAPI from "@/api/form";
 import { usePageTable, useTableSelection } from "@/composables";
 import { downloadFile } from "@/utils";
 import { extractFields, formatCellValue, parseDataJson } from "./utils/form-field";
+
 defineOptions({
   name: "FormData",
   inheritAttrs: false,
 });
+
 const route = useRoute();
+
 // 表单唯一标识（列表"数据"按钮携带）
 const formKey = computed(() => String(route.query.formKey ?? ""));
+
 // 页面标题（列表页携带）
 const title = computed(() => String(route.query.title ?? "表单数据"));
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 // 表单名称（导出文件名用）
 const formName = ref("");
+
 // 导出中状态（防重复触发）
 const exporting = ref(false);
+
 // 表单规则（shallowRef 避免深代理破坏 Rule 内部 Creator 结构）
 const rule = shallowRef([]);
+
 // 从表单规则提取的字段元数据（field + title + 选项映射）
 const fields = ref([]);
+
 // 动态列上限：超出部分在详情抽屉查看，避免表格横向溢出
 const MAX_FIELD_COLUMNS = 6;
+
 const displayFields = computed(() => fields.value.slice(0, MAX_FIELD_COLUMNS));
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData } = usePageTable({
   initialParams: { pageNum: 1, pageSize: 10 },
-  request: (queryParams) => FormAPI.getFormDataPage(formKey.value, queryParams),
+  request: (queryParams) => FormAPI.getSubmissionPage(formKey.value, queryParams),
 });
+
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
+
 // 详情抽屉状态
 const detailState = reactive({
   visible: false,
 });
+
 // 详情行（descriptions 展示提交人/时间）
 const detailRow = ref();
+
 const detailApi = ref();
 const detailData = ref({});
 const detailRule = shallowRef([]);
 const detailOption = ref({ submitBtn: false, resetBtn: false });
+
 onMounted(async () => {
   if (!formKey.value) {
     ElMessage.error("缺少表单标识参数");
@@ -173,12 +192,14 @@ onMounted(async () => {
   fields.value = extractFields(rule.value);
   fetchData();
 });
+
 // 行数据解析缓存（行 ID -> 字段值映射，避免模板重复解析 dataJson）
 const rowDataMap = computed(() => {
   const map = new Map();
   list.value.forEach((row) => map.set(row.id, parseDataJson(row.dataJson)));
   return map;
 });
+
 /**
  * 取行数据的指定字段值
  *
@@ -188,11 +209,12 @@ const rowDataMap = computed(() => {
 function getFieldValue(row, field) {
   return rowDataMap.value.get(row.id)?.[field];
 }
+
 /**
  * 打开详情抽屉只读回显（优先提交时版本快照，防止表单改版后历史数据漂移）
  */
 async function handleDetailClick(row) {
-  const detail = await FormAPI.getFormDataDetail(formKey.value, row.id);
+  const detail = await FormAPI.getSubmissionDetail(formKey.value, row.id);
   detailRow.value = detail;
   detailData.value = detail.dataJson ? JSON.parse(detail.dataJson) : {};
   // 独立 JSON.parse，与页面渲染规则隔离，可安全置为只读
@@ -207,6 +229,7 @@ async function handleDetailClick(row) {
   await nextTick();
   detailApi.value?.disabled(true);
 }
+
 /**
  * 删除单个或批量表单数据
  *
@@ -218,6 +241,7 @@ async function handleDelete(id) {
     ElMessage.warning("请勾选删除项");
     return;
   }
+
   try {
     await ElMessageBox.confirm("删除后不可恢复，确认删除已选中的数据项?", "警告", {
       confirmButtonText: "确定",
@@ -228,19 +252,23 @@ async function handleDelete(id) {
     ElMessage.info("已取消删除");
     return;
   }
+
   loading.value = true;
   try {
-    await FormAPI.deleteFormData(formKey.value, dataIds);
+    await FormAPI.deleteSubmissions(formKey.value, dataIds);
     ElMessage.success("删除成功");
     fetchData();
   } finally {
     loading.value = false;
   }
 }
+
 // 导出分页大小
 const EXPORT_PAGE_SIZE = 500;
+
 // 导出页数上限（超出截断提示）
 const EXPORT_MAX_PAGES = 100;
+
 /**
  * 导出全量数据为 Excel（全部字段 + 提交人/版本/时间；分页拉取，exceljs 按需加载）
  */
@@ -251,7 +279,7 @@ async function handleExport() {
     const rows = [];
     let total = 0;
     for (let pageNum = 1; pageNum <= EXPORT_MAX_PAGES; pageNum++) {
-      const page = await FormAPI.getFormDataPage(formKey.value, {
+      const page = await FormAPI.getSubmissionPage(formKey.value, {
         pageNum,
         pageSize: EXPORT_PAGE_SIZE,
       });
@@ -266,6 +294,7 @@ async function handleExport() {
       ElMessage.warning("暂无数据可导出");
       return;
     }
+
     const ExcelJS = await import("exceljs");
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("表单数据");
@@ -293,6 +322,7 @@ async function handleExport() {
         return record;
       })
     );
+
     const buffer = await workbook.xlsx.writeBuffer();
     downloadFile({ data: buffer }, `${formName.value || formKey.value}-数据.xlsx`);
     ElMessage.success(`成功导出 ${rows.length} 条数据`);

@@ -1,6 +1,7 @@
 <!-- 文本滚动公告：水平滚动、预设样式、打字机效果，悬停暂停 -->
 <template>
   <div
+    v-if="!closed"
     ref="containerRef"
     class="text-scroll-container"
     :class="[`text-scroll--${props.type}`]"
@@ -17,32 +18,40 @@
         :style="scrollStyle"
       >
         <!-- 滚动内容，复制两份以实现无缝滚动 -->
-        <div class="scroll-item" v-html="sanitizedContent" />
-        <div class="scroll-item" v-html="sanitizedContent" />
+        <div class="scroll-item">{{ displayText }}</div>
+        <div class="scroll-item" aria-hidden="true">{{ displayText }}</div>
       </div>
     </div>
-    <div v-if="showClose" class="right-icon" @click="handleRightIconClick">
-      <el-icon><Close /></el-icon>
-    </div>
+    <button
+      v-if="showClose"
+      type="button"
+      class="right-icon"
+      aria-label="关闭公告"
+      @click="handleClose"
+    >
+      <el-icon aria-hidden="true"><Close /></el-icon>
+    </button>
   </div>
 </template>
 
 <script setup>
-import { useElementHover } from "@vueuse/core";
+import { useElementHover, useResizeObserver } from "@vueuse/core";
+
 /**
  * 关闭公告时触发
  */
 const emit = defineEmits(["close"]);
+
 /**
- * 公告横向滚动
+ * 文字横向滚动：速度、方向与打字机效果
  */
 const props = defineProps({
-  /** 滚动文本内容（必填） */
+  /** 纯文本内容，不解析 HTML。 */
   text: {
     type: String,
     required: true,
   },
-  /** 滚动速度，数值越小滚动越慢 */
+  /** 每秒移动的像素数，非正数时暂停。 */
   speed: {
     type: Number,
     default: 70,
@@ -73,94 +82,110 @@ const props = defineProps({
     default: 100,
   },
 });
+
 const containerRef = ref(null);
 const isHovered = useElementHover(containerRef);
 const scrollContent = ref(null);
+const closed = ref(false);
 // 动画持续时间（秒）
 const animationDuration = ref(0);
+const scrollDistance = ref(0);
+
 const currentText = ref("");
 // 打字机定时器，组件卸载时清理
 let typewriterTimer = null;
 const isTypewriterComplete = ref(false);
+
 // 鼠标未悬停，且启用打字机时需等打字完成
 const shouldScroll = computed(() => {
+  if (closed.value || props.speed <= 0) return false;
   if (props.typewriter) {
     return !isHovered.value && isTypewriterComplete.value;
   }
   return !isHovered.value;
 });
-// 打字机模式下显示当前已打出的文本，否则显示完整文本；内容支持 HTML，注意 XSS 风险
-const sanitizedContent = computed(() => (props.typewriter ? currentText.value : props.text));
+
+const displayText = computed(() => (props.typewriter ? currentText.value : props.text));
+
 // 动画时长、播放状态与方向通过 CSS 变量传给样式
 const scrollStyle = computed(() => ({
   "--animation-duration": `${animationDuration.value}s`,
+  "--scroll-distance": `-${scrollDistance.value}px`,
   "--animation-play-state": shouldScroll.value ? "running" : "paused",
   "--animation-direction": props.direction === "left" ? "normal" : "reverse",
 }));
+
 /**
  * 内容复制两份做无缝滚动，宽度取一半；速度越小动画越长
  */
 const calculateDuration = () => {
   if (scrollContent.value) {
     const contentWidth = scrollContent.value.scrollWidth / 2;
-    animationDuration.value = contentWidth / props.speed;
+    scrollDistance.value = contentWidth;
+    animationDuration.value = props.speed > 0 ? contentWidth / props.speed : 0;
   }
 };
+
 /**
- * 触发 close 事件并直接销毁组件
+ * 内部隐藏并停止资源，父组件可通过 close 同步显示状态。
  */
-const handleRightIconClick = () => {
+function handleClose() {
+  closed.value = true;
+  stopTypewriter();
+  stopResize();
   emit("close");
-  if (containerRef.value) {
-    containerRef.value.remove();
-  }
-};
+}
+
+/**
+ * 取消打字动画的定时任务。
+ */
+function stopTypewriter() {
+  if (typewriterTimer !== null) clearTimeout(typewriterTimer);
+  typewriterTimer = null;
+}
+
 /**
  * 逐字显示文本，打完后置完成标记以开始滚动
  */
 const startTypewriter = () => {
+  stopTypewriter();
   let index = 0;
+  // 按 Unicode 码点拆分，避免从代理对中间截断表情等字符。
+  const characters = Array.from(props.text);
   currentText.value = "";
   isTypewriterComplete.value = false;
+
   /**
-   * 打字机效果：逐字追加文本
+   * 逐字更新当前显示文本。
    */
   const type = () => {
-    if (index < props.text.length) {
-      currentText.value += props.text[index];
+    if (closed.value) return;
+    if (index < characters.length) {
+      currentText.value += characters[index];
       index++;
-      typewriterTimer = setTimeout(type, props.typewriterSpeed);
+      typewriterTimer = setTimeout(type, Math.max(1, props.typewriterSpeed));
     } else {
+      typewriterTimer = null;
       isTypewriterComplete.value = true;
     }
   };
+
   type();
 };
-onMounted(() => {
-  calculateDuration();
-  window.addEventListener("resize", calculateDuration);
-  if (props.typewriter) {
-    startTypewriter();
-  }
-});
-onUnmounted(() => {
-  window.removeEventListener("resize", calculateDuration);
-  if (typewriterTimer) {
-    clearTimeout(typewriterTimer);
-  }
-});
-// 文本变化后重开打字机
+
+const { stop: stopResize } = useResizeObserver([containerRef, scrollContent], calculateDuration);
+onBeforeUnmount(stopTypewriter);
+
 watch(
-  () => props.text,
+  () => [props.text, props.typewriter, props.typewriterSpeed],
   () => {
-    if (props.typewriter) {
-      if (typewriterTimer) {
-        clearTimeout(typewriterTimer);
-      }
-      startTypewriter();
-    }
-  }
+    stopTypewriter();
+    if (!closed.value && props.typewriter) startTypewriter();
+  },
+  { immediate: true }
 );
+watch(() => [displayText.value, props.speed], calculateDuration, { flush: "post" });
+onMounted(calculateDuration);
 </script>
 
 <style scoped lang="scss">
@@ -197,8 +222,15 @@ watch(
 
   .right-icon {
     right: 0;
+    padding: 0;
     cursor: pointer;
     background-color: transparent !important;
+    border: 0;
+
+    &:focus-visible {
+      outline: 2px solid var(--el-color-primary);
+      outline-offset: -3px;
+    }
   }
 
   .scroll-wrapper {
@@ -223,7 +255,6 @@ watch(
       padding: 0 10px;
       font-size: 14px;
       color: var(--el-color-primary-light-2) !important;
-      text-align: left;
       text-align: center;
 
       :deep(a) {
@@ -243,7 +274,7 @@ watch(
     }
 
     100% {
-      transform: translateX(-100%);
+      transform: translateX(var(--scroll-distance));
     }
   }
 

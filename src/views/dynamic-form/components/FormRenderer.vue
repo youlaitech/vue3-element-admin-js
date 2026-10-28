@@ -31,6 +31,7 @@ defineOptions({
   name: "FormRenderer",
   inheritAttrs: false,
 });
+
 /**
  * 表单渲染组件（填写/公开/预览三页共用；规则加载与提交由承载页实现）
  */
@@ -66,12 +67,15 @@ const props = defineProps({
     default: false,
   },
 });
+
 /**
  * 表单校验通过后上抛提交数据
  */
 const emit = defineEmits(["submit"]);
+
 const formApi = ref();
 const formData = ref({});
+
 // 返回填写态时清掉残留提交值（重新挂载会重新应用规则默认值）
 watch(
   () => props.submitted,
@@ -81,6 +85,7 @@ watch(
     }
   }
 );
+
 /**
  * 抛出表单数据（浅拷贝，防异步提交期间被继续编辑污染）
  */

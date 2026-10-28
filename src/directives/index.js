@@ -1,4 +1,5 @@
 import { hasPerm } from "./permission";
+
 /**
  * 全局注册 directive
  */

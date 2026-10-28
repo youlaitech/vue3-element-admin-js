@@ -167,14 +167,18 @@
 
 <script setup>
 import { ElMessage, ElMessageBox } from "element-plus";
+import { FullScreen, QuestionFilled, Refresh } from "@element-plus/icons-vue";
+
 import DictAPI from "@/api/system/dict";
 import { usePageTable, useTableSelection } from "@/composables";
 import { CommonStatus } from "@/enums";
 import { useDictStoreHook } from "@/stores/dict";
+
 defineOptions({
   name: "DictItemPanel",
   inheritAttrs: false,
 });
+
 /**
  * 字典项面板
  */
@@ -190,12 +194,17 @@ const props = defineProps({
     default: "",
   },
 });
+
 const dictStore = useDictStoreHook();
+
 const tableWrapperRef = ref(null);
 const { toggle: toggleFullscreen } = useFullscreen(tableWrapperRef);
+
 const dictItemFormRef = ref();
+
 // 标签类型可选项
 const tagTypeOptions = ["primary", "success", "info", "warning", "danger"];
+
 // 分页表格数据管理
 const { loading, list, total, params, fetchData, handleQuery, handleResetQuery } = usePageTable({
   initialParams: {
@@ -206,22 +215,28 @@ const { loading, list, total, params, fetchData, handleQuery, handleResetQuery }
   },
   request: (query) => DictAPI.getDictItemPage(props.dictCode, query),
 });
+
 const { selectedIds, hasSelection, handleSelectionChange } = useTableSelection();
+
 const dialogState = reactive({
   title: "",
   visible: false,
 });
+
 const initialFormData = {
   dictCode: props.dictCode,
   sort: 1,
   status: CommonStatus.ENABLED,
   tagType: "",
 };
+
 const formData = reactive({ ...initialFormData });
+
 const rules = {
   value: [{ required: true, message: "请输入字典值", trigger: "blur" }],
   label: [{ required: true, message: "请输入字典标签", trigger: "blur" }],
 };
+
 /**
  * 重置表单数据和验证状态
  */
@@ -233,12 +248,14 @@ function resetForm() {
   });
   Object.assign(formData, initialFormData);
 }
+
 /**
  * 打开表单弹窗
  */
 function openDialog() {
   dialogState.visible = true;
 }
+
 /**
  * 关闭表单弹窗并清理临时状态
  */
@@ -246,6 +263,7 @@ function closeDialog() {
   dialogState.visible = false;
   resetForm();
 }
+
 /**
  * 打开新增字典项弹窗
  */
@@ -254,6 +272,7 @@ function handleCreateClick() {
   dialogState.title = "新增字典项";
   openDialog();
 }
+
 /**
  * 打开编辑字典项弹窗并回填数据
  *
@@ -267,12 +286,14 @@ async function handleEditClick(row) {
   Object.assign(formData, data);
   openDialog();
 }
+
 /**
- * 字典项变更后清除本地缓存，避免 DictSelect/DictTag 沿用旧数据直到 SSE 推送到达
+ * 字典项变更后立即清除本地缓存，不等待实时消息返回
  */
 function invalidateDictCache() {
-  dictStore.removeDictItem(props.dictCode);
+  dictStore.invalidateDict(props.dictCode);
 }
+
 /**
  * 校验并提交字典项表单
  */
@@ -282,8 +303,10 @@ async function handleSubmit() {
     () => false
   );
   if (!valid) return;
+
   formData.dictCode = props.dictCode;
   const id = formData.id;
+
   loading.value = true;
   try {
     if (id) {
@@ -300,6 +323,7 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
+
 /**
  * 删除单个或批量字典项
  *
@@ -311,6 +335,7 @@ async function handleDelete(id) {
     ElMessage.warning("请勾选删除项");
     return;
   }
+
   try {
     await ElMessageBox.confirm("确认删除已选中的数据项?", "警告", {
       confirmButtonText: "确定",
@@ -321,6 +346,7 @@ async function handleDelete(id) {
     ElMessage.info("已取消删除");
     return;
   }
+
   loading.value = true;
   try {
     await DictAPI.deleteDictItems(props.dictCode, itemIds);
@@ -331,6 +357,7 @@ async function handleDelete(id) {
     loading.value = false;
   }
 }
+
 onMounted(() => {
   handleQuery();
 });

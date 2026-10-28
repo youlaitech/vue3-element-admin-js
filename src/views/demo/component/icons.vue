@@ -37,10 +37,12 @@
 
 <script setup>
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+
 defineOptions({
   name: "IconDemo",
   inheritAttrs: false,
 });
+
 const svg_icons = [
   "api",
   "cascader",
@@ -89,6 +91,7 @@ const icons = ref(ElementPlusIconsVue);
 function generateIconCode(symbol) {
   return `<div class="i-svg:${symbol}" />`;
 }
+
 /**
  * 生成 Element Plus 图标的使用代码
  */

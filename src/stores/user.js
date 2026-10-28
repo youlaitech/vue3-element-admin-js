@@ -1,23 +1,29 @@
 import { store } from "@/stores";
+
 import AuthAPI from "@/api/auth";
 import UserAPI from "@/api/system/user";
-import { AuthStorage } from "@/utils/auth";
+
+import { AuthStorage, authSessionRevision } from "@/utils/auth";
 import { usePermissionStoreHook } from "@/stores/permission";
 import { useDictStoreHook } from "@/stores/dict";
 import { useTagsViewStore } from "@/stores";
-import { cleanupSse } from "@/utils/sse";
 import router from "@/router";
+
 // 会话失效已处理，登录成功后复位
 let sessionExpired = false;
-// 连续续期失败上限
-const MAX_REFRESH_FAILURES = 3;
-// 连续续期失败次数
-let refreshFailures = 0;
+
+/**
+ * 创建未登录时的用户信息。
+ */
+const createEmptyUserInfo = () => ({ roles: [], perms: [] });
+
+/**
+ * 管理用户资料、登录会话和令牌续期。
+ */
 export const useUserStore = defineStore("user", () => {
-  // 用户信息
-  const userInfo = ref({});
-  // 记住我状态
+  const userInfo = ref(createEmptyUserInfo());
   const rememberMe = ref(AuthStorage.getRememberMe());
+
   /**
    * 登录
    */
@@ -25,78 +31,121 @@ export const useUserStore = defineStore("user", () => {
     const { accessToken, refreshToken } = await AuthAPI.login(loginRequest);
     rememberMe.value = loginRequest.rememberMe ?? false;
     AuthStorage.setTokens(accessToken, refreshToken, rememberMe.value);
-    refreshFailures = 0;
     sessionExpired = false;
   }
+
   /**
    * 扫码登录：用票据换取会话令牌
    */
   async function loginByQrCode(ticket) {
     const { accessToken, refreshToken } = await AuthAPI.qrLogin(ticket);
     AuthStorage.setTokens(accessToken, refreshToken, false);
-    refreshFailures = 0;
     sessionExpired = false;
   }
+
   let refreshPromise = null;
+  // 新会话独立续期，不能等待上一账号尚未结束的任务。
+  watch(
+    authSessionRevision,
+    () => {
+      refreshPromise = null;
+    },
+    { flush: "sync" }
+  );
+
   /**
-   * 刷新 token（单飞）：并发请求共享同一次 refresh
+   * 并发续期共享同一任务，完成后允许下一次续期。
    */
   function refreshTokenOnce() {
     if (refreshPromise) return refreshPromise;
-    refreshPromise = doRefreshToken().finally(() => {
-      refreshPromise = null;
+
+    const revision = authSessionRevision.value;
+    const token = AuthStorage.getRefreshToken();
+    /**
+     * 合并续期并丢弃旧会话结果，支持 Web Locks 时跨标签页串行。
+     */
+    const refresh = async () => {
+      if (revision !== authSessionRevision.value) throw new Error("登录会话已切换");
+      const current = AuthStorage.getRefreshToken();
+      if (current !== token) {
+        if (current.split(".")[1] !== token.split(".")[1]) throw new Error("登录会话已切换");
+        return;
+      }
+      await doRefreshToken();
+    };
+    const task = navigator.locks
+      ? navigator.locks.request("youlai-auth-refresh", refresh)
+      : refresh();
+    const pending = task.finally(() => {
+      // 旧会话的 finally 不能清除新会话已建立的续期任务。
+      if (refreshPromise === pending) refreshPromise = null;
     });
-    return refreshPromise;
+    refreshPromise = pending;
+    return pending;
   }
+
   /**
    * 等待进行中的续期；无续期时立即返回
    */
   function waitRefresh() {
     return refreshPromise ?? Promise.resolve();
   }
+
   /**
-   * 获取用户信息
+   * 读取并替换当前会话的用户快照。
    */
-  async function getUserInfo() {
+  async function fetchUserInfo() {
+    const revision = authSessionRevision.value;
     const data = await UserAPI.getInfo();
+    if (revision !== authSessionRevision.value) throw new Error("登录会话已切换");
     if (!data) {
       throw new Error("Verification failed, please Login again.");
     }
-    Object.assign(userInfo.value, data);
+    userInfo.value = data;
     return data;
   }
+
   /**
    * 登出
+   *
+   * @returns 认证中心的统一登出地址；为空表示只退了本地
    */
   async function logout() {
-    await AuthAPI.logout();
-    resetAllState();
+    const revision = authSessionRevision.value;
+    try {
+      const result = await AuthAPI.logout();
+      return revision === authSessionRevision.value ? (result?.logoutUrl ?? null) : null;
+    } finally {
+      // 服务端退出失败也要清理本地状态，避免界面停留在已登录形态
+      if (revision === authSessionRevision.value) resetAllState();
+    }
   }
+
   /**
-   * 重置所有系统状态（凭证、路由、缓存、SSE）
+   * 重置凭证、路由和本地缓存。
    */
   function resetAllState() {
     // 1. 重置用户状态
     resetUserState();
+
     // 2. 重置其他模块状态
     usePermissionStoreHook().resetRouter();
     useDictStoreHook().clearDictCache();
-    useDictStoreHook().teardownDictSync();
     useTagsViewStore().delAllViews();
-    // 3. 清理 SSE 连接
-    cleanupSse();
   }
+
   /**
    * 重置用户状态（仅用户模块内的，全局清理走 resetAllState）
    */
   function resetUserState() {
     AuthStorage.clearAuth();
-    userInfo.value = {};
+    userInfo.value = createEmptyUserInfo();
   }
+
   /**
    * 会话失效的统一出口：清空状态并静默跳转登录页
    *
-   * <p>整页 replace 避免回退到已失效的页面；redirect 参数用于登录后回到原页面。
+   * 整页 replace 避免回退到失效页面，redirect 用于登录后返回。
    */
   async function redirectToLogin() {
     if (sessionExpired) return;
@@ -112,27 +161,26 @@ export const useUserStore = defineStore("user", () => {
     resetAllState();
     window.location.replace(loginHref);
   }
+
   /**
    * 刷新 token
    */
   async function doRefreshToken() {
-    if (refreshFailures >= MAX_REFRESH_FAILURES) {
-      throw new Error("令牌续期连续失败，请重新登录");
-    }
     const currentRefreshToken = AuthStorage.getRefreshToken();
+    const revision = authSessionRevision.value;
+
     if (!currentRefreshToken) {
       throw new Error("没有有效的刷新令牌");
     }
-    try {
-      const { accessToken, refreshToken: newRefreshToken } =
-        await AuthAPI.refreshToken(currentRefreshToken);
-      AuthStorage.setTokens(accessToken, newRefreshToken, AuthStorage.getRememberMe());
-      refreshFailures = 0;
-    } catch (error) {
-      refreshFailures += 1;
-      throw error;
-    }
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await AuthAPI.refreshToken(currentRefreshToken);
+    // 续期期间可能切换账号，旧结果不得覆盖新凭证。
+    if (revision !== authSessionRevision.value) throw new Error("登录会话已切换");
+    if (currentRefreshToken !== AuthStorage.getRefreshToken()) throw new Error("登录凭证已更新");
+    AuthStorage.setTokens(accessToken, newRefreshToken, AuthStorage.getRememberMe(), true);
   }
+
   return {
     userInfo,
     rememberMe,
@@ -140,14 +188,16 @@ export const useUserStore = defineStore("user", () => {
     login,
     loginByQrCode,
     logout,
-    getUserInfo,
+    fetchUserInfo,
     resetAllState,
     resetUserState,
+    isSessionExpired: () => sessionExpired,
     redirectToLogin,
     refreshTokenOnce,
     waitRefresh,
   };
 });
+
 /**
  * 在组件外部使用 UserStore 的钩子函数
  *

@@ -1,4 +1,5 @@
 import { createPinia } from "pinia";
+
 const store = createPinia();
 /**
  * 注册 pinia 实例
@@ -6,6 +7,7 @@ const store = createPinia();
 export function setupStore(app) {
   app.use(store);
 }
+
 export * from "./app";
 export * from "./dict";
 export * from "./permission";

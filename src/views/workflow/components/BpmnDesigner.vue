@@ -156,15 +156,20 @@
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
+
 import Modeler from "bpmn-js/lib/Modeler";
 import { is } from "bpmn-js/lib/util/ModelUtil";
+import { FullScreen, QuestionFilled, ZoomIn, ZoomOut } from "@element-plus/icons-vue";
+
 import flowableModdleDescriptor from "./bpmn/flowable-moddle";
 import RoleAPI from "@/api/system/role";
 import FormAPI from "@/api/form";
+
 defineOptions({
   name: "BpmnDesigner",
   inheritAttrs: false,
 });
+
 /**
  * BPMN 流程设计器
  * bpmn-js 建模器 + 轻量属性面板（名称/表单标识/办理人/候选组/条件表达式），
@@ -182,16 +187,21 @@ const props = defineProps({
     required: true,
   },
 });
+
 /**
  * 保存时抛出当前画布的 BPMN XML
  */
 const emit = defineEmits(["save"]);
+
 const canvasRef = ref(null);
 const modeler = shallowRef();
+
 // 脏标记：画布有未保存的修改（承载页据此拦截离开）
 const dirty = ref(false);
+
 // 当前选中元素（Shape/Connection 统称）
 const selectedElement = shallowRef(null);
+
 const isUserTask = computed(
   () => !!selectedElement.value && is(selectedElement.value, "bpmn:UserTask")
 );
@@ -202,6 +212,7 @@ const isSequenceFlow = computed(
 const isFormBindable = computed(
   () => !!selectedElement.value && is(selectedElement.value, "bpmn:StartEvent")
 );
+
 const selectedName = computed(() => selectedElement.value?.businessObject?.name ?? "");
 const selectedFormKey = computed(() => selectedElement.value?.businessObject?.get("formKey") ?? "");
 const selectedAssignee = computed(
@@ -225,6 +236,7 @@ const workflowFormOptions = ref([]);
 const selectedCondition = computed(
   () => selectedElement.value?.businessObject?.conditionExpression?.body ?? ""
 );
+
 /**
  * 更新元素普通属性（名称/formKey/assignee/candidateGroups）
  *
@@ -242,6 +254,7 @@ function updateProperty(property, value) {
   // 手动触发依赖刷新，否则受控控件（表单下拉/办理人输入等）选中值不回显
   triggerRef(selectedElement);
 }
+
 /**
  * 更新候选组多选值（数组拼接为逗号串写入 candidateGroups）
  *
@@ -250,18 +263,21 @@ function updateProperty(property, value) {
 function updateCandidateGroups(codes) {
   updateProperty("candidateGroups", codes.join(","));
 }
+
 /**
  * 加载角色编码选项（候选组下拉数据源）
  */
 async function loadRoleCodeOptions() {
   roleCodeOptions.value = await RoleAPI.getCodeOptions();
 }
+
 /**
  * 加载发起表单选项（formKey 下拉数据源）
  */
 async function loadWorkflowFormOptions() {
   workflowFormOptions.value = await FormAPI.getWorkflowOptions();
 }
+
 /**
  * 更新连线条件表达式（空值移除条件，走默认分支）
  *
@@ -279,6 +295,7 @@ function updateCondition(value) {
   // 同 updateProperty：手动触发 shallowRef 依赖刷新，保证条件表达式回显
   triggerRef(selectedElement);
 }
+
 /**
  * 保存：导出当前画布 XML 并抛出
  */
@@ -286,6 +303,7 @@ async function handleSave() {
   const { xml } = await modeler.value.saveXML({ format: true });
   emit("save", xml ?? "");
 }
+
 /**
  * 画布缩放
  *
@@ -295,12 +313,14 @@ function handleZoom(delta) {
   const canvas = modeler.value.get("canvas");
   canvas.zoom(canvas.zoom() + delta);
 }
+
 /**
  * 适应画布（完整展示流程图）
  */
 function handleFitViewport() {
   modeler.value.get("canvas").zoom("fit-viewport");
 }
+
 /**
  * 导入 XML 并选中态复位
  */
@@ -316,10 +336,12 @@ async function importXml(xml) {
     dirty.value = false;
   }
 }
+
 watch(
   () => props.xml,
   (xml) => importXml(xml)
 );
+
 onMounted(() => {
   modeler.value = new Modeler({
     container: canvasRef.value,
@@ -337,9 +359,11 @@ onMounted(() => {
   loadRoleCodeOptions();
   loadWorkflowFormOptions();
 });
+
 onBeforeUnmount(() => {
   modeler.value?.destroy();
 });
+
 /**
  * 暴露保存动作供承载页调用
  */

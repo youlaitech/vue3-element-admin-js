@@ -1,12 +1,14 @@
 import request from "@/utils/request";
+
 const CONFIG_BASE_URL = "/api/v1/configs";
+
 const ConfigAPI = {
   /**
    * 获取配置分页数据
    */
   getPage(queryParams) {
     return request({
-      url: `${CONFIG_BASE_URL}`,
+      url: CONFIG_BASE_URL,
       method: "get",
       params: queryParams,
     });
@@ -24,7 +26,7 @@ const ConfigAPI = {
    * 新增配置
    */
   create(data) {
-    return request({ url: `${CONFIG_BASE_URL}`, method: "post", data });
+    return request({ url: CONFIG_BASE_URL, method: "post", data });
   },
   /**
    * 修改配置
@@ -45,5 +47,5 @@ const ConfigAPI = {
     return request({ url: `${CONFIG_BASE_URL}/refresh`, method: "PUT" });
   },
 };
+
 export default ConfigAPI;
-// 重导出类型

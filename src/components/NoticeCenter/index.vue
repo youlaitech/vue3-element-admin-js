@@ -72,6 +72,7 @@
 
 <script setup>
 import { useNotice } from "./useNotice";
+
 const {
   list,
   unreadTotal,
@@ -85,6 +86,7 @@ const {
   readAll,
   goMore,
 } = useNotice();
+
 /**
  * 下拉展开时刷新通知列表
  */

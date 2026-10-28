@@ -1,8 +1,8 @@
 import request from "@/utils/request";
+
 const TENANT_BASE_URL = "/api/v1/tenants";
-/**
- * 租户信息
- */
+
+// 租户信息
 const TenantAPI = {
   /**
    * 获取当前用户可访问的租户列表
@@ -13,6 +13,7 @@ const TenantAPI = {
       method: "get",
     });
   },
+
   /**
    * 获取当前租户信息
    */
@@ -20,8 +21,10 @@ const TenantAPI = {
     return request({
       url: `${TENANT_BASE_URL}/current`,
       method: "get",
+      silentErrorStatuses: [404, 405, 501],
     });
   },
+
   /**
    * 切换租户
    *
@@ -33,16 +36,18 @@ const TenantAPI = {
       method: "post",
     });
   },
+
   /**
    * 获取租户分页数据（平台租户管理）
    */
   getPage(queryParams) {
     return request({
-      url: `${TENANT_BASE_URL}`,
+      url: TENANT_BASE_URL,
       method: "get",
       params: queryParams,
     });
   },
+
   /**
    * 获取租户表单数据
    */
@@ -52,16 +57,18 @@ const TenantAPI = {
       method: "get",
     });
   },
+
   /**
    * 新增租户并初始化默认数据
    */
   create(data) {
     return request({
-      url: `${TENANT_BASE_URL}`,
+      url: TENANT_BASE_URL,
       method: "post",
       data,
     });
   },
+
   /**
    * 修改租户
    */
@@ -72,6 +79,7 @@ const TenantAPI = {
       data,
     });
   },
+
   /**
    * 删除租户（批量）
    */
@@ -81,6 +89,7 @@ const TenantAPI = {
       method: "delete",
     });
   },
+
   /**
    * 修改租户状态
    */
@@ -91,6 +100,7 @@ const TenantAPI = {
       params: { status },
     });
   },
+
   /**
    * 获取租户菜单 ID 集合
    */
@@ -100,6 +110,7 @@ const TenantAPI = {
       method: "get",
     });
   },
+
   /**
    * 更新租户菜单
    */
@@ -111,5 +122,5 @@ const TenantAPI = {
     });
   },
 };
+
 export default TenantAPI;
-// 重导出类型

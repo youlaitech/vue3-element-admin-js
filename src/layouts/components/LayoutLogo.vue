@@ -1,7 +1,6 @@
-import { appConfig } from "@/settings"; import logo from "@/assets/images/logo.png";
 <template>
   <div class="layout-logo">
-    <transition enter-active-class="animate__animated animate__fadeInLeft">
+    <transition enter-active-class="logo-fade-enter-active">
       <router-link :key="+collapse" class="wh-full flex-center" to="/">
         <img :src="logo" class="w20px h20px" />
         <span v-if="!collapse" class="layout-logo__title">
@@ -13,9 +12,9 @@ import { appConfig } from "@/settings"; import logo from "@/assets/images/logo.p
 </template>
 
 <script setup>
-/**
- * 侧边栏 Logo
- */
+import { appConfig } from "@/settings";
+import logo from "@/assets/images/logo.png";
+
 defineProps({
   collapse: {
     type: Boolean,
@@ -36,6 +35,22 @@ defineProps({
     font-size: 14px;
     font-weight: bold;
     color: $sidebar-logo-text-color;
+  }
+}
+
+.logo-fade-enter-active {
+  animation: logo-fade-in-left 1s both;
+}
+
+@keyframes logo-fade-in-left {
+  from {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
 </style>

@@ -6,10 +6,12 @@
 
 <script setup>
 import { isExternal } from "@/utils/index";
+
 defineOptions({
   name: "AppLink",
   inheritAttrs: false,
 });
+
 /**
  * 应用内链接：按菜单路径跳转
  */
@@ -19,13 +21,22 @@ const props = defineProps({
     required: true,
   },
 });
+
 const externalUrl = computed(() => {
   return isExternal(props.to.path || "") ? props.to.path : "";
 });
+
 const isExternalLink = computed(() => {
   return Boolean(externalUrl.value);
 });
+
+// 站内地址（同源）不能带 noopener，新页签要继承当前页签会话存储里的登录态
+const isSameOriginLink = computed(() => {
+  return externalUrl.value.startsWith(`${window.location.origin}/`);
+});
+
 const linkType = computed(() => (isExternalLink.value ? "a" : "router-link"));
+
 /**
  * 拼接链接属性：外链给 a 标签，内链交给 router-link
  */
@@ -34,20 +45,28 @@ const linkProps = (to) => {
     return {
       href: externalUrl.value,
       target: "_blank",
-      rel: "noopener noreferrer",
+      rel: isSameOriginLink.value ? undefined : "noopener noreferrer",
     };
   }
+
   const { meta, ...routeTo } = to;
   void meta;
   return { to: routeTo };
 };
+
 /**
  * 外链点击自行处理跳转，不走 router-link 的默认行为
  */
 function handleClick(event) {
   if (!isExternalLink.value) return;
+
   event.preventDefault();
   event.stopPropagation();
-  window.open(externalUrl.value, "_blank", "noopener,noreferrer");
+
+  window.open(
+    externalUrl.value,
+    "_blank",
+    isSameOriginLink.value ? undefined : "noopener,noreferrer"
+  );
 }
 </script>

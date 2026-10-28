@@ -6,6 +6,7 @@ import {
   findLeafByKey,
   getFileIcon,
 } from "../utils/tree-builder";
+
 /**
  * 代码预览：拉取生成结果并构造文件树
  */
@@ -14,17 +15,21 @@ export function useCodePreview(genConfigFormData) {
   const previewScope = ref("all");
   const previewTypeOptions = ref([]);
   const previewTypes = ref([]);
+
   const filteredTreeData = computed(() => {
     if (!treeData.value.length) return [];
     return filterTree(treeData.value, previewScope.value, previewTypes.value);
   });
+
   const code = ref("");
   const currentFileKey = ref("");
-  const fileTreeRef = ref();
+
   const { copy, copied } = useClipboard();
+
   watch(copied, () => {
     if (copied.value) ElMessage.success("复制成功");
   });
+
   /**
    * 获取预览数据并构建文件树
    */
@@ -33,6 +38,7 @@ export function useCodePreview(genConfigFormData) {
     const pageType = genConfigFormData.value.pageType || "classic";
     const data = await GeneratorAPI.getPreviewData(tableName, pageType, "ts");
     const previewList = data || [];
+
     // 提取语言类型选项
     const typeOptions = Array.from(
       new Set(
@@ -43,23 +49,21 @@ export function useCodePreview(genConfigFormData) {
     );
     previewTypeOptions.value = typeOptions;
     previewTypes.value = [...typeOptions];
-    /**
-     * 构建树
-     */
+
+    // 构建树
     const tree = buildFileTree(previewList);
     treeData.value = tree?.children ? [...tree.children] : [];
-    /**
-     * 选中第一个叶子节点
-     */
+
+    // 选中第一个叶子节点
     const firstLeaf = findFirstLeaf(tree);
     if (firstLeaf) {
       code.value = firstLeaf.content || "";
       currentFileKey.value = firstLeaf.key || "";
-      await nextTick();
-      fileTreeRef.value?.setCurrentKey?.(currentFileKey.value);
     }
+
     return previewList;
   }
+
   /**
    * 点击文件树节点
    */
@@ -69,16 +73,18 @@ export function useCodePreview(genConfigFormData) {
       currentFileKey.value = data.key || "";
     }
   }
+
   /**
    * 复制代码
    */
   function handleCopyCode() {
     if (code.value) copy(code.value);
   }
+
   // 过滤条件变了之后，如果当前选中的文件还在就继续高亮，否则选第一个
   watch(
     () => filteredTreeData.value,
-    async (nodes) => {
+    (nodes) => {
       if (!nodes.length) {
         currentFileKey.value = "";
         code.value = "";
@@ -87,8 +93,6 @@ export function useCodePreview(genConfigFormData) {
       if (currentFileKey.value) {
         const leaf = findLeafByKey(nodes, currentFileKey.value);
         if (leaf) {
-          await nextTick();
-          fileTreeRef.value?.setCurrentKey?.(currentFileKey.value);
           return;
         }
       }
@@ -96,12 +100,11 @@ export function useCodePreview(genConfigFormData) {
       if (first) {
         code.value = first.content || "";
         currentFileKey.value = first.key || "";
-        await nextTick();
-        fileTreeRef.value?.setCurrentKey?.(currentFileKey.value);
       }
     },
     { immediate: true }
   );
+
   return {
     treeData,
     filteredTreeData,
@@ -110,7 +113,6 @@ export function useCodePreview(genConfigFormData) {
     previewTypeOptions,
     code,
     currentFileKey,
-    fileTreeRef,
     handlePreview,
     handleFileTreeNodeClick,
     handleCopyCode,
