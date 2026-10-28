@@ -14,7 +14,9 @@
 <script setup>
 import { appConfig } from "@/settings";
 import logo from "@/assets/images/logo.png";
-
+/**
+ * 侧边栏 Logo
+ */
 defineProps({
   collapse: {
     type: Boolean,
