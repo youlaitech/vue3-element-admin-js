@@ -243,7 +243,7 @@ const fileCount = computed(() => {
  */
 function handleDownload() {
   const pageType = props.genConfigFormData.pageType || "classic";
-  return GeneratorAPI.download(props.tableName, pageType, "ts");
+  return GeneratorAPI.download(props.tableName, pageType, "js");
 }
 
 /**

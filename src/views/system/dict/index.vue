@@ -29,7 +29,10 @@
               @click="handleTypeClick(row)"
             >
               <div class="dict-type__info">
-                <span class="dict-type__name" :title="row.name">{{ row.name }}</span>
+                <span class="dict-type__name" :title="row.name">
+                  <StatusDot :active="row.status === CommonStatus.ENABLED" />
+                  {{ row.name }}
+                </span>
                 <span class="dict-type__code" :title="row.dictCode">{{ row.dictCode }}</span>
               </div>
               <div class="dict-type__actions">
@@ -142,6 +145,7 @@ import { ArrowLeft, ArrowRight, Delete, Edit, Plus } from "@element-plus/icons-v
 
 import DictAPI from "@/api/system/dict";
 import { usePageTable } from "@/composables";
+import StatusDot from "@/components/StatusDot/index.vue";
 import { CommonStatus } from "@/enums";
 import DictItemPanel from "./components/DictItemPanel.vue";
 

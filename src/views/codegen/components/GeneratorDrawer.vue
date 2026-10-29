@@ -485,7 +485,7 @@ async function handleNext() {
 
   if (currentStep.value === STEP.PREVIEW) {
     const pageType = genConfigFormData.value.pageType || "classic";
-    await GeneratorAPI.download(currentTableName.value, pageType, "ts");
+    await GeneratorAPI.download(currentTableName.value, pageType, "js");
   }
 }
 

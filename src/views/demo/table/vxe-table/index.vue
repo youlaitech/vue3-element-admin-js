@@ -703,11 +703,17 @@ const xModalEvent = {
 const crudStore = {
   /** 表单类型，true 表示修改，false 表示新增 */
   isUpdate: true,
-  /** 加载表格数据 */
+  /**
+   * 加载表格数据
+   */
   commitQuery: () => xGridDom.value?.commitProxy("query"),
-  /** 清空表格数据 */
+  /**
+   * 清空表格数据
+   */
   clearTable: () => xGridDom.value?.reloadData([]),
-  /** 新增后是否跳入最后一页 */
+  /**
+   * 新增后是否跳入最后一页
+   */
   afterInsert: () => {
     const pager = xGridDom.value?.getProxyInfo()?.pager;
     if (pager) {
@@ -717,7 +723,9 @@ const crudStore = {
       }
     }
   },
-  /** 删除后是否返回上一页 */
+  /**
+   * 删除后是否返回上一页
+   */
   afterDelete: () => {
     const tableData = xGridDom.value.getData();
     const pager = xGridDom.value?.getProxyInfo()?.pager;
@@ -725,7 +733,9 @@ const crudStore = {
       --pager.currentPage;
     }
   },
-  /** 点击显示弹窗 */
+  /**
+   * 点击显示弹窗
+   */
   onShowModal: (row) => {
     if (row) {
       crudStore.isUpdate = true;
@@ -737,7 +747,9 @@ const crudStore = {
     }
     xModalDom.value?.open();
   },
-  /** 确定并保存 */
+  /**
+   * 确定并保存
+   */
   onSubmitForm: () => {
     if (xModalOpt.loading) return;
     // 表单校验
@@ -757,7 +769,9 @@ const crudStore = {
       callback();
     });
   },
-  /** 删除 */
+  /**
+   * 删除
+   */
   onDelete: (row) => {
     let ids = [];
     if (row === undefined) {
@@ -790,7 +804,9 @@ const crudStore = {
   onModify: (id, field, value) => {
     console.debug("🚀 ~ onModify", { id, field, value });
   },
-  /** 更多自定义方法 */
+  /**
+   * 更多自定义方法
+   */
   moreFn: () => {},
 };
 </script>

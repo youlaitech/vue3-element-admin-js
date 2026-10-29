@@ -34,10 +34,7 @@
             >
               <div class="role-list__info">
                 <span class="role-list__title">
-                  <span
-                    class="role-list__dot"
-                    :class="{ 'is-stopped': row.status !== CommonStatus.ENABLED }"
-                  />
+                  <StatusDot :active="row.status === CommonStatus.ENABLED" />
                   <span class="role-list__name" :title="row.name">{{ row.name }}</span>
                 </span>
                 <span class="role-list__meta">
@@ -307,6 +304,7 @@ import RoleAPI from "@/api/system/role";
 import MenuAPI from "@/api/system/menu";
 import DeptAPI from "@/api/system/dept";
 import { usePageTable } from "@/composables";
+import StatusDot from "@/components/StatusDot/index.vue";
 import { CommonStatus } from "@/enums";
 import { ROLE_ROOT } from "@/constants";
 
@@ -931,18 +929,6 @@ onMounted(() => {
     font-weight: 600;
     color: var(--el-text-color-primary);
     white-space: nowrap;
-  }
-
-  &__dot {
-    flex: 0 0 auto;
-    width: 6px;
-    height: 6px;
-    background-color: var(--el-color-success);
-    border-radius: 50%;
-
-    &.is-stopped {
-      background-color: var(--el-text-color-placeholder);
-    }
   }
 
   &__meta {
