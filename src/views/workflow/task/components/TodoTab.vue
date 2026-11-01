@@ -101,8 +101,15 @@
 
         <el-tabs class="todo-approve__tabs">
           <el-tab-pane label="申请信息">
+            <form-create
+              v-if="isInitiatorTask && detail.formJson"
+              v-model="editFormData"
+              v-model:api="editFormApi"
+              :rule="editRule"
+              :option="editOption"
+            />
             <FormDetail
-              v-if="detail.formJson"
+              v-else-if="detail.formJson"
               :form-json="detail.formJson"
               :options-json="detail.optionsJson"
               :data-json="detail.dataJson"
@@ -223,6 +230,39 @@ const approveState = reactive({
 // 当前任务详情
 const detail = ref();
 
+// 发起人节点可编辑表单：只有该节点允许修改申请内容，其余节点保持只读
+const editFormApi = ref();
+const editFormData = ref({});
+const editRule = shallowRef([]);
+const editOption = ref({ submitBtn: false, resetBtn: false });
+const isInitiatorTask = computed(() => Boolean(detail.value?.taskFormKey));
+
+watch(
+  () => [
+    detail.value?.taskFormKey,
+    detail.value?.formJson,
+    detail.value?.optionsJson,
+    detail.value?.dataJson,
+  ],
+  () => {
+    if (!isInitiatorTask.value) return;
+    try {
+      editRule.value = JSON.parse(detail.value?.formJson || "[]");
+      editOption.value = {
+        ...JSON.parse(detail.value?.optionsJson || "{}"),
+        submitBtn: false,
+        resetBtn: false,
+      };
+      editFormData.value = JSON.parse(detail.value?.dataJson || "{}");
+    } catch {
+      editRule.value = [];
+      editOption.value = { submitBtn: false, resetBtn: false };
+      editFormData.value = {};
+    }
+  },
+  { immediate: true },
+);
+
 // 审批意见（通过/驳回共用）
 const comment = ref("");
 
@@ -310,7 +350,17 @@ function closeRejectMode() {
 async function handleComplete() {
   submitting.value = true;
   try {
-    await WorkflowAPI.task.complete(detail.value.taskId, { comment: comment.value });
+    if (isInitiatorTask.value) {
+      const valid = await editFormApi.value
+        ?.validate()
+        .then(() => true)
+        .catch(() => false);
+      if (!valid) return;
+    }
+    await WorkflowAPI.task.complete(detail.value.taskId, {
+      comment: comment.value,
+      formData: isInitiatorTask.value ? { ...editFormData.value } : undefined,
+    });
     ElMessage.success("审批通过");
     approveState.visible = false;
     fetchData();
