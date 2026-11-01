@@ -34,7 +34,7 @@ export function useGenConfig() {
         .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
         .join("");
       genConfigFormData.value.entityName = camel;
-    }
+    },
   );
   // 日期类型字段默认用范围查询，比较符合直觉
   watch(
@@ -53,7 +53,7 @@ export function useGenConfig() {
         }
       });
     },
-    { deep: true, immediate: true }
+    { deep: true, immediate: true },
   );
   /**
    * 未保存过的表页面类型为空，统一补成普通表单

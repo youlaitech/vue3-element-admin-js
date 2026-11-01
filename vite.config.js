@@ -8,6 +8,7 @@ import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
 
 import UnoCSS from "unocss/vite";
+import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import packageInfo from "./package.json" with { type: "json" };
 
@@ -19,21 +20,13 @@ const __APP_INFO__ = {
 
 const pathSrc = resolve(import.meta.dirname, "src");
 
-export default defineConfig(({ mode, command, isPreview }) => {
+export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, import.meta.dirname, "");
-  const isDevServer = command === "serve" && !isPreview;
-  const port = Number(env.APP_PORT ?? "3000");
-  if (!Number.isInteger(port) || port < 1 || port > 65535)
-    throw new Error("APP_PORT 必须是 1–65535 的整数");
+  const port = Number(env.APP_PORT) || undefined;
   const proxyTarget = env.API_PROXY_TARGET;
-  if (isDevServer) {
-    if (!proxyTarget || !/^https?:\/\//.test(proxyTarget))
-      throw new Error("API_PROXY_TARGET 必须是 HTTP(S) 地址");
-    new URL(proxyTarget);
-  }
 
   return {
-    // 部署在子路径时由 .env.youlai 指定 VITE_BASE_URL，缺省用站点根路径
+    // 部署在子路径时由环境变量 VITE_BASE_URL 指定，缺省用站点根路径
     base: env.VITE_BASE_URL || "/",
     resolve: {
       alias: {
@@ -48,47 +41,40 @@ export default defineConfig(({ mode, command, isPreview }) => {
         },
       },
     },
-    server: isDevServer
-      ? {
-          host: "0.0.0.0",
-          port,
-          open: true,
-          proxy: {
-            "/api/v1/realtime/ws": {
-              target: proxyTarget,
-              ws: true,
-            },
-            [env.VITE_API_BASE]: {
-              changeOrigin: true,
-              target: proxyTarget,
-              rewrite: (path) => path.slice(env.VITE_API_BASE.length),
-            },
-            // 保留浏览器访问地址，OIDC 回调经开发代理返回。
-            "/oauth2": {
-              changeOrigin: true,
-              xfwd: true,
-              target: proxyTarget,
-            },
-            "/login/oauth2": {
-              changeOrigin: true,
-              xfwd: true,
-              target: proxyTarget,
-            },
-          },
-        }
-      : undefined,
+    server: {
+      host: "0.0.0.0",
+      port,
+      open: true,
+      proxy: {
+        [env.VITE_API_BASE]: {
+          changeOrigin: true,
+          target: proxyTarget,
+          rewrite: (path) => path.slice(env.VITE_API_BASE.length),
+        },
+        // 通知中心 WebSocket，单独代理以转发握手请求
+        "/api/v1/realtime/ws": {
+          changeOrigin: true,
+          rewriteWsOrigin: true,
+          target: proxyTarget,
+          ws: true,
+        },
+        // 统一认证登录的授权跳转与回调，路径不改写，跳转回当前开发地址
+        "^/(oauth2|login/oauth2)": {
+          changeOrigin: true,
+          xfwd: true,
+          target: proxyTarget,
+        },
+      },
+    },
     plugins: [
       vue(),
       ...(env.VITE_MOCK_ENABLED === "true" ? [mockDevServerPlugin()] : []),
       UnoCSS(),
-      // API 自动导入
+      // 函数自动导入
       AutoImport({
-        // 导入 Vue 函数，如：ref, reactive, toRef 等
         imports: ["vue", "@vueuse/core", "pinia", "vue-router", "vue-i18n"],
-        resolvers: [
-          // 导入 Element Plus函数，如：ElMessage, ElMessageBox 等
-          ElementPlusResolver({ importStyle: "sass" }),
-        ],
+        // Element Plus 函数按需导入
+        resolvers: [ElementPlusResolver({ importStyle: "sass" })],
         vueTemplate: true,
         // 不产出类型声明与 ESLint globals，globals 名单维护在 eslint.config.js
         dts: false,
@@ -96,10 +82,10 @@ export default defineConfig(({ mode, command, isPreview }) => {
       // 组件自动导入
       Components({
         resolvers: [
-          // 导入 Element Plus 组件
+          // Element Plus 组件按需导入
           ElementPlusResolver({ importStyle: "sass" }),
         ],
-        // 指定自定义组件位置(默认:src/components)
+        // 全局组件与页面内组件目录
         dirs: ["src/components", "src/**/components"],
         // 不产出组件类型声明
         dts: false,
@@ -140,90 +126,14 @@ export default defineConfig(({ mode, command, isPreview }) => {
         "vxe-table",
         "path-browserify",
         "lodash-es",
+        "dompurify",
         "@element-plus/icons-vue",
         "element-plus/es",
         "element-plus/es/locale/lang/en",
         "element-plus/es/locale/lang/zh-cn",
-        // Element Plus 组件样式预构建：按 src 实际用到的组件清单硬编码，首启即预加载，
-        // 避免首次使用某组件时触发依赖重优化导致页面刷新
-        ...[
-          "alert",
-          "avatar",
-          "backtop",
-          "badge",
-          "base",
-          "breadcrumb",
-          "breadcrumb-item",
-          "button",
-          "card",
-          "cascader",
-          "checkbox",
-          "checkbox-group",
-          "checkbox-button",
-          "col",
-          "color-picker",
-          "config-provider",
-          "collapse-transition",
-          "date-picker",
-          "descriptions",
-          "descriptions-item",
-          "dialog",
-          "divider",
-          "drawer",
-          "dropdown",
-          "dropdown-item",
-          "dropdown-menu",
-          "empty",
-          "form",
-          "form-item",
-          "icon",
-          "image",
-          "image-viewer",
-          "input",
-          "input-number",
-          "input-tag",
-          "link",
-          "loading",
-          "menu",
-          "menu-item",
-          "message",
-          "message-box",
-          "notification",
-          "option",
-          "pagination",
-          "popover",
-          "progress",
-          "radio",
-          "radio-button",
-          "radio-group",
-          "result",
-          "row",
-          "scrollbar",
-          "select",
-          "skeleton",
-          "skeleton-item",
-          "space",
-          "step",
-          "steps",
-          "sub-menu",
-          "switch",
-          "tab-pane",
-          "table",
-          "table-column",
-          "tabs",
-          "tag",
-          "text",
-          "time-picker",
-          "time-select",
-          "timeline",
-          "timeline-item",
-          "tooltip",
-          "tree",
-          "tree-select",
-          "upload",
-          "watermark",
-        ].map((c) => `element-plus/es/components/${c}/style/index`),
-        // 流程设计器与预览器为路由懒加载，bpmn-js 体积大，首启预构建避免进入页面时重优化刷新
+        // Element Plus 组件样式：按组件目录枚举，新增组件时不会在运行期补优化并刷新页面
+        ...getElementPlusStyleDeps(),
+        // 流程设计器与预览器为路由懒加载，首启预构建，避免进入页面时重优化刷新
         "bpmn-js/lib/Modeler",
         "bpmn-js/lib/NavigatedViewer",
         "bpmn-js/lib/util/ModelUtil",
@@ -283,3 +193,15 @@ export default defineConfig(({ mode, command, isPreview }) => {
     },
   };
 });
+
+// 按组件目录枚举 Element Plus 样式入口，避免手写清单漏项后运行期补优化并刷新页面
+function getElementPlusStyleDeps() {
+  const componentsDir = resolve(import.meta.dirname, "node_modules/element-plus/es/components");
+  if (!existsSync(componentsDir)) return [];
+  return readdirSync(componentsDir, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() && existsSync(resolve(componentsDir, entry.name, "style/index.mjs")),
+    )
+    .map((entry) => `element-plus/es/components/${entry.name}/style/index`);
+}

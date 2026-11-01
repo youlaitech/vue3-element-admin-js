@@ -15,7 +15,7 @@ export function useTableSelection() {
    */
   function handleSelectionChange(selection) {
     selectedIds.value = selection.flatMap((item) =>
-      item.id === undefined || item.id === null ? [] : [item.id]
+      item.id === undefined || item.id === null ? [] : [item.id],
     );
   }
 

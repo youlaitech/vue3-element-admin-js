@@ -320,7 +320,7 @@ async function handleExport() {
         record.formVersion = row.formVersion;
         record.createTime = row.createTime;
         return record;
-      })
+      }),
     );
 
     const buffer = await workbook.xlsx.writeBuffer();

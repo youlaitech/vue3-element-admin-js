@@ -46,7 +46,7 @@ watchEffect(
   },
   {
     flush: "post",
-  }
+  },
 );
 /**
  * 部门树的节点过滤

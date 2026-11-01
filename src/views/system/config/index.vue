@@ -289,7 +289,7 @@ async function handleDelete(id) {
       type: "warning",
     }).then(
       () => true,
-      () => false
+      () => false,
     );
     if (!confirmed) return;
 

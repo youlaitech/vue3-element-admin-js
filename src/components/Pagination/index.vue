@@ -77,7 +77,7 @@ watch(
       currentPage.value = lastPage;
       emit("pagination", { page: currentPage.value, limit: pageSize.value });
     }
-  }
+  },
 );
 /**
  * 切换每页条数时回到第一页，并触发分页请求

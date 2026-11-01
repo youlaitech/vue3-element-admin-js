@@ -322,7 +322,7 @@ async function openDialog(parentId, deptId) {
 async function handleSubmit() {
   const valid = await deptFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 

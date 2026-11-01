@@ -177,7 +177,7 @@ const rules = computed(() =>
         menuName: [{ required: true, message: "请输入菜单名称", trigger: "blur" }],
         parentId: [{ required: true, message: "请选择上级菜单", trigger: "change" }],
       }
-    : {}
+    : {},
 );
 /**
  * 角色全选（多选下拉 header 快捷操作）
@@ -197,7 +197,7 @@ function validate() {
   }
   return menuFormRef.value.validate().then(
     () => true,
-    () => false
+    () => false,
   );
 }
 

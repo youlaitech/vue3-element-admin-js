@@ -58,7 +58,7 @@ async function renderDiagram(xml, executedIds, activeIds) {
 watch(
   () => [props.xml, props.executedActivityIds, props.activeActivityIds],
   ([xml, executedIds, activeIds]) => renderDiagram(xml, executedIds, activeIds),
-  { flush: "post" }
+  { flush: "post" },
 );
 
 onMounted(() => {

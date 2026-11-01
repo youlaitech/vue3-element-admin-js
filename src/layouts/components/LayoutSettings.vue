@@ -357,7 +357,7 @@ function getColorLabel(name) {
 const activePaletteName = computed(() =>
   settingsStore.activeThemePalette
     ? getPaletteName(settingsStore.activeThemePalette)
-    : t("settings.customPalette")
+    : t("settings.customPalette"),
 );
 /**
  * 展开或收起自定义颜色

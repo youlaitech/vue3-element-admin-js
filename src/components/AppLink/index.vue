@@ -66,7 +66,7 @@ function handleClick(event) {
   window.open(
     externalUrl.value,
     "_blank",
-    isSameOriginLink.value ? undefined : "noopener,noreferrer"
+    isSameOriginLink.value ? undefined : "noopener,noreferrer",
   );
 }
 </script>

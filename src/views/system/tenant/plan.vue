@@ -338,7 +338,7 @@ async function handleEditClick(planId) {
 const handleSubmit = useDebounceFn(async () => {
   const valid = await planFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 

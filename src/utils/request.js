@@ -84,7 +84,7 @@ http.interceptors.response.use(
 
     ElMessage.error(msg || "请求失败");
     return Promise.reject(error);
-  }
+  },
 );
 
 /**

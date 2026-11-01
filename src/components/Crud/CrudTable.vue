@@ -575,7 +575,7 @@ const columns = ref(
       col.reserveSelection = true;
     }
     return col;
-  })
+  }),
 );
 const loading = ref(false);
 const loadError = ref("");
@@ -643,7 +643,7 @@ const defaultPagination = {
 const pagination = reactive(
   typeof props.tableConfig.pagination === "object"
     ? { ...defaultPagination, ...props.tableConfig.pagination }
-    : defaultPagination
+    : defaultPagination,
 );
 const paginationKeys = props.tableConfig.paginationKeys ?? {
   page: "pageNum",
@@ -708,7 +708,7 @@ async function handleDelete(id, permission) {
     type: "warning",
   }).then(
     () => true,
-    () => false
+    () => false,
   );
   if (!confirmed || (permission && !hasPerm(permission))) return;
   await action(ids);
@@ -800,7 +800,7 @@ async function exportRows() {
   const exportColumns = columns.value
     .filter(
       (col) =>
-        col.cellType !== "actions" && col.label && col.prop && exportForm.fields.includes(col.prop)
+        col.cellType !== "actions" && col.label && col.prop && exportForm.fields.includes(col.prop),
     )
     .map((col) => ({ header: col.label, key: col.prop }));
   const scope = exportForm.scope;
@@ -948,7 +948,7 @@ async function handleToolbar(key) {
       if (config.value.importFile && config.value.importRows && !config.value.importMode)
         throw new Error("同时配置两种导入回调时，请指定 importMode");
       handleOpenImportModal(
-        config.value.importMode ? config.value.importMode === "file" : !!config.value.importFile
+        config.value.importMode ? config.value.importMode === "file" : !!config.value.importFile,
       );
       break;
     case "export":
@@ -1056,7 +1056,7 @@ let appliedQuery = {};
 let lastSuccessfulQuery;
 let pageSequence = 0;
 const canExport = computed(
-  () => !loading.value && !loadError.value && lastSuccessfulQuery !== undefined
+  () => !loading.value && !loadError.value && lastSuccessfulQuery !== undefined,
 );
 onScopeDispose(() => {
   pageSequence += 1;

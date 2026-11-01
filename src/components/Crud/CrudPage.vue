@@ -66,7 +66,7 @@ const slots = useSlots();
 const resolvedFormConfig = computed(() =>
   props.formConfig
     ? { ...props.formConfig, rowKey: props.formConfig.rowKey ?? props.tableConfig.rowKey }
-    : undefined
+    : undefined,
 );
 const page = useCrudPage();
 const {

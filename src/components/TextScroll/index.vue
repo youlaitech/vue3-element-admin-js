@@ -182,7 +182,7 @@ watch(
     stopTypewriter();
     if (!closed.value && props.typewriter) startTypewriter();
   },
-  { immediate: true }
+  { immediate: true },
 );
 watch(() => [displayText.value, props.speed], calculateDuration, { flush: "post" });
 onMounted(calculateDuration);

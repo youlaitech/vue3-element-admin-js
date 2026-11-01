@@ -105,7 +105,7 @@ watch(
     if (innerUpdating.value) return;
     editorRef.value = null;
     editorKey.value += 1;
-  }
+  },
 );
 
 // 组件销毁时，及时销毁编辑器

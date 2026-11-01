@@ -108,7 +108,7 @@ watch(
   () => expandedMenuIndexes.value,
   () => {
     syncActiveParentMenus();
-  }
+  },
 );
 // 水平菜单切换时收起弹出的垂直菜单
 watch(
@@ -117,7 +117,7 @@ watch(
     if (newMode === "horizontal" && menuRef.value) {
       expandedMenuIndexes.value.forEach((item) => menuRef.value.close(item));
     }
-  }
+  },
 );
 // 路由激活项变化后同步父级菜单激活态
 watch(
@@ -127,7 +127,7 @@ watch(
       syncActiveParentMenus();
     });
   },
-  { immediate: true }
+  { immediate: true },
 );
 // TagsView 切换时重新计算父级菜单激活态
 watch(
@@ -136,7 +136,7 @@ watch(
     nextTick(() => {
       syncActiveParentMenus();
     });
-  }
+  },
 );
 /**
  * 标记包含当前路由的父级菜单

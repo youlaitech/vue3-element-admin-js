@@ -97,7 +97,7 @@ function handleTenantChange(tenantId) {
     (error) => {
       const message = error instanceof Error ? error.message : "切换租户失败";
       ElMessage.error(message);
-    }
+    },
   );
 }
 

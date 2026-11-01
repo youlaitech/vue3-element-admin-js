@@ -308,7 +308,7 @@ const categoryOptions = {
 // 当前编辑表单状态：非草稿（已发布/已停用）时类型作为业务标识不可修改
 const editingStatus = ref(null);
 const categoryDisabled = computed(
-  () => editingStatus.value !== null && editingStatus.value !== FormStatus.DRAFT
+  () => editingStatus.value !== null && editingStatus.value !== FormStatus.DRAFT,
 );
 
 /**
@@ -424,7 +424,7 @@ async function handleEditClick(row) {
 async function handleSubmit() {
   const valid = await formDefinitionFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 

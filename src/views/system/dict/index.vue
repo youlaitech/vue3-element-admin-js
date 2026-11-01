@@ -281,7 +281,7 @@ async function handleEditClick(id) {
 async function handleSubmit() {
   const valid = await dictFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 

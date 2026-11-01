@@ -500,7 +500,7 @@ function closeDialog() {
 async function handleSubmit() {
   const valid = await noticeFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 

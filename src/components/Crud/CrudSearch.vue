@@ -102,7 +102,7 @@ const isExpand = ref(false);
 const optionError = ref("");
 const isInitializing = ref(false);
 const fields = reactive(
-  (props.searchConfig.fields ?? []).map((item) => ({ ...item, attrs: { ...item.attrs } }))
+  (props.searchConfig.fields ?? []).map((item) => ({ ...item, attrs: { ...item.attrs } })),
 );
 const initialValues = Object.fromEntries(
   fields.map((item) => [
@@ -114,14 +114,14 @@ const initialValues = Object.fromEntries(
           ? []
           : item.type === "input-number"
             ? null
-            : ""
+            : "",
     ),
-  ])
+  ]),
 );
 const queryParams = reactive(cloneDeep(initialValues));
 const isExpandable = computed(() => props.searchConfig.isExpandable ?? true);
 const showNumber = computed(() =>
-  isExpandable.value ? (props.searchConfig.showNumber ?? 3) : fields.length
+  isExpandable.value ? (props.searchConfig.showNumber ?? 3) : fields.length,
 );
 const cardAttrs = computed(() => ({
   shadow: "never",
@@ -132,7 +132,7 @@ const formAttrs = computed(() => ({ inline: true, ...props.searchConfig.form }))
 const layoutClass = computed(() =>
   props.searchConfig.grid
     ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6 gap-5"
-    : "flex flex-wrap gap-x-8 gap-y-4"
+    : "flex flex-wrap gap-x-8 gap-y-4",
 );
 /**
  * 加载字段选项；失败可重试，上一批结束前不重复加载。
@@ -143,7 +143,7 @@ async function initializeFields() {
   isInitializing.value = true;
   optionError.value = "";
   const results = await Promise.allSettled(
-    initializers.map((field) => Promise.resolve().then(() => field.onInit?.(field)))
+    initializers.map((field) => Promise.resolve().then(() => field.onInit?.(field))),
   );
   const failure = results.find((result) => result.status === "rejected");
   if (failure?.status === "rejected")

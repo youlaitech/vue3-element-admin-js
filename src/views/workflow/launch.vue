@@ -112,7 +112,7 @@ const processList = ref([]);
 const selectedId = ref("");
 
 const selectedProcess = computed(() =>
-  processList.value.find((process) => process.id === selectedId.value)
+  processList.value.find((process) => process.id === selectedId.value),
 );
 
 // 审批流程走向预览
@@ -166,7 +166,7 @@ function resetAutoName() {
 
 // 复用动态表单的规则加载与渲染状态。
 const { rule, option, loading, submitted, load, refill } = useFormRenderer(() =>
-  FormAPI.getRender(selectedProcess.value?.formKey ?? "")
+  FormAPI.getRender(selectedProcess.value?.formKey ?? ""),
 );
 
 const starting = ref(false);

@@ -73,7 +73,7 @@ watch(
       return;
     }
     getBreadcrumb();
-  }
+  },
 );
 onBeforeMount(() => {
   getBreadcrumb();

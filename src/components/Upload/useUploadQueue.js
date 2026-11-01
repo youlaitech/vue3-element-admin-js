@@ -55,7 +55,7 @@ export function useUploadQueue(model, values) {
             (file) =>
               file.status === "ready" ||
               file.status === "uploading" ||
-              (file.uid !== undefined && activeTasks.has(file.uid))
+              (file.uid !== undefined && activeTasks.has(file.uid)),
           )
         : [];
       fileList.value = [
@@ -67,7 +67,7 @@ export function useUploadQueue(model, values) {
       ];
     },
     // 同步消费回写标记，避免延迟侦听与下一次发布混淆。
-    { immediate: true, flush: "sync" }
+    { immediate: true, flush: "sync" },
   );
 
   /**
@@ -89,7 +89,7 @@ export function useUploadQueue(model, values) {
         const file = fileList.value.find((item) => item.uid === uid);
         if (file) file.percentage = percentage;
       },
-      controller.signal
+      controller.signal,
     ).finally(() => {
       if (requests.get(uid) === controller) requests.delete(uid);
     });

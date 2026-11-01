@@ -352,7 +352,7 @@ async function handleStatusChange(row) {
 async function handleSubmit() {
   const valid = await dataFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 

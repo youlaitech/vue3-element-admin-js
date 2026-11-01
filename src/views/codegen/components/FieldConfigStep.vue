@@ -226,7 +226,7 @@ const aiChangedCount = computed(() => Object.keys(props.aiChanges ?? {}).length)
 const visibleFields = computed(() => {
   if (!onlyAiChanged.value) return fieldConfigs.value;
   return fieldConfigs.value.filter(
-    (row) => row.columnName && props.aiChanges?.[row.columnName]?.length
+    (row) => row.columnName && props.aiChanges?.[row.columnName]?.length,
   );
 });
 
@@ -264,7 +264,7 @@ async function locateField(columnName) {
   await nextTick();
   const cards = listRef.value?.querySelectorAll(".field-card");
   const target = Array.from(cards ?? []).find(
-    (card) => card.querySelector(".field-column")?.textContent?.trim() === columnName
+    (card) => card.querySelector(".field-column")?.textContent?.trim() === columnName,
   );
   if (!target) return;
   target.scrollIntoView({ behavior: "smooth", block: "center" });

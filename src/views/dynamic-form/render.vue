@@ -45,7 +45,7 @@ const renderData = ref();
 const submitting = ref(false);
 
 const { rule, option, loading, submitted, load, refill } = useFormRenderer(() =>
-  FormAPI.getRender(formKey.value)
+  FormAPI.getRender(formKey.value),
 );
 
 onMounted(async () => {

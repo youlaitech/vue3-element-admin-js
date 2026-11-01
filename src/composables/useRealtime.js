@@ -193,7 +193,7 @@ export function provideRealtime() {
         [...(user.userInfo.perms ?? [])].sort().join(),
       ].join("|"),
     resetConnection,
-    { flush: "sync" }
+    { flush: "sync" },
   );
   const context = {
     status: client.status,

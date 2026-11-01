@@ -93,7 +93,7 @@ watch(
       chartInstance.setOption(newOptions);
     }
   },
-  { deep: true }
+  { deep: true },
 );
 onMounted(() => {
   nextTick(() => initChart());

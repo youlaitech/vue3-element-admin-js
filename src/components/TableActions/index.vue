@@ -85,7 +85,7 @@ watch(
   () => overflowActions.value.length,
   (count) => {
     if (count === 0) expanded.value = false;
-  }
+  },
 );
 
 /**

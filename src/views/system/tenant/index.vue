@@ -490,7 +490,7 @@ const menuTreeProps = {
 
 // 目标套餐未配置菜单时禁止提交
 const isPlanMenuEmpty = computed(
-  () => tenantPlanId.value != null && planMenuIds.value.length === 0
+  () => tenantPlanId.value != null && planMenuIds.value.length === 0,
 );
 
 const hasPermTenantMenu = computed(() => hasPerm("sys:tenant:plan-assign"));
@@ -753,7 +753,7 @@ async function handleTenantPlanSelectSubmit() {
         type: "warning",
         confirmButtonText: "确认更换",
         cancelButtonText: "取消",
-      }
+      },
     );
   } catch {
     return;
@@ -772,7 +772,7 @@ async function handleTenantPlanSelectSubmit() {
     if (hasPermTenantMenu.value) {
       const targetPlanMenuIdSet = new Set(planMenuIds.value);
       const keepMenuIds = originalEnabledMenuIds.value.filter((menuId) =>
-        targetPlanMenuIdSet.has(menuId)
+        targetPlanMenuIdSet.has(menuId),
       );
       await TenantAPI.updateTenantMenus(tenantId, keepMenuIds);
     }
@@ -869,7 +869,7 @@ function closeDialog() {
 const handleSubmit = useDebounceFn(async () => {
   const valid = await tenantFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 

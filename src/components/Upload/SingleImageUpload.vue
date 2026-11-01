@@ -127,7 +127,7 @@ function handleUpload(options) {
       },
       (error) => {
         reject(error);
-      }
+      },
     );
   });
 }

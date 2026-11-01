@@ -13,7 +13,7 @@ const VIEW_PREFIX = "/src/views/";
  * 视图文件路径集合，元素形如 system/user/index
  */
 export const viewPaths = new Set(
-  Object.keys(viewModules).map((key) => key.slice(VIEW_PREFIX.length).replace(/\.vue$/, ""))
+  Object.keys(viewModules).map((key) => key.slice(VIEW_PREFIX.length).replace(/\.vue$/, "")),
 );
 
 /**

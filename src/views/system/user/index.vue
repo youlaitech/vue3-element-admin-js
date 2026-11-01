@@ -375,7 +375,7 @@ const roleOptions = ref([]);
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "600px" : "90%"));
 
 const resetPasswordDialogWidth = computed(() =>
-  appStore.device === DeviceEnum.DESKTOP ? "420px" : "90%"
+  appStore.device === DeviceEnum.DESKTOP ? "420px" : "90%",
 );
 
 const rules = {
@@ -495,7 +495,7 @@ function getUserActions(row) {
 const handleSubmit = useDebounceFn(async () => {
   const valid = await userFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 
@@ -617,7 +617,7 @@ function resetResetPasswordForm() {
 const handleResetPasswordSubmit = useDebounceFn(async () => {
   const valid = await resetPasswordFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid || !resetPasswordDialog.userId) return;
 

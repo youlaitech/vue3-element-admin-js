@@ -21,13 +21,13 @@ export const useSettingsStore = defineStore("setting", () => {
   const showWatermark = useStorage(STORAGE_KEYS.SHOW_WATERMARK, defaults.showWatermark);
   const pageSwitchingAnimation = useStorage(
     STORAGE_KEYS.PAGE_SWITCHING_ANIMATION,
-    defaults.pageSwitchingAnimation
+    defaults.pageSwitchingAnimation,
   );
   // 布局
   const layout = useStorage(STORAGE_KEYS.LAYOUT, defaults.layout);
   const sidebarColorScheme = useStorage(
     STORAGE_KEYS.SIDEBAR_COLOR_SCHEME,
-    defaults.sidebarColorScheme
+    defaults.sidebarColorScheme,
   );
   // 主题
   const theme = useStorage(STORAGE_KEYS.THEME, defaults.theme);
@@ -36,7 +36,7 @@ export const useSettingsStore = defineStore("setting", () => {
     ...defaults.themeColors,
   });
   const activeThemePalette = computed(
-    () => themePalettePresets.find((item) => item.id === themePalette.value) || null
+    () => themePalettePresets.find((item) => item.id === themePalette.value) || null,
   );
   const resolvedTheme = ref(resolveThemeMode(theme.value));
   // 特殊模式
@@ -57,7 +57,7 @@ export const useSettingsStore = defineStore("setting", () => {
         stopWatchingSystemTheme = undefined;
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
   watch(
     [resolvedTheme, themeColors],
@@ -65,7 +65,7 @@ export const useSettingsStore = defineStore("setting", () => {
       toggleDarkMode(t === ThemeMode.DARK);
       applyTheme(generateThemeColors(colors, t));
     },
-    { immediate: true, deep: true }
+    { immediate: true, deep: true },
   );
   watch(sidebarColorScheme, (v) => toggleSidebarColor(v === SidebarColor.CLASSIC_BLUE), {
     immediate: true,
@@ -76,7 +76,7 @@ export const useSettingsStore = defineStore("setting", () => {
     (v) => {
       document.documentElement.style.filter = v ? "grayscale(100%)" : "";
     },
-    { immediate: true }
+    { immediate: true },
   );
   // 色弱模式监听
   watch(
@@ -84,7 +84,7 @@ export const useSettingsStore = defineStore("setting", () => {
     (v) => {
       document.documentElement.classList.toggle("color-weak", v);
     },
-    { immediate: true }
+    { immediate: true },
   );
   /**
    * 应用一套主题调色板

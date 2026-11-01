@@ -520,7 +520,7 @@ watch(
     addCurrentTag();
     updateCurrentTag();
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 onMounted(() => {

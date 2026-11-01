@@ -44,8 +44,8 @@ export function useCodePreview(genConfigFormData) {
       new Set(
         previewList
           .map((item) => item.language || item.fileName.split(".").pop() || "")
-          .filter(Boolean)
-      )
+          .filter(Boolean),
+      ),
     );
     previewTypeOptions.value = typeOptions;
     previewTypes.value = [...typeOptions];
@@ -102,7 +102,7 @@ export function useCodePreview(genConfigFormData) {
         currentFileKey.value = first.key || "";
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   return {

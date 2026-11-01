@@ -2,7 +2,7 @@ import eslint from "@eslint/js";
 import globals from "globals";
 import pluginVue from "eslint-plugin-vue";
 import vueParser from "vue-eslint-parser";
-import configPrettier from "eslint-config-prettier";
+import skipFormatting from "@vue/eslint-config-prettier/skip-formatting";
 
 // 自动导入的 API 与 Element Plus 函数：由 unplugin-auto-import 注入，无需显式导入
 // 新增自动导入的函数时在此补一行
@@ -166,11 +166,5 @@ export default [
     },
   },
 
-  {
-    rules: {
-      ...configPrettier.rules,
-      "arrow-body-style": "off",
-      "prefer-arrow-callback": "off",
-    },
-  },
+  skipFormatting,
 ];
