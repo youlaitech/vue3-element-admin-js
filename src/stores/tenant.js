@@ -114,7 +114,7 @@ export const useTenantStore = defineStore("tenant", () => {
   async function switchTenant(tenantId) {
     await refreshTokenIfSupported(tenantId);
 
-    const tenantInfo = await TenantAPI.switchTenant(tenantId);
+    const tenantInfo = await TenantAPI.getTenant(tenantId);
     if (tenantInfo) {
       setCurrentTenant(tenantInfo);
       return;
