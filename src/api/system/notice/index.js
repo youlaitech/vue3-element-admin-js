@@ -4,7 +4,7 @@ const NOTICE_BASE_URL = "/api/v1/notices";
 
 const NoticeAPI = {
   /**
-   * 管理端预览，不改变阅读状态。
+   * 管理端预览，不改变阅读状态
    */
   getPreview(id) {
     return request({

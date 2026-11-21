@@ -4,8 +4,8 @@
 
 **Vue3 + Vite + JavaScript 企业级后台管理前端**
 
-[![Vue](https://img.shields.io/badge/Vue-3.5.30-brightgreen.svg)](https://vuejs.org/)
-[![Element Plus](https://img.shields.io/badge/Element%20Plus-2.13.5-blue.svg)](https://element-plus.org/)
+[![Vue](https://img.shields.io/badge/Vue-3.5.41-brightgreen.svg)](https://vuejs.org/)
+[![Element Plus](https://img.shields.io/badge/Element%20Plus-2.14.4-blue.svg)](https://element-plus.org/)
 [![Gitee Star](https://gitee.com/youlaiorg/vue3-element-admin-js/badge/star.svg)](https://gitee.com/youlaiorg/vue3-element-admin-js/stargazers)
 [![GitHub Star](https://img.shields.io/github/stars/youlaitech/vue3-element-admin-js?style=social)](https://github.com/youlaitech/vue3-element-admin-js)
 [![GitCode Star](https://gitcode.com/youlai/vue3-element-admin-js/star/badge.svg)](https://gitcode.com/youlai/vue3-element-admin-js/stargazers)
@@ -17,7 +17,7 @@
 
 <div align="center">
 
-[![在线预览](https://img.shields.io/badge/在线预览-2D8CF0?style=for-the-badge&logo=google-chrome&logoColor=white)](https://vue.youlai.tech)
+[![在线预览](https://img.shields.io/badge/在线预览-2D8CF0?style=for-the-badge&logo=google-chrome&logoColor=white)](https://admin.youlai.tech)
 [![移动端预览](https://img.shields.io/badge/移动端预览-19BE6B?style=for-the-badge&logo=android&logoColor=white)](https://app.youlai.tech)
 [![文档](https://img.shields.io/badge/文档-8B5CF6?style=for-the-badge&logo=gitbook&logoColor=white)](https://www.youlai.tech/vue3-element-admin)
 [![官网](https://img.shields.io/badge/官网-FF9F1C?style=for-the-badge&logo=safari&logoColor=white)](https://www.youlai.tech/docs/web/)
@@ -95,7 +95,7 @@ pnpm install
 pnpm run dev
 ```
 
-启动后访问 [http://localhost:3000](http://localhost:3000)，使用 `admin` / `123456` 登录。
+启动后访问 [http://localhost:3000](http://localhost:3000)，使用 `youlai` / `123456` 登录。
 
 > 更多内容详见官方文档：[快速开始](https://www.youlai.tech/docs/web/) · [部署指南](https://www.youlai.tech/docs/web/deployment/deploy.html)
 
@@ -117,6 +117,8 @@ npx skills add https://github.com/youlaitech/youlai-skills --skill vue-admin
 | [vue3-element-admin-js](https://gitee.com/youlaiorg/vue3-element-admin-js) | Vue 3 + Vite + JS + Element Plus | JavaScript 版本 | ✅️ |
 | [vue3-element-template](https://gitee.com/youlaiorg/vue3-element-template) | Vue 3 + Vite + TS + Element Plus | 精简模板 | ✅️ |
 | [vue3-naiveui-admin](https://gitee.com/youlaiorg/vue3-naiveui-admin) | Vue 3 + Vite + TS + Naive UI | Naive UI 版本 | ✅️ |
+| [react-antd-admin](https://gitee.com/youlaiorg/react-antd-admin) | React 19 + Vite + TS + Ant Design | React 版本 | ✅️ |
+| [react-arco-admin](https://gitee.com/haoxr/react-arco-admin) | React 19 + Vite + TS + Arco Design | Arco Design 版本 | ✅️ |
 | [youlai-app](https://gitee.com/youlaiorg/youlai-app) | Vue 3 + UniApp | 移动端 App | ✅️ |
 
 **后端**

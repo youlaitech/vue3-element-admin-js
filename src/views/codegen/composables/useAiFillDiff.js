@@ -38,7 +38,7 @@ function enumLabel(options, value) {
 /**
  * 对比两份配置，只保留发生变化的部分
  */
-export function diffGenConfig(before, after) {
+function diffGenConfig(before, after) {
   const diff = { fields: [], fieldCount: 0, changeCount: 0 };
   if ((before.businessName ?? "") !== (after.businessName ?? "")) {
     diff.businessName = {

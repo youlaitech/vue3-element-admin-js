@@ -41,7 +41,7 @@ const currentIndex = ref(0);
 const chartInstance = ref();
 
 /**
- * 轮换高亮的设备状态。
+ * 轮换高亮的设备状态
  */
 const highlightItem = (chart) => {
   chartInstance.value = chart;

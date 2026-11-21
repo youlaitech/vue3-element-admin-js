@@ -72,7 +72,7 @@ const editorConfig = {
   MENU_CONF: {
     uploadImage: {
       /**
-       * 上传编辑器图片并插入返回的文件地址。
+       * 上传编辑器图片并插入返回的文件地址
        */
       async customUpload(file, insertFn) {
         const data = await FileAPI.uploadFile(file);

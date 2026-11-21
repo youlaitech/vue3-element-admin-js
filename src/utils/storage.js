@@ -1,7 +1,7 @@
 import { APP_PREFIX, STORAGE_KEYS } from "@/constants";
 
 /**
- * JSON 存储；缺失、解析失败或校验失败时使用默认值。
+ * JSON 存储；缺失、解析失败或校验失败时使用默认值
  */
 export class Storage {
   /**
@@ -40,7 +40,7 @@ export class Storage {
   }
 
   /**
-   * 读取 JSON 数据，解析或校验失败时返回默认值。
+   * 读取 JSON 数据，解析或校验失败时返回默认值
    */
   static read(storage, key, defaultValue, validate) {
     const raw = storage.getItem(key);
@@ -79,7 +79,7 @@ export class Storage {
   }
 
   /**
-   * 从本地与会话存储中移除指定前缀的键。
+   * 从本地与会话存储中移除指定前缀的键
    */
   static clearByPrefix(prefix) {
     const localKeys = Object.keys(localStorage).filter((key) => key.startsWith(prefix));
@@ -90,7 +90,7 @@ export class Storage {
   }
 
   /**
-   * 清理项目名前缀下的本地与会话存储。
+   * 清理项目名前缀下的本地与会话存储
    */
   static clearAllProject() {
     this.clearByPrefix(`${APP_PREFIX}:`);

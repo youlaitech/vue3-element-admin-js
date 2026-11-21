@@ -127,7 +127,7 @@ const calculateDuration = () => {
 };
 
 /**
- * 内部隐藏并停止资源，父组件可通过 close 同步显示状态。
+ * 内部隐藏并停止资源，父组件可通过 close 同步显示状态
  */
 function handleClose() {
   closed.value = true;
@@ -137,7 +137,7 @@ function handleClose() {
 }
 
 /**
- * 取消打字动画的定时任务。
+ * 取消打字动画的定时任务
  */
 function stopTypewriter() {
   if (typewriterTimer !== null) clearTimeout(typewriterTimer);
@@ -150,13 +150,13 @@ function stopTypewriter() {
 const startTypewriter = () => {
   stopTypewriter();
   let index = 0;
-  // 按 Unicode 码点拆分，避免从代理对中间截断表情等字符。
+  // 按 Unicode 码点拆分，避免从代理对中间截断表情等字符
   const characters = Array.from(props.text);
   currentText.value = "";
   isTypewriterComplete.value = false;
 
   /**
-   * 逐字更新当前显示文本。
+   * 逐字更新当前显示文本
    */
   const type = () => {
     if (closed.value) return;

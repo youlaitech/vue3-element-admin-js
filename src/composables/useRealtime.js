@@ -17,7 +17,7 @@ import { createRealtimeClient, RealtimeConnectionStatus } from "@/utils/realtime
 import { parseRealtimeTicket } from "@/utils/realtime/protocol";
 const REALTIME_CONTEXT = Symbol("realtime-context");
 /**
- * 在应用根组件初始化实时连接。
+ * 在应用根组件初始化实时连接
  */
 export function provideRealtime() {
   const user = useUserStore();
@@ -27,13 +27,13 @@ export function provideRealtime() {
   const seenNoticeIds = new Set();
   let mounted = false;
   let disposed = false;
-  // 会话或权限变化时递增，使旧的 HTTP 校准响应失效。
+  // 会话或权限变化时递增，使旧的 HTTP 校准响应失效
   let revision = 0;
   let presenceRequest = null;
   let calibrationTimer = null;
   const client = createRealtimeClient({
     /**
-     * 领取并校验票据；服务未启用或无权连接时返回 null。
+     * 领取并校验票据；服务未启用或无权连接时返回 null
      */
     async requestTicket(request) {
       const ticket = await RealtimeAPI.createTicket(request);
@@ -44,7 +44,7 @@ export function provideRealtime() {
     },
   });
   /**
-   * 判断当前用户是否有权查看在线人数。
+   * 判断当前用户是否有权查看在线人数
    */
   function hasPresencePermission() {
     const { roles = [], perms = [] } = user.userInfo;
@@ -54,19 +54,19 @@ export function provideRealtime() {
     );
   }
   /**
-   * 按当前权限选择订阅主题。
+   * 按当前权限选择订阅主题
    */
   function getTopics() {
     return hasPresencePermission() ? ["notice", "dict", "presence"] : ["notice", "dict"];
   }
   /**
-   * 判断应用和登录状态是否允许建立连接。
+   * 判断应用和登录状态是否允许建立连接
    */
   function canRun() {
     return mounted && !disposed && !!user.userInfo.userId && !!AuthStorage.getAccessToken();
   }
   /**
-   * 通知页面刷新公告，隔离处理器异常。
+   * 通知页面刷新公告，隔离处理器异常
    */
   function notifyNotices(message) {
     for (const handler of noticeHandlers) {
@@ -78,12 +78,12 @@ export function provideRealtime() {
     }
   }
   /**
-   * 应用在线快照，忽略同一节点的过期结果。
+   * 应用在线快照，忽略同一节点的过期结果
    */
   function applyPresence(snapshot) {
     if (!hasPresencePermission()) return;
     const previous = presence.value;
-    // 仅在同一节点内比较时间；服务重启后的新节点快照可直接替换。
+    // 仅在同一节点内比较时间；服务重启后的新节点快照可直接替换
     if (
       previous?.nodeId === snapshot.nodeId &&
       Date.parse(previous.observedAt) > Date.parse(snapshot.observedAt)
@@ -92,7 +92,7 @@ export function provideRealtime() {
     presence.value = snapshot;
   }
   /**
-   * 合并在线人数校准请求，忽略旧会话响应。
+   * 合并在线人数校准请求，忽略旧会话响应
    */
   function refreshPresence() {
     if (!canRun() || !hasPresencePermission() || presenceRequest) return;
@@ -108,14 +108,14 @@ export function provideRealtime() {
     presenceRequest = request;
   }
   /**
-   * 清除待执行的 HTTP 校准任务。
+   * 清除待执行的 HTTP 校准任务
    */
   function stopCalibration() {
     if (calibrationTimer !== null) clearTimeout(calibrationTimer);
     calibrationTimer = null;
   }
   /**
-   * 持续在线也定期核对 HTTP，补偿进程重启或队列拒绝造成的漏提示。
+   * 持续在线也定期核对 HTTP，补偿进程重启或队列拒绝造成的漏提示
    */
   function calibrate() {
     stopCalibration();
@@ -126,7 +126,7 @@ export function provideRealtime() {
     calibrationTimer = setTimeout(calibrate, 120_000 + Math.random() * 180_000);
   }
   /**
-   * 将实时消息分发给通知、字典和在线状态。
+   * 将实时消息分发给通知、字典和在线状态
    */
   function handleMessage(message) {
     if (!canRun()) return;
@@ -135,7 +135,7 @@ export function provideRealtime() {
         calibrate();
         break;
       case "notice.changed":
-        // 只保留有限去重窗口，不将消息 ID 当作持久投递记录。
+        // 只保留有限去重窗口，不将消息 ID 当作持久投递记录
         if (seenNoticeIds.has(message.id)) return;
         seenNoticeIds.add(message.id);
         if (seenNoticeIds.size > 128) {
@@ -153,7 +153,7 @@ export function provideRealtime() {
     }
   }
   /**
-   * 清理旧会话状态，并按当前权限重新连接。
+   * 清理旧会话状态，并按当前权限重新连接
    */
   function resetConnection() {
     revision += 1;
@@ -168,7 +168,7 @@ export function provideRealtime() {
     }
   }
   /**
-   * 前台恢复时检查连接并校准业务数据。
+   * 前台恢复时检查连接并校准业务数据
    */
   function resume() {
     if (!canRun() || document.visibilityState !== "visible") return;
@@ -176,11 +176,11 @@ export function provideRealtime() {
     calibrate();
   }
   /**
-   * 随页面可见状态恢复或暂停 HTTP 校准。
+   * 随页面可见状态恢复或暂停 HTTP 校准
    */
   function handleVisibility() {
     if (document.visibilityState === "visible") resume();
-    // 浏览器隐藏时保留连接，只暂停 HTTP 校准。
+    // 浏览器隐藏时保留连接，只暂停 HTTP 校准
     else stopCalibration();
   }
   const stopMessages = client.onMessage(handleMessage);
@@ -200,12 +200,12 @@ export function provideRealtime() {
     isConnected: computed(() => client.status.value === RealtimeConnectionStatus.CONNECTED),
     presence: readonly(presence),
     /**
-     * 在 setup 中订阅公告，随当前作用域释放，也可手动取消。
+     * 在 setup 中订阅公告，随当前作用域释放，也可手动取消
      */
     onNoticeChange(handler) {
       noticeHandlers.add(handler);
       /**
-       * 取消当前公告订阅。
+       * 取消当前公告订阅
        */
       function unsubscribe() {
         noticeHandlers.delete(handler);
@@ -222,7 +222,7 @@ export function provideRealtime() {
     resetConnection();
   });
   /**
-   * 释放连接、监听器和定时器。
+   * 释放连接、监听器和定时器
    */
   function dispose() {
     if (disposed) return;
@@ -243,7 +243,7 @@ export function provideRealtime() {
   return context;
 }
 /**
- * 获取应用提供的实时状态与公告订阅入口。
+ * 获取应用提供的实时状态与公告订阅入口
  */
 export function useRealtime() {
   const context = inject(REALTIME_CONTEXT);

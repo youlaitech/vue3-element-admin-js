@@ -3,7 +3,7 @@ import request from "@/utils/request";
 const AUTH_BASE_URL = "/api/v1/auth";
 
 /**
- * OIDC 授权入口，末段对应后端 registrationId。
+ * OIDC 授权入口，末段对应后端 registrationId
  */
 export const OIDC_AUTHORIZATION_URL = "/oauth2/authorization/youlai";
 
@@ -44,7 +44,7 @@ const AuthAPI = {
   /**
    * 退出登录
    *
-   * 统一认证登录额外返回认证中心登出地址，普通登录返回 null。
+   * 统一认证登录额外返回认证中心登出地址，普通登录返回 null
    */
   logout() {
     return request({
@@ -113,7 +113,7 @@ const AuthAPI = {
   },
 
   /**
-   * 用 OIDC 登录票据换取本地令牌。
+   * 用 OIDC 登录票据换取本地令牌
    */
   exchangeOidcTicket(ticket) {
     return request({

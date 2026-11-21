@@ -7,7 +7,7 @@
 export function extractFields(rules) {
   const result = [];
   /**
-   * 递归收集表单规则中的字段。
+   * 递归收集表单规则中的字段
    */
   const walk = (nodes) => {
     nodes.forEach((node) => {
@@ -33,7 +33,7 @@ export function extractFields(rules) {
  * 提取字段选项映射（value -> label，脏项跳过）
  * @param options 规则 options 数组
  */
-export function extractOptionMap(options) {
+function extractOptionMap(options) {
   const optionMap = new Map();
   if (!Array.isArray(options)) return optionMap;
   options.forEach((option) => {

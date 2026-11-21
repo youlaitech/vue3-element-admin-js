@@ -1,7 +1,7 @@
 import { isExternal } from "@/utils";
 
 /**
- * 维护已访问页签和缓存视图。
+ * 维护已访问页签和缓存视图
  */
 export const useTagsViewStore = defineStore("tagsView", () => {
   const visitedViews = ref([]);
@@ -33,7 +33,7 @@ export const useTagsViewStore = defineStore("tagsView", () => {
    * 添加缓存视图到缓存视图列表中
    */
   function addCachedView({ fullPath, keepAlive }) {
-    // 以 fullPath 区分同一路径下的不同查询参数。
+    // 以 fullPath 区分同一路径下的不同查询参数
     if (cachedViews.value.includes(fullPath)) {
       return;
     }

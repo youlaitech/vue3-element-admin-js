@@ -256,7 +256,7 @@ function buildCatalogTree(menus) {
  */
 function findDefaultCatalogId() {
   /**
-   * 递归查找默认目录的 ID。
+   * 递归查找默认目录的 ID
    */
   const find = (nodes) => {
     for (const node of nodes) {
@@ -277,7 +277,7 @@ function findDefaultCatalogId() {
 const menuBreadcrumb = computed(() => {
   const names = [];
   /**
-   * 查找父目录并收集面包屑路径。
+   * 查找父目录并收集面包屑路径
    */
   const find = (nodes, chain) => {
     for (const node of nodes) {
@@ -304,7 +304,7 @@ const grantedRoleNames = computed(() =>
 const menuRoutePath = computed(() => {
   let routePath = "";
   /**
-   * 查找父目录并拼接菜单完整路由。
+   * 查找父目录并拼接菜单完整路由
    */
   const find = (nodes, basePath) => {
     for (const node of nodes) {

@@ -1,31 +1,31 @@
 <template>
   <div class="page-container">
-    <el-card class="page-search" shadow="never">
-      <el-form ref="queryFormRef" :model="params" :inline="true">
-        <el-form-item prop="keywords" label="关键字">
-          <el-input
-            v-model="params.keywords"
-            placeholder="租户名称/租户编码/域名"
-            clearable
-            @keyup.enter="handleQuery"
-          />
-        </el-form-item>
-
-        <el-form-item prop="status" label="状态">
-          <el-select v-model="params.status" placeholder="全部" clearable style="width: 120px">
-            <el-option label="正常" :value="CommonStatus.ENABLED" />
-            <el-option label="禁用" :value="CommonStatus.DISABLED" />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" @click="handleQuery">搜索</el-button>
-          <el-button @click="handleResetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
     <el-card ref="tableWrapperRef" class="page-content" shadow="never">
+      <div class="page-filter">
+        <el-form ref="queryFormRef" :model="params" :inline="true">
+          <el-form-item prop="keywords" label="关键字">
+            <el-input
+              v-model="params.keywords"
+              placeholder="租户名称/租户编码/域名"
+              clearable
+              @keyup.enter="handleQuery"
+            />
+          </el-form-item>
+
+          <el-form-item prop="status" label="状态">
+            <el-select v-model="params.status" placeholder="全部" clearable style="width: 120px">
+              <el-option label="正常" :value="CommonStatus.ENABLED" />
+              <el-option label="禁用" :value="CommonStatus.DISABLED" />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" @click="handleQuery">搜索</el-button>
+            <el-button @click="handleResetQuery">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+
       <div class="page-toolbar">
         <div class="page-toolbar__left">
           <el-button v-hasPerm="['sys:tenant:create']" type="primary" @click="openDialog()">
@@ -331,7 +331,6 @@
           :default-expanded-keys="menuExpandedKeys"
           :default-expand-all="false"
           class="mt-5"
-          @check="handleMenuCheckedChange"
         >
           <template #default="{ data }">
             {{ data.label }}
@@ -474,7 +473,6 @@ const tenantMenuIds = ref([]);
 const menuSourceOptions = ref([]);
 const planPreviewOptions = ref([]);
 const menuPermOptions = ref([]);
-const menuCheckedCount = ref(0);
 const menuParentChildLinked = ref(true);
 const originalEnabledMenuIds = ref([]);
 
@@ -565,7 +563,6 @@ function updateCheckedMenus() {
       : planMenuIds.value;
   menuTreeRef.value?.setCheckedKeys([], false);
   checkedMenuIds.forEach((menuId) => menuTreeRef.value?.setChecked(menuId, true, false));
-  menuCheckedCount.value = checkedMenuIds.length;
 }
 
 /**
@@ -580,7 +577,6 @@ async function handlePlanChange(planId) {
     menuPermOptions.value = applyMenuOptionsDisabled([], false);
     await nextTick();
     menuTreeRef.value?.setCheckedKeys([], false);
-    menuCheckedCount.value = 0;
     return;
   }
   loading.value = true;
@@ -601,14 +597,6 @@ async function handlePlanChange(planId) {
 }
 
 /**
- * 树节点勾选变化时更新勾选计数
- */
-function handleMenuCheckedChange() {
-  const checkedKeys = menuTreeRef.value?.getCheckedKeys(false) || [];
-  menuCheckedCount.value = checkedKeys.length;
-}
-
-/**
  * 重置套餐相关的所有临时状态
  */
 function resetTenantPlanState() {
@@ -621,7 +609,6 @@ function resetTenantPlanState() {
   planPreviewOptions.value = [];
   menuPermOptions.value = [];
   menuSourceOptions.value = [];
-  menuCheckedCount.value = 0;
   menuParentChildLinked.value = true;
   checkedTenant.value = {};
   checkedTenantForm.value = null;
@@ -864,7 +851,7 @@ function closeDialog() {
 }
 
 /**
- * 校验并提交租户配置。
+ * 校验并提交租户配置
  */
 const handleSubmit = useDebounceFn(async () => {
   const valid = await tenantFormRef.value?.validate().then(

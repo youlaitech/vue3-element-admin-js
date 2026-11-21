@@ -194,17 +194,49 @@
               </template>
             </template>
             <template v-else-if="col.cellType === 'actions'">
-              <TableActions
-                :actions="getRowActions(col, scope.row)"
-                :max-visible="col.maxVisibleActions"
+              <template
+                v-for="group in [getRowActionGroups(col, scope.row)]"
+                :key="col.columnKey ?? col.prop ?? 'actions'"
               >
-                <template
-                  v-for="name in getRowActionSlotNames($slots)"
-                  #[name.slice(4)]="slotProps"
-                >
-                  <slot :name="name" :row="scope.row" v-bind="slotProps" />
-                </template>
-              </TableActions>
+                <div v-if="group.inline.length" class="row-actions">
+                  <el-button
+                    v-for="action in group.inline"
+                    :key="action.key"
+                    link
+                    size="small"
+                    type="primary"
+                    v-bind="action.buttonProps"
+                    :disabled="action.disabled"
+                    :loading="action.loading"
+                    @click="action.run"
+                  >
+                    {{ action.label }}
+                  </el-button>
+                  <el-dropdown v-if="group.overflow.length" trigger="click" placement="bottom-end">
+                    <el-button link size="small" type="primary" aria-label="更多操作">
+                      更多
+                      <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+                    </el-button>
+                    <template #dropdown>
+                      <el-dropdown-menu>
+                        <el-dropdown-item
+                          v-for="action in group.overflow"
+                          :key="action.key"
+                          :disabled="action.disabled"
+                          :style="
+                            action.buttonProps?.type === 'danger'
+                              ? { color: 'var(--el-color-danger)' }
+                              : undefined
+                          "
+                          @click="action.run"
+                        >
+                          {{ action.label }}
+                        </el-dropdown-item>
+                      </el-dropdown-menu>
+                    </template>
+                  </el-dropdown>
+                </div>
+              </template>
             </template>
             <template v-else-if="col.cellType === 'custom'">
               <slot :name="col.slotName ?? col.prop" :prop="col.prop" v-bind="scope" />
@@ -357,7 +389,7 @@
 
 <script setup>
 import { hasPerm } from "@/utils/permission";
-import TableActions from "@/components/TableActions/index.vue";
+import { ArrowDown } from "@element-plus/icons-vue";
 import { useDateFormat } from "@vueuse/core";
 import { genFileId } from "element-plus";
 import { reactive, ref, computed } from "vue";
@@ -403,7 +435,7 @@ const rowKey = props.tableConfig.rowKey ?? "id";
 const permissionPrefix = computed(() => props.tableConfig.permissionPrefix);
 
 /**
- * 有前缀时补全相对权限，完整权限原样保留。
+ * 有前缀时补全相对权限，完整权限原样保留
  */
 function resolvePermission(permission) {
   const resolve = (value) =>
@@ -412,14 +444,14 @@ function resolvePermission(permission) {
 }
 
 /**
- * 未配置前缀时，单元格编辑不附加内置权限。
+ * 未配置前缀时，单元格编辑不附加内置权限
  */
 function hasActionPermission(action) {
   return !permissionPrefix.value || hasPerm(resolvePermission(action));
 }
 
 /**
- * 将业务配置合并到内置按钮默认值。
+ * 将业务配置合并到内置按钮默认值
  */
 function resolveActions(actions, buttonProps = {}) {
   return actions.map((item) => {
@@ -448,14 +480,14 @@ function resolveActions(actions, buttonProps = {}) {
 }
 
 /**
- * 取得当前行和勾选记录，供按钮条件及回调使用。
+ * 取得当前行和勾选记录，供按钮条件及回调使用
  */
 function getActionContext(row) {
   return { row, selectedRows: selectedRows.value, selectedKeys: selectedKeys.value };
 }
 
 /**
- * 同时检查权限和业务显示条件。
+ * 同时检查权限和业务显示条件
  */
 function isActionVisible(button, row) {
   if (button.permission && !hasPerm(button.permission)) return false;
@@ -465,21 +497,21 @@ function isActionVisible(button, row) {
 }
 
 /**
- * 工具栏和各行分别记录动作执行状态。
+ * 工具栏和各行分别记录动作执行状态
  */
 function getActionKey(button, row) {
   return JSON.stringify([row ? row[rowKey] : null, button.key]);
 }
 
 /**
- * 判断动作是否正在执行。
+ * 判断动作是否正在执行
  */
 function isActionPending(button, row) {
   return pendingActions.has(getActionKey(button, row));
 }
 
 /**
- * 业务配置不能启用正在执行或尚不满足条件的按钮。
+ * 业务配置不能启用正在执行或尚不满足条件的按钮
  */
 function isActionDisabled(button, row) {
   const disabled =
@@ -496,7 +528,7 @@ function isActionDisabled(button, row) {
 }
 
 /**
- * 提供按钮插槽的显示状态和执行方法。
+ * 提供按钮插槽的显示状态和执行方法
  */
 function getActionState(button, row) {
   return {
@@ -510,7 +542,7 @@ function getActionState(button, row) {
 }
 
 /**
- * 先筛选可见动作，再交给操作栏计算折叠数量。
+ * 先筛选可见动作，再交给操作栏计算折叠数量
  */
 function getRowActions(column, row) {
   return resolveActions(column.actions ?? ["edit", "delete"], { link: true, size: "small" })
@@ -519,14 +551,25 @@ function getRowActions(column, row) {
 }
 
 /**
- * 转发行操作插槽，保留原有 row-action 命名。
+ * 操作列默认直接显示的数量，0 表示全部显示
  */
-function getRowActionSlotNames(slots) {
-  return Object.keys(slots).filter((name) => name.startsWith("row-action-"));
+function getActionLimit(column) {
+  const limit = column.maxVisibleActions;
+  return typeof limit === "number" && Number.isInteger(limit) && limit >= 0 ? limit : 2;
 }
 
 /**
- * 执行前检查条件，并等待自定义操作完成。
+ * 按配置拆分行操作，超出直接显示上限的动作折叠到更多
+ */
+function getRowActionGroups(column, row) {
+  const actions = getRowActions(column, row);
+  const limit = getActionLimit(column);
+  if (limit === 0 || actions.length <= limit) return { inline: actions, overflow: [] };
+  return { inline: actions.slice(0, limit), overflow: actions.slice(limit) };
+}
+
+/**
+ * 执行前检查条件，并等待自定义操作完成
  */
 async function runAction(button, row) {
   if (!isActionVisible(button, row) || isActionDisabled(button, row)) return;
@@ -602,7 +645,7 @@ const pendingCells = reactive(new Set());
 const defaultColumnVisibility = columns.value.map((col) => col.show);
 
 /**
- * 只向 Element Plus 传递列属性，保留自有元数据供渲染和请求使用。
+ * 只向 Element Plus 传递列属性，保留自有元数据供渲染和请求使用
  */
 function getColumnAttrs(column) {
   const attrs = { ...column };
@@ -655,7 +698,7 @@ const elementTableRef = ref();
 const selectedRows = ref([]);
 const selectedKeys = ref([]);
 /**
- * 更新勾选记录及主键。
+ * 更新勾选记录及主键
  */
 function handleSelectionChange(selection) {
   selectedRows.value = selection;
@@ -663,7 +706,7 @@ function handleSelectionChange(selection) {
 }
 
 /**
- * 列显隐只修改当前实例，恢复时使用声明初值。
+ * 列显隐只修改当前实例，恢复时使用声明初值
  */
 function restoreColumns() {
   columns.value.forEach((col, index) => {
@@ -672,7 +715,7 @@ function restoreColumns() {
 }
 
 /**
- * 同步清理选中行、主键及界面状态。
+ * 同步清理选中行、主键及界面状态
  */
 function clearSelection() {
   selectedRows.value = [];
@@ -681,21 +724,21 @@ function clearSelection() {
 }
 
 /**
- * 读取当前勾选的记录。
+ * 读取当前勾选的记录
  */
 function getSelection() {
   return selectedRows.value;
 }
 
 /**
- * 沿用已提交的条件查询，可选择回到第一页。
+ * 沿用已提交的条件查询，可选择回到第一页
  */
 function refresh(resetPage = false) {
   return loadData(appliedQuery, resetPage);
 }
 
 /**
- * 删除指定行或勾选记录，成功后刷新列表。
+ * 删除指定行或勾选记录，成功后刷新列表
  */
 async function handleDelete(id, permission) {
   const ids = id === undefined ? selectedKeys.value.join(",") : String(id);
@@ -714,7 +757,7 @@ async function handleDelete(id, permission) {
   await action(ids);
   clearSelection();
   ElMessage.success("删除成功");
-  // 删除已成功，刷新失败可单独重试。
+  // 删除已成功，刷新失败可单独重试
   await refresh().catch(() => undefined);
 }
 
@@ -725,7 +768,7 @@ columns.value.forEach((item) => {
   }
 });
 /**
- * 浏览器导出的数据范围。
+ * 浏览器导出的数据范围
  */
 const ExportScope = {
   CURRENT: "current",
@@ -748,14 +791,14 @@ const exportRules = {
 };
 
 /**
- * 打开浏览器导出表单。
+ * 打开浏览器导出表单
  */
 function openExportDialog() {
   exportError.value = "";
   exportDialogVisible.value = true;
 }
 /**
- * 校验导出配置并生成文件，失败保留弹窗。
+ * 校验导出配置并生成文件，失败保留弹窗
  */
 async function handleExport() {
   if (exporting.value) return;
@@ -773,7 +816,7 @@ async function handleExport() {
 }
 
 /**
- * 关闭并重置导出表单。
+ * 关闭并重置导出表单
  */
 function closeExportDialog() {
   exportDialogVisible.value = false;
@@ -783,7 +826,7 @@ function closeExportDialog() {
   });
 }
 /**
- * 按需加载 ExcelJS 并创建工作簿。
+ * 按需加载 ExcelJS 并创建工作簿
  */
 async function createWorkbook() {
   const ExcelJS = await import("exceljs");
@@ -791,7 +834,7 @@ async function createWorkbook() {
 }
 
 /**
- * 按所选字段和数据范围生成 Excel 文件。
+ * 按所选字段和数据范围生成 Excel 文件
  */
 async function exportRows() {
   const query = getExportQuery();
@@ -832,7 +875,7 @@ const importFormRules = {
 };
 
 /**
- * 打开导入表单，区分文件上传与浏览器解析。
+ * 打开导入表单，区分文件上传与浏览器解析
  */
 function handleOpenImportModal(isFile = false) {
   importError.value = "";
@@ -840,7 +883,7 @@ function handleOpenImportModal(isFile = false) {
   isFileImport.value = isFile;
 }
 /**
- * 用新文件替换已选文件。
+ * 用新文件替换已选文件
  */
 function handleFileExceed(files) {
   uploadRef.value.clearFiles();
@@ -849,7 +892,7 @@ function handleFileExceed(files) {
   uploadRef.value.handleStart(file);
 }
 /**
- * 下载导入模板。
+ * 下载导入模板
  */
 async function handleDownloadTemplate() {
   const template = props.tableConfig.importTemplate;
@@ -859,7 +902,7 @@ async function handleDownloadTemplate() {
 }
 
 /**
- * 校验后导入文件，成功后刷新列表。
+ * 校验后导入文件，成功后刷新列表
  */
 async function handleImportSubmit() {
   if (importing.value) return;
@@ -892,7 +935,7 @@ async function handleImportSubmit() {
 }
 
 /**
- * 关闭并重置导入表单。
+ * 关闭并重置导入表单
  */
 function handleCloseImportModal() {
   importModalVisible.value = false;
@@ -902,7 +945,7 @@ function handleCloseImportModal() {
   });
 }
 /**
- * 将原文件交给导入接口处理。
+ * 将原文件交给导入接口处理
  */
 async function importFile() {
   const action = props.tableConfig.importFile;
@@ -912,7 +955,7 @@ async function importFile() {
   return action(file);
 }
 /**
- * 解析 Excel 首张工作表，将数据行交给导入回调。
+ * 解析 Excel 首张工作表，将数据行交给导入回调
  */
 async function importRows() {
   const action = props.tableConfig.importRows;
@@ -928,7 +971,7 @@ async function importRows() {
   return action(rows);
 }
 /**
- * 执行内置工具，或发出自定义工具栏事件。
+ * 执行内置工具，或发出自定义工具栏事件
  */
 async function handleToolbar(key) {
   switch (key) {
@@ -965,7 +1008,7 @@ async function handleToolbar(key) {
 }
 
 /**
- * 保存单元格修改，失败时回滚未刷新的记录。
+ * 保存单元格修改，失败时回滚未刷新的记录
  */
 async function handleModify(field, value, row) {
   const id = getRowKey(row);
@@ -992,7 +1035,7 @@ async function handleModify(field, value, row) {
 }
 
 /**
- * 读取字符串或数字主键，缺失时抛错。
+ * 读取字符串或数字主键，缺失时抛错
  */
 function getRowKey(row) {
   const value = row[rowKey];
@@ -1001,7 +1044,7 @@ function getRowKey(row) {
 }
 
 /**
- * 配置保存接口且有更新权限时允许编辑，保存中禁用。
+ * 配置保存接口且有更新权限时允许编辑，保存中禁用
  */
 function isCellDisabled(row, field) {
   return (
@@ -1012,14 +1055,14 @@ function isCellDisabled(row, field) {
 }
 
 /**
- * 切换每页条数并回到第一页。
+ * 切换每页条数并回到第一页
  */
 function handleSizeChange(value) {
   pagination.pageSize = value;
   void refresh(true).catch(() => undefined);
 }
 /**
- * 切换页码并查询列表。
+ * 切换页码并查询列表
  */
 function handleCurrentChange(value) {
   pagination.currentPage = value;
@@ -1028,7 +1071,7 @@ function handleCurrentChange(value) {
 
 let filterParams = {};
 /**
- * 转换表头筛选值；清空的列从累计条件中删除，再通知页面应用筛选。
+ * 转换表头筛选值；清空的列从累计条件中删除，再通知页面应用筛选
  */
 function handleFilterChange(newFilters) {
   for (const key in newFilters) {
@@ -1046,7 +1089,7 @@ function handleFilterChange(newFilters) {
 }
 
 /**
- * 读取已转换的表头筛选条件。
+ * 读取已转换的表头筛选条件
  */
 function getFilters() {
   return filterParams;
@@ -1063,7 +1106,7 @@ onScopeDispose(() => {
 });
 
 /**
- * 仅最新响应回填列表，成功查询同时记录导出所用条件。
+ * 仅最新响应回填列表，成功查询同时记录导出所用条件
  */
 async function loadData(query = appliedQuery, resetPage = false) {
   const sequence = ++pageSequence;
@@ -1114,7 +1157,7 @@ async function loadData(query = appliedQuery, resetPage = false) {
 }
 
 /**
- * 读取上次成功查询的条件，去除分页参数。
+ * 读取上次成功查询的条件，去除分页参数
  */
 function getExportQuery() {
   if (!canExport.value || !lastSuccessfulQuery) throw new Error("请先成功加载列表再导出");
@@ -1125,7 +1168,7 @@ function getExportQuery() {
 }
 
 /**
- * 服务端导出期间禁止重复请求。
+ * 服务端导出期间禁止重复请求
  */
 async function exportFile() {
   if (exporting.value) return;
@@ -1141,7 +1184,7 @@ async function exportFile() {
 }
 
 /**
- * 应用远程排序；本地排序保留 Element Plus 原有行为。
+ * 应用远程排序；本地排序保留 Element Plus 原有行为
  */
 async function handleSortChange(state) {
   const column = columns.value.find((col) => col.prop === state.prop);
@@ -1151,7 +1194,7 @@ async function handleSortChange(state) {
 }
 
 /**
- * 清除表头筛选和内部条件，不发起查询。
+ * 清除表头筛选和内部条件，不发起查询
  */
 function clearFilters() {
   filterParams = {};
@@ -1161,7 +1204,7 @@ function clearFilters() {
 if (props.autoLoad !== false) void loadData().catch(() => undefined);
 
 /**
- * 将工作簿保存为 .xlsx 文件。
+ * 将工作簿保存为 .xlsx 文件
  */
 function saveXlsx(fileData, fileName) {
   downloadFile({ data: fileData }, fileName.endsWith(".xlsx") ? fileName : fileName + ".xlsx");
@@ -1185,5 +1228,16 @@ defineExpose({
     margin-right: 0 !important;
     margin-left: 0 !important;
   }
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.row-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 </style>

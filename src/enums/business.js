@@ -29,7 +29,7 @@ export const UserGender = {
 };
 
 /**
- * 表单发布状态。
+ * 表单发布状态
  */
 export const FormStatus = {
   /** 草稿 */

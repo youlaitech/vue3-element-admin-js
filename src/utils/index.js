@@ -1,4 +1,3 @@
-// 工具函数统一导出
 // 数据验证
 export { isExternal, isValidURL } from "./validate";
 // 数据格式化

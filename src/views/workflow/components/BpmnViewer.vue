@@ -11,7 +11,7 @@ defineOptions({
 });
 
 /**
- * BPMN 流程图与节点高亮数据。
+ * BPMN 流程图与节点高亮数据
  */
 const props = defineProps({
   /** BPMN 2.0 XML */

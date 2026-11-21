@@ -5,7 +5,7 @@ import router from "@/router";
 import { authSessionRevision } from "@/utils/auth";
 const PAGE_SIZE = 5;
 /**
- * 通知中心的数据与交互。
+ * 通知中心的数据与交互
  */
 export function useNotice() {
   const { onNoticeChange } = useRealtime();
@@ -21,7 +21,7 @@ export function useNotice() {
   let listSequence = 0;
   let unreadSequence = 0;
   /**
-   * 加载当前阅读状态的通知，忽略过期响应。
+   * 加载当前阅读状态的通知，忽略过期响应
    */
   async function fetchList(params) {
     const revision = authSessionRevision.value;
@@ -44,7 +44,7 @@ export function useNotice() {
     if (query.isRead === 0) unreadTotal.value = page.total ?? 0;
   }
   /**
-   * 查询未读总数，忽略旧会话及旧请求结果。
+   * 查询未读总数，忽略旧会话及旧请求结果
    */
   async function fetchUnreadTotal() {
     const revision = authSessionRevision.value;
@@ -58,7 +58,7 @@ export function useNotice() {
     unreadTotal.value = page.total ?? 0;
   }
   /**
-   * 切换阅读状态并重新加载通知。
+   * 切换阅读状态并重新加载通知
    */
   async function switchStatus(status) {
     if (activeStatus.value === status) return;
@@ -66,7 +66,7 @@ export function useNotice() {
     await fetchList();
   }
   /**
-   * 刷新通知列表和未读总数。
+   * 刷新通知列表和未读总数
    */
   async function refresh() {
     await Promise.all([
@@ -75,7 +75,7 @@ export function useNotice() {
     ]);
   }
   /**
-   * 同时只执行一次刷新；在途收到新提示时，结束后再补拉一次。
+   * 同时只执行一次刷新；在途收到新提示时，结束后再补拉一次
    */
   function scheduleRefresh() {
     if (disposed) return;
@@ -94,7 +94,7 @@ export function useNotice() {
       });
   }
   /**
-   * 打开通知详情并刷新阅读状态。
+   * 打开通知详情并刷新阅读状态
    */
   async function read(id) {
     const revision = authSessionRevision.value;
@@ -105,7 +105,7 @@ export function useNotice() {
     await refresh();
   }
   /**
-   * 将全部通知标为已读并刷新列表。
+   * 将全部通知标为已读并刷新列表
    */
   async function readAll() {
     if (unreadTotal.value <= 0) return;
@@ -114,7 +114,7 @@ export function useNotice() {
     ElMessage.success("已全部标记为已读");
   }
   /**
-   * 进入我的通知页面。
+   * 进入我的通知页面
    */
   function goMore() {
     void router.push({ name: "MyNotice" });

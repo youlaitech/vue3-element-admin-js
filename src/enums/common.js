@@ -1,17 +1,5 @@
 /**
- * 对话框操作模式。
- */
-export const DialogMode = {
-  /** 新增 */
-  CREATE: "create",
-  /** 编辑 */
-  EDIT: "edit",
-  /** 只读查看 */
-  VIEW: "view",
-};
-
-/**
- * 通用启用状态。
+ * 通用启用状态
  */
 export const CommonStatus = {
   /** 禁用 */

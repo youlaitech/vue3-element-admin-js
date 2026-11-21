@@ -1,7 +1,7 @@
 import { ref, shallowRef } from "vue";
 
 /**
- * 加载规则并管理表单填写、公开访问与预览页的渲染状态。
+ * 加载规则并管理表单填写、公开访问与预览页的渲染状态
  */
 export function useFormRenderer(loader) {
   // shallowRef：深响应式代理会破坏 form-create Rule 内部 Creator 结构

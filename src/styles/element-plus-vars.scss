@@ -2,12 +2,12 @@
  * Element Plus Sass 主题变量配置
  *
  * 通过 vite.config.ts 的 additionalData 注入，必须在 Element Plus 组件 Sass
- * 样式加载前生效。
+ * 样式加载前生效
  */
 @forward "element-plus/theme-chalk/src/common/var.scss" with (
   $colors: (
     "primary": (
-      // 默认色板取自 src/settings.ts，避免首屏出现两套颜色
+      // 默认色板取自 src/settings.js，避免首屏出现两套颜色
       "base": #165dff,
     ),
     "success": (
@@ -25,6 +25,16 @@
   ),
 
   $bg-color: (
-    "page": #f5f7fb,
-  )
+    "page": #f5f6f8,
+  ),
+
+  // 组件尺寸三档必须与运行时 --el-component-size* 同步落地：
+  // select/segmented 的 min-height、color-picker 触发器、range-input 内高、
+  // checkbox/radio 行高回退值只认编译期 Sass map，不读运行时变量，
+  // 不同步会出现输入框 36 / 下拉 32 的同排错位
+  $common-component-size: (
+      "large": 40px,
+      "default": 36px,
+      "small": 30px,
+    )
 );

@@ -14,15 +14,15 @@ const http = axios.create({
   paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
 });
 
-// 先注册续期拦截器，使令牌失效在业务错误提示之前处理。
+// 先注册续期拦截器，使令牌失效在业务错误提示之前处理
 installTokenRefresh(http);
 
-// 拦截器保留完整响应，解包仅在下方 request 入口执行一次。
+// 拦截器保留完整响应，解包仅在下方 request 入口执行一次
 http.interceptors.response.use(
   async (response) => {
     const { responseType } = response.config;
 
-    // 文件接口的业务失败仍按 JSON 处理，成功时保留完整文件响应。
+    // 文件接口的业务失败仍按 JSON 处理，成功时保留完整文件响应
     if (responseType === "blob" || responseType === "arraybuffer") {
       try {
         const result = await readBinaryApiResult(response);
@@ -64,7 +64,7 @@ http.interceptors.response.use(
 
     const { code, msg } = response.data;
 
-    // 令牌失效已交由前面的续期拦截器处理，这里不重复提示。
+    // 令牌失效已交由前面的续期拦截器处理，这里不重复提示
     if (code === ApiCodeEnum.ACCESS_TOKEN_INVALID || code === ApiCodeEnum.REFRESH_TOKEN_INVALID) {
       return Promise.reject(error);
     }
@@ -75,7 +75,7 @@ http.interceptors.response.use(
       try {
         await permissionStore.refreshPermissions();
       } catch {
-        // 权限刷新失败不能覆盖原请求的 403。
+        // 权限刷新失败不能覆盖原请求的 403
         return Promise.reject(error);
       }
       ElMessage.error(msg || "权限不足");
@@ -88,7 +88,7 @@ http.interceptors.response.use(
 );
 
 /**
- * 二进制保留响应头，JSON 返回业务 data；Axios 泛型适配集中在此处。
+ * 二进制保留响应头，JSON 返回业务 data；Axios 泛型适配集中在此处
  */
 async function request(config) {
   const response = await http.request(config);

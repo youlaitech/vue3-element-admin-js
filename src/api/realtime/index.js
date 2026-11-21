@@ -4,7 +4,7 @@ import request from "@/utils/request";
 const REALTIME_BASE_URL = "/api/v1/realtime";
 const RealtimeAPI = {
   /**
-   * 获取连接票据；服务未启用或无权连接时返回 null。
+   * 获取连接票据；服务未启用或无权连接时返回 null
    */
   async createTicket(data) {
     try {
@@ -28,7 +28,7 @@ const RealtimeAPI = {
     }
   },
   /**
-   * 查询当前节点的在线人数快照。
+   * 查询当前节点的在线人数快照
    */
   getPresenceSnapshot() {
     return request({

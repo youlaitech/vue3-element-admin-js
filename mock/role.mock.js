@@ -26,7 +26,7 @@ export default defineMock([
           {
             id: "2",
             name: "系统管理员",
-            code: "ADMIN",
+            code: "ROOT",
             status: 1,
             sort: 2,
             dataScope: 1,
@@ -182,7 +182,7 @@ const roleMap = {
   2: {
     id: "2",
     name: "系统管理员",
-    code: "ADMIN",
+    code: "ROOT",
     status: 1,
     sort: 2,
     dataScope: 1,

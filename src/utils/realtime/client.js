@@ -2,7 +2,7 @@ import { readonly, shallowRef } from "vue";
 import { createHeartbeatPong, parseRealtimeServerMessage } from "./protocol";
 
 /**
- * 实时连接对外显示的状态。
+ * 实时连接对外显示的状态
  */
 export const RealtimeConnectionStatus = {
   DISCONNECTED: "disconnected",
@@ -17,7 +17,7 @@ const MAX_BUFFERED_BYTES = 16_384;
 const STOP_RECONNECT_CODES = new Set([1000, 1008, 1009, 4003, 4009]);
 
 /**
- * 将一次性票据写入 WebSocket 握手地址。
+ * 将一次性票据写入 WebSocket 握手地址
  */
 function createWebSocketUrl(ticket) {
   const address = new URL("/api/v1/realtime/ws", window.location.origin);
@@ -27,7 +27,7 @@ function createWebSocketUrl(ticket) {
 }
 
 /**
- * 一次有效连接、一个重连任务；所有迟到回调都受 attempt 身份约束。
+ * 一次有效连接、一个重连任务；所有迟到回调都受 attempt 身份约束
  */
 export function createRealtimeClient(options) {
   const status = shallowRef(RealtimeConnectionStatus.DISCONNECTED);
@@ -37,19 +37,19 @@ export function createRealtimeClient(options) {
   let retryTimer = null;
   let retryCount = 0;
   let enabled = false;
-  // 服务未启用、协议或权限拒绝后暂停恢复，由 disconnect 重置。
+  // 服务未启用、协议或权限拒绝后暂停恢复，由 disconnect 重置
   let blocked = false;
   let topics = ["notice"];
 
   /**
-   * 按对象身份识别当前连接，隔离旧连接的回调。
+   * 按对象身份识别当前连接，隔离旧连接的回调
    */
   function isCurrent(attempt) {
     return current === attempt;
   }
 
   /**
-   * 逐个分发消息，隔离订阅者异常。
+   * 逐个分发消息，隔离订阅者异常
    */
   function notify(message) {
     for (const handler of handlers) {
@@ -62,7 +62,7 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 按退避间隔安排重连，最多保留一个待执行任务。
+   * 按退避间隔安排重连，最多保留一个待执行任务
    */
   function scheduleRetry(minimumDelay = 0) {
     if (!enabled || blocked || retryTimer !== null) return;
@@ -70,7 +70,7 @@ export function createRealtimeClient(options) {
       enabled = false;
       return;
     }
-    // 指数退避叠加随机延迟，避免网络恢复时大量客户端同时重连。
+    // 指数退避叠加随机延迟，避免网络恢复时大量客户端同时重连
     const maximum = Math.min(1_000 * 2 ** retryCount++, 30_000);
     const delay = Math.max(minimumDelay, maximum / 2 + (Math.random() * maximum) / 2);
     retryTimer = setTimeout(() => {
@@ -80,11 +80,11 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 结束本次连接尝试，最多安排一次重连。
+   * 结束本次连接尝试，最多安排一次重连
    */
   function finish(attempt, retry, code = 4000, minimumDelay = 0) {
     if (!isCurrent(attempt)) return;
-    // 稳定在线后才重置预算，短暂连上不能使快速失败无限重试。
+    // 稳定在线后才重置预算，短暂连上不能使快速失败无限重试
     if (attempt.connectedAt && Date.now() - attempt.connectedAt >= 30_000) retryCount = 0;
     current = null;
     if (attempt.timer !== null) clearTimeout(attempt.timer);
@@ -99,7 +99,7 @@ export function createRealtimeClient(options) {
         if (socket.readyState === WebSocket.OPEN) socket.close(code);
         else if (socket.readyState === WebSocket.CONNECTING) socket.close();
       } catch {
-        // 回调已失效，底层关闭失败不会产生第二条恢复链。
+        // 回调已失效，底层关闭失败不会产生第二条恢复链
       }
     }
     if (!retry && enabled) blocked = true;
@@ -113,7 +113,7 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 检查连接期限，超时后结束本次尝试。
+   * 检查连接期限，超时后结束本次尝试
    */
   function checkDeadline(attempt) {
     if (!isCurrent(attempt)) return false;
@@ -123,7 +123,7 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 建连后将同一个定时器改为检查心跳期限。
+   * 建连后将同一个定时器改为检查心跳期限
    */
   function armDeadline(attempt) {
     if (!isCurrent(attempt)) return;
@@ -138,7 +138,7 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 应答服务端心跳，发送失败时结束本次连接。
+   * 应答服务端心跳，发送失败时结束本次连接
    */
   function sendPong(attempt, pingId) {
     if (!isCurrent(attempt)) return false;
@@ -161,7 +161,7 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 确认连接就绪、应答心跳并分发业务消息。
+   * 确认连接就绪、应答心跳并分发业务消息
    */
   function handleMessage(attempt, data) {
     if (!checkDeadline(attempt)) return;
@@ -196,14 +196,14 @@ export function createRealtimeClient(options) {
       if (!sendPong(attempt, message.id)) return;
       armDeadline(attempt);
     } else if (status.value !== RealtimeConnectionStatus.CONNECTED) {
-      // 就绪前的业务提示由连接成功后的 HTTP 补拉覆盖。
+      // 就绪前的业务提示由连接成功后的 HTTP 补拉覆盖
       return;
     }
     notify(message);
   }
 
   /**
-   * 领取票据并建立连接，忽略过期尝试的回调。
+   * 领取票据并建立连接，忽略过期尝试的回调
    */
   async function start() {
     if (!enabled || blocked || current) return;
@@ -216,7 +216,7 @@ export function createRealtimeClient(options) {
     };
     current = attempt;
     status.value = RealtimeConnectionStatus.CONNECTING;
-    // 领票与握手共用总超时，领票悬挂也会结束本次尝试。
+    // 领票与握手共用总超时，领票悬挂也会结束本次尝试
     armDeadline(attempt);
     try {
       const ticket = await options.requestTicket({ clientInstanceId, platform: "web", topics });
@@ -228,7 +228,7 @@ export function createRealtimeClient(options) {
       const socket = new WebSocket(createWebSocketUrl(ticket.ticket));
       attempt.socket = socket;
       socket.onmessage = (event) => handleMessage(attempt, event.data);
-      // 浏览器的 error 后跟随 close；在 close 中统一决定恢复，避免丢失关闭码。
+      // 浏览器的 error 后跟随 close；在 close 中统一决定恢复，避免丢失关闭码
       socket.onerror = () => {};
       socket.onclose = (event) => {
         const retry = !STOP_RECONNECT_CODES.has(event.code);
@@ -241,7 +241,7 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 重复调用只检查健康；改变主题时先结束旧连接。
+   * 重复调用只检查健康；改变主题时先结束旧连接
    */
   function connect(nextTopics = ["notice"]) {
     const desired = [...new Set(["notice", ...nextTopics])].sort();
@@ -258,7 +258,7 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 停止连接并清理定时器与重连状态。
+   * 停止连接并清理定时器与重连状态
    */
   function disconnect() {
     enabled = false;
@@ -271,7 +271,7 @@ export function createRealtimeClient(options) {
   }
 
   /**
-   * 注册消息处理器，并返回取消订阅函数。
+   * 注册消息处理器，并返回取消订阅函数
    */
   function onMessage(handler) {
     handlers.add(handler);

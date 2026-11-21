@@ -1,21 +1,21 @@
 /**
- * 实时消息协议版本。
+ * 实时消息协议版本
  */
 export const REALTIME_PROTOCOL_VERSION = 1;
 /**
- * 可订阅的业务主题。
+ * 可订阅的业务主题
  */
 export const REALTIME_TOPICS = ["notice", "dict", "presence"];
 const MAX_MESSAGE_BYTES = 16_384;
 const MAX_TIMER_DELAY_MS = 2_147_483_647;
 /**
- * 判断输入是否为非空、非数组对象。
+ * 判断输入是否为非空、非数组对象
  */
 function isRecord(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 /**
- * 校验文本长度及首尾空白。
+ * 校验文本长度及首尾空白
  */
 function isText(value, maximumLength = 128) {
   return (
@@ -26,19 +26,19 @@ function isText(value, maximumLength = 128) {
   );
 }
 /**
- * 校验非负安全整数。
+ * 校验非负安全整数
  */
 function isNonNegativeInteger(value) {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 }
 /**
- * 校验可用于定时器的正整数毫秒数。
+ * 校验可用于定时器的正整数毫秒数
  */
 function isTimerDelay(value) {
   return isNonNegativeInteger(value) && value > 0 && value <= MAX_TIMER_DELAY_MS;
 }
 /**
- * 校验 UTC 时间及日期有效性。
+ * 校验 UTC 时间及日期有效性
  */
 function isUtcTimestamp(value) {
   if (typeof value !== "string") return false;
@@ -50,7 +50,7 @@ function isUtcTimestamp(value) {
   return new Date(milliseconds).toISOString() === normalized;
 }
 /**
- * 计算 UTF-8 字节数，超过消息上限时提前结束。
+ * 计算 UTF-8 字节数，超过消息上限时提前结束
  */
 function utf8ByteLength(value) {
   let bytes = 0;
@@ -62,7 +62,7 @@ function utf8ByteLength(value) {
   return bytes;
 }
 /**
- * 解析并校验服务端消息，业务层只接收可信结构。
+ * 解析并校验服务端消息，业务层只接收可信结构
  */
 export function parseRealtimeServerMessage(text) {
   if (utf8ByteLength(text) > MAX_MESSAGE_BYTES) {
@@ -151,7 +151,7 @@ export function parseRealtimeServerMessage(text) {
   }
 }
 /**
- * 校验领票接口，避免无效数据进入连接流程。
+ * 校验领票接口，避免无效数据进入连接流程
  */
 export function parseRealtimeTicket(value) {
   const invalid = {
@@ -166,7 +166,7 @@ export function parseRealtimeTicket(value) {
   return { kind: "success", value: { ticket } };
 }
 /**
- * 生成对应服务端心跳的应答消息。
+ * 生成对应服务端心跳的应答消息
  */
 export function createHeartbeatPong(pingId) {
   return {

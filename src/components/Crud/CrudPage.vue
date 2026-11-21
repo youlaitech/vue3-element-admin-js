@@ -81,11 +81,11 @@ const {
   applyFilters,
 } = page;
 
-// 子组件挂载后读取搜索初值，避免首次重复请求。
+// 子组件挂载后读取搜索初值，避免首次重复请求
 onMounted(() => search());
 
 /**
- * 筛选子组件插槽，并去掉转发前缀。
+ * 筛选子组件插槽，并去掉转发前缀
  */
 function getSlotNames(prefix) {
   return Object.keys(slots)
@@ -94,7 +94,7 @@ function getSlotNames(prefix) {
 }
 
 /**
- * 有表单时直接新增，否则交给页面处理。
+ * 有表单时直接新增，否则交给页面处理
  */
 function handleCreate() {
   if (props.formConfig) openCreate();
@@ -102,21 +102,21 @@ function handleCreate() {
 }
 
 /**
- * 打开编辑表单，默认使用页面配置的详情加载器。
+ * 打开编辑表单，默认使用页面配置的详情加载器
  */
 function openEdit(row, loader = props.loadFormData, target) {
   return page.openEdit(row, loader, target);
 }
 
 /**
- * 打开只读表单，默认使用页面配置的详情加载器。
+ * 打开只读表单，默认使用页面配置的详情加载器
  */
 function openView(row, loader = props.loadFormData, target) {
   return page.openView(row, loader, target);
 }
 
 /**
- * 处理内置编辑、查看，再通知页面行操作。
+ * 处理内置编辑、查看，再通知页面行操作
  */
 async function handleRowAction(action) {
   if (props.formConfig) {
@@ -127,7 +127,7 @@ async function handleRowAction(action) {
 }
 
 /**
- * 保存成功后通知页面，并沿用已应用的条件刷新列表。
+ * 保存成功后通知页面，并沿用已应用的条件刷新列表
  */
 async function handleSaved() {
   emit("saved");

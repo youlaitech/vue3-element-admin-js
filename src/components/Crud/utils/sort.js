@@ -1,5 +1,5 @@
 /**
- * 将表头排序转为接口参数；清除时不发送空规则。
+ * 将表头排序转为接口参数；清除时不发送空规则
  */
 export function buildSort(sort, field = sort.prop) {
   if (sort.order === null) return undefined;

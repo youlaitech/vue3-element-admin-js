@@ -431,7 +431,7 @@ async function resetSettingsToDefault() {
 }
 
 /**
- * 生成 src/settings.ts 中 defaults 的配置片段
+ * 生成 src/settings.js 中 defaults 的配置片段
  */
 function buildDefaultsCode() {
   const themeColorsCode = JSON.stringify(settingsStore.themeColors, null, 4)
@@ -468,7 +468,7 @@ function buildDefaultsCode() {
   pageSwitchingAnimation: ${settings.pageSwitchingAnimation},
   showSettings: ${settings.showSettings},
   watermarkContent: ${settings.watermarkContent},
-} as const;`;
+};`;
 }
 
 /**

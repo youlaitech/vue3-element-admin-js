@@ -23,7 +23,7 @@ function rgbToHex(r, g, b) {
  * @param {Number} level 加深的程度，限 0-1 之间
  * @returns {String} 返回处理后的颜色值
  */
-export function getDarkColor(color, level) {
+function getDarkColor(color, level) {
   const rgb = hexToRgb(color);
   for (let i = 0; i < 3; i++) rgb[i] = Math.round(20.5 * level + rgb[i] * (1 - level));
   return rgbToHex(rgb[0], rgb[1], rgb[2]);
@@ -35,7 +35,7 @@ export function getDarkColor(color, level) {
  * @param {Number} level 变浅的程度，限 0-1 之间
  * @returns {String} 返回处理后的颜色值
  */
-export const getLightColor = (color, level) => {
+const getLightColor = (color, level) => {
   const rgb = hexToRgb(color);
   for (let i = 0; i < 3; i++) rgb[i] = Math.round(255 * level + rgb[i] * (1 - level));
   return rgbToHex(rgb[0], rgb[1], rgb[2]);
@@ -68,7 +68,7 @@ export function generateThemeColors(palette, theme) {
 /**
  * 取系统的明暗主题偏好
  */
-export function getSystemTheme() {
+function getSystemTheme() {
   return window.matchMedia(SYSTEM_DARK_MEDIA).matches ? ThemeMode.DARK : ThemeMode.LIGHT;
 }
 

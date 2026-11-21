@@ -164,7 +164,7 @@ function resetAutoName() {
   autoNameDirty.value = false;
 }
 
-// 复用动态表单的规则加载与渲染状态。
+// 复用动态表单的规则加载与渲染状态
 const { rule, option, loading, submitted, load, refill } = useFormRenderer(() =>
   FormAPI.getRender(selectedProcess.value?.formKey ?? ""),
 );
